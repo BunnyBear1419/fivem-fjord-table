@@ -388,7 +388,7 @@ class IngredientDirectoryView(discord.ui.View):
         self.owner_id = owner_id
         self.data = data
         self.page = 0
-        self.page_size = 8
+        self.page_size = 5
         self.page_count = max(1, (len(build_ingredient_directory(data)) + self.page_size - 1) // self.page_size)
         self.refresh_buttons()
 
