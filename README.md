@@ -44,6 +44,6 @@ python bot.py
 
 ## Scope
 
-This project is now focused on the FiveM crafting directory. The former ALU code is retained in the Git history and repository during the migration, but the active bot entry point no longer loads the ALU dashboard or its MongoDB player-state features.
+This project is now focused on the FiveM crafting directory. Only the FiveM crafting bot, recipe data, deployment files, and relevant tests are maintained in the current project.
 
 This is a FiveM roleplay game reference only, not real-world instructions.
