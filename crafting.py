@@ -222,6 +222,23 @@ def find_ingredient_usage(data: dict[str, Any], ingredient_name: str):
     return matches
 
 
+def find_exact_recipe_outputs(data: dict[str, Any], item_name: str):
+    """Find recipes that produce an item with this exact name."""
+    needle = item_name.casefold().strip()
+    outputs = []
+    if not needle:
+        return outputs
+    for table in data.get("tables", []):
+        for recipe in table.get("recipes", []):
+            if str(recipe.get("name", "")).casefold().strip() == needle:
+                outputs.append({
+                    "table": table.get("name", "Unnamed table"),
+                    "recipe": recipe,
+                    "ingredients": recipe.get("ingredients") or [],
+                })
+    return outputs
+
+
 def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discord.Embed:
     """Build a cross-table report for one exact ingredient name."""
     matches = find_ingredient_usage(data, ingredient_name)
@@ -236,17 +253,27 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
         ),
         color=discord.Color.from_rgb(57, 75, 111),
     )
+    outputs = find_exact_recipe_outputs(data, ingredient_name)
+    if outputs:
+        made_lines = []
+        for output in outputs[:10]:
+            ingredients = ", ".join(
+                f"{name} ×{quantity}" for name, quantity in output["ingredients"]
+            ) or "Ingredients need review"
+            made_lines.append(f"• **{output['recipe'].get('name', 'Unnamed recipe')}** at **{output['table']}**\n  Requires: {ingredients}")
+        embed.add_field(name=f"Where {ingredient_name.strip()[:80]} is made", value="\n".join(made_lines)[:1024], inline=False)
+
     for group in matches[:25]:
         lines = [
-            f"• **{item['recipe']}** — ×{item['quantity']}"
-            + (f" ({item['occurrences']} entries)" if item["occurrences"] > 1 else "")
+            f"• **{item['recipe']}** requires **{ingredient_name.strip()} ×{item['quantity']}**"
+            + (f" ({item['occurrences']} ingredient entries)" if item["occurrences"] > 1 else "")
             for item in group["recipes"]
         ]
-        embed.add_field(name=group["table"][:256], value="\n".join(lines)[:1024], inline=False)
+        embed.add_field(name=f"Used at: {group['table']}"[:256], value="\n".join(lines)[:1024], inline=False)
     if len(matches) > 25:
-        embed.set_footer(text=f"Showing 25 of {len(matches)} matching tables.")
+        embed.set_footer(text=f"Showing 25 of {len(matches)} tables that use this ingredient.")
     else:
-        embed.set_footer(text="Exact ingredient match only • Coca Leaf and Coca Leaves are treated separately")
+        embed.set_footer(text="Exact ingredient match only • duplicate ingredient entries are preserved • Coca Leaf and Coca Leaves are separate")
     return embed
 
 
