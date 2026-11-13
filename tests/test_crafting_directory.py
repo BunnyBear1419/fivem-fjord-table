@@ -72,8 +72,8 @@ def test_all_ingredient_directory_groups_exact_names_and_preserves_occurrences()
     assert set(by_name) == {"Coca Leaf", "Coca Leaves"}
     assert [use["quantity"] for use in by_name["Coca Leaf"]] == [1, 3]
     document = ingredient_directory_document(data)
-    assert "Test Table | Test Recipe" in document
-    assert "Test Table | Test Recipe" in document
-    assert document.count("Test Table | Test Recipe") == 2
+    assert "Coca Leaf\n" in document
+    assert "Coca Leaves\n" in document
+    assert document.count("requires ×") == 3
     embed = ingredient_directory_embed(data)
     assert embed.fields
