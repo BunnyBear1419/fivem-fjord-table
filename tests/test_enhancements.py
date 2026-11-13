@@ -51,3 +51,95 @@ def test_csv_and_excel_exports_keep_duplicate_ingredient_occurrences():
     assert csv_data.count("Wire") == 2
     excel_data = recipes_xlsx_bytes(data)
     assert excel_data[:2] == b"PK"
+
+
+def test_dependency_chain_traces_nested_outputs_and_stops_cycles():
+    from enhancements import dependency_chain, dependency_lines
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Final Item", "ingredients": [["Intermediate", 2]]},
+        {"name": "Intermediate", "ingredients": [["Base", 3]]},
+        {"name": "Base", "ingredients": [["Final Item", 1]]},
+    ]}]}
+    chain = dependency_chain(data, "Final Item")
+    lines = dependency_lines(chain)
+    assert any("Intermediate" in line for line in lines)
+    assert any("cycle stopped" in line for line in lines)
+
+
+def test_inventory_calculator_combines_duplicate_stock_and_finds_missing():
+    from enhancements import inventory_plan
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Widget", "ingredients": [["Wire", 2], ["Wire", 1], ["Bolt", 2]]}
+    ]}]}
+    result = inventory_plan(data, "Bench", "Widget", 3, "Wire x5, Wire x1, Bolt x2")
+    assert result["available_batches"] == 1
+    assert result["missing"] == {"Wire": 3, "Bolt": 4}
+
+
+def test_multi_recipe_planner_combines_totals_across_recipes():
+    from enhancements import multi_recipe_plan
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "A", "ingredients": [["Wire", 2]]},
+        {"name": "B", "ingredients": [["Wire", 3], ["Bolt", 1]]},
+    ]}]}
+    result = multi_recipe_plan(data, [("Bench", "A", 2), ("Bench", "B", 3)])
+    assert result["ingredients"] == {"Wire": 13, "Bolt": 3}
+
+
+def test_advanced_search_filters_table_ingredient_tool_and_minimum():
+    from enhancements import advanced_search
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Widget", "ingredients": [["Wire", 2], ["Bolt", 1]], "tools": ["Hammer"]},
+        {"name": "Other", "ingredients": [["Wire", 1]], "tools": ["Saw"]},
+    ]}]}
+    results = advanced_search(data, table_filter="Bench", ingredient_filter="wire", tool_filter="hammer", min_ingredients=2)
+    assert [recipe["name"] for _, recipe in results] == ["Widget"]
+
+
+def test_recipe_comparison_reports_shared_and_exclusive_items():
+    from enhancements import recipe_comparison
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "A", "ingredients": [["Wire", 2], ["Bolt", 1]]},
+        {"name": "B", "ingredients": [["Wire", 1], ["Nail", 3]]},
+    ]}]}
+    result = recipe_comparison(data, "Bench", "A", "Bench", "B")
+    assert result["shared"] == ["Wire"]
+    assert result["only_a"] == ["Bolt"]
+    assert result["only_b"] == ["Nail"]
+
+
+def test_import_merge_skips_conflicts_and_preserves_duplicate_ingredient_rows():
+    from enhancements import merge_recipe_import
+    current = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Existing", "ingredients": [["Wire", 1]]}
+    ]}]}
+    incoming = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Existing", "ingredients": [["Bolt", 1]]},
+        {"name": "New", "ingredients": [["Wire", 2], ["Wire", 3]]},
+    ]}]}
+    merged, summary = merge_recipe_import(current, incoming, "skip")
+    assert summary["skipped"] == 1
+    assert summary["recipes_added"] == 1
+    new_recipe = next(r for r in merged["tables"][0]["recipes"] if r["name"] == "New")
+    assert new_recipe["ingredients"] == [["Wire", 2], ["Wire", 3]]
+
+
+def test_stable_ids_are_added_and_preserved_when_names_change():
+    from enhancements import ensure_stable_ids
+    data = {"tables": [{"name": "Bench", "recipes": [{"name": "Widget", "ingredients": []}]}]}
+    ensure_stable_ids(data)
+    table_id = data["tables"][0]["id"]
+    recipe_id = data["tables"][0]["recipes"][0]["id"]
+    data["tables"][0]["name"] = "Renamed Bench"
+    data["tables"][0]["recipes"][0]["name"] = "Renamed Widget"
+    ensure_stable_ids(data)
+    assert data["tables"][0]["id"] == table_id
+    assert data["tables"][0]["recipes"][0]["id"] == recipe_id
+
+
+def test_new_features_are_exposed_in_private_menu_and_admin_tools():
+    source = open("bot.py", encoding="utf-8").read()
+    for feature in ("Production chains", "Inventory calculator", "Multi-recipe planner", "Advanced search", "Item database", "Recipe comparison"):
+        assert feature in source
+    for feature in ("Import / merge recipe JSON", "Configure staff roles", "View crafting analytics"):
+        assert feature in source

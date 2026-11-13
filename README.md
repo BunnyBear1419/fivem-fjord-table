@@ -12,6 +12,12 @@ Members use only **`/crafting`**. It opens a private dropdown menu with:
 - **All ingredients** — browse or download the complete exact-name ingredient directory.
 - **Recipe shopping list** — calculate required ingredients for 1–999 batches; repeated ingredient rows are summed for the requested total.
 - **Crafting table comparison** — compare shared and table-exclusive ingredients.
+- **Production chains** — trace recipe outputs through nested ingredient recipes to base items (cycle/depth limited).
+- **Inventory calculator** — enter current stock and calculate craftable batches plus missing quantities.
+- **Multi-recipe planner** — combine several table/recipe/batch requests into one shopping list.
+- **Advanced search** — filter by keyword, table, ingredient, tool, and minimum ingredient-row count.
+- **Item database** — open an exact-name item page showing where it is produced and consumed.
+- **Recipe comparison** — compare two recipes' shared and exclusive ingredients.
 - **Help and instructions** — see how to use the directory.
 - **Report a recipe issue** — submit an issue type, optional table/recipe, and details.
 - **Admin tools** — shown only to members with Manage Server permission.
@@ -26,14 +32,16 @@ The Admin tools submenu includes:
 - Export JSON, CSV, and Excel workbooks (each ingredient occurrence is a separate row).
 - Validate recipe data for missing names/ingredients, invalid quantities, repeated recipe names, and possible spelling variations. Findings are review-only; nothing is auto-corrected.
 - View a reversible recipe change history and restore a prior snapshot.
-- View table and recipe totals.
+- View table and recipe totals plus usage analytics.
+- Configure approved staff role IDs (Manage Server is required to change role permissions).
+- Import/merge recipe JSON with a preview, validation, skip/replace conflict handling, backup, and history snapshot.
 - Review structured issue reports and resolve a report by number.
 
-Admin actions check the Manage Server permission again when submitted. Every recipe-data change creates a timestamped backup and a history snapshot before saving.
+Admin actions check the Manage Server permission again when submitted. Every recipe-data change creates a timestamped backup and a history snapshot before saving. Automatic backups run every 24 hours and retain the 10 newest backup files. Recipe tables and recipes receive stable IDs when data is loaded and saved.
 
 For ingredient input, use comma-separated entries such as `Plastic bag x2, Powder x1`. Repeated ingredient entries are intentionally preserved and never deduplicated.
 
-Admin edits are written to `crafting-data.json`, a runtime override separate from source `recipes.json`. Use the Export option after making changes and keep the exported file somewhere safe; runtime files and backups are stored on the Discloud app filesystem and should not be treated as your only copy.
+Admin edits are written to `crafting-data.json`, a runtime override separate from source `recipes.json`. Use the Export option after making changes and keep the exported file somewhere safe; runtime files, staff-role settings, and backups are stored on the Discloud app filesystem. That filesystem may not survive every host-side rebuild or app replacement, so download exports/backups and keep an external copy.
 
 ## Old slash commands
 
@@ -53,7 +61,7 @@ Do not delete and reinvite the bot just to refresh commands.
 - `recipes.json` — original bundled crafting table and recipe data.
 - `crafting-data.json` — runtime admin-edited override, created after the first admin change.
 - `crafting.py` — directory UI, search, ingredient parsing, and backup/storage helpers.
-- `enhancements.py` — shopping-list calculations, table comparisons, validation, and CSV/Excel exports.
+- `enhancements.py` — production chains, inventory and multi-recipe planning, advanced search, comparisons, imports, analytics, validation, and CSV/Excel exports.
 - `history.json` — reversible administrator change snapshots, created when the first change is made.
 - `bot.py` — the one slash command, dropdown menus, admin controls, usage tracking, reports, and logging.
 

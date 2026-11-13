@@ -22,7 +22,7 @@ if env_file.is_file():
 
 import discord
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from crafting import (
     OVERRIDE_FILE, CraftingDirectoryView, create_backup, load_recipe_data,
@@ -32,6 +32,9 @@ from crafting import (
 from enhancements import (
     calculate_recipe_ingredients, recipe_shopping_embed, table_comparison_embed,
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
+    ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
+    multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
+    analytics_embed,
 )
 
 PROJECT_NAME = "FiveM Crafting Directory"
@@ -39,6 +42,7 @@ BASE_DIR = Path(__file__).resolve().parent
 STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
 HISTORY_FILE = BASE_DIR / "history.json"
+PERMISSIONS_FILE = BASE_DIR / "permissions.json"
 LOG_FILE = BASE_DIR / "bot.log"
 COLOR = discord.Color.from_rgb(57, 75, 111)
 
@@ -105,6 +109,16 @@ def is_guild_admin(interaction: discord.Interaction) -> bool:
     return bool(interaction.guild and interaction.user.guild_permissions.manage_guild)
 
 
+def can_manage_crafting(interaction: discord.Interaction) -> bool:
+    if is_guild_admin(interaction):
+        return True
+    if not interaction.guild:
+        return False
+    config = read_json(PERMISSIONS_FILE, {"role_ids": []})
+    allowed = {int(value) for value in config.get("role_ids", []) if str(value).isdigit()}
+    return any(role.id in allowed for role in getattr(interaction.user, "roles", []))
+
+
 class KeepAliveHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
@@ -143,8 +157,14 @@ def help_embed():
     embed.add_field(name="All ingredients", value="Browse the complete ingredient directory by name, table, recipe, and quantity. Download the full plain-text list.", inline=False)
     embed.add_field(name="Recipe shopping list", value="Choose a recipe and batch count to calculate the total ingredients needed.", inline=False)
     embed.add_field(name="Crafting table comparison", value="Compare shared ingredients and ingredients unique to each table.", inline=False)
+    embed.add_field(name="Production chains", value="Trace an item's crafting dependencies back to base ingredients.", inline=False)
+    embed.add_field(name="Inventory calculator", value="Use current stock to calculate craftable batches and missing items.", inline=False)
+    embed.add_field(name="Multi-recipe planner", value="Combine several recipes into one shopping list.", inline=False)
+    embed.add_field(name="Advanced search", value="Filter by table, ingredient, tool, keyword, and ingredient count.", inline=False)
+    embed.add_field(name="Item database", value="Open an item page showing where it is made and used.", inline=False)
+    embed.add_field(name="Recipe comparison", value="Compare two recipes and their shared/exclusive ingredients.", inline=False)
     embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry with table and recipe details.", inline=False)
-    embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server permission required.", inline=False)
+    embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server or approved staff role required.", inline=False)
     embed.set_footer(text="Private menu • Only you can see and use this session")
     return embed
 
@@ -156,7 +176,7 @@ class CraftingBot(commands.Bot):
         self.guild_commands_cleaned = False
 
     async def setup_hook(self):
-        self.recipe_data = load_recipe_data()
+        self.recipe_data = ensure_stable_ids(load_recipe_data())
         # Syncing the one-command local tree replaces the old global command set.
         synced = await self.tree.sync()
         count = sum(len(table.get("recipes", [])) for table in self.recipe_data["tables"])
@@ -164,6 +184,8 @@ class CraftingBot(commands.Bot):
 
     async def on_ready(self):
         logger.info("%s online as %s | guilds connected: %s", PROJECT_NAME, self.user, len(self.guilds))
+        if not automatic_backup.is_running():
+            automatic_backup.start()
         # Remove any legacy guild-specific copies created by older bot versions.
         if not self.guild_commands_cleaned:
             for guild in self.guilds:
@@ -177,7 +199,24 @@ bot = CraftingBot()
 
 
 def refresh_recipe_data():
-    bot.recipe_data = load_recipe_data()
+    bot.recipe_data = ensure_stable_ids(load_recipe_data())
+
+
+@tasks.loop(hours=24)
+async def automatic_backup():
+    try:
+        path = create_backup()
+        backups = sorted(path.parent.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
+        for old in backups[10:]:
+            old.unlink(missing_ok=True)
+        logger.info("Automatic recipe backup created: %s", path.name)
+    except Exception:
+        logger.exception("Automatic recipe backup failed")
+
+
+@automatic_backup.before_loop
+async def before_automatic_backup():
+    await bot.wait_until_ready()
 
 
 class SearchModal(discord.ui.Modal, title="Search crafting recipes"):
@@ -264,18 +303,18 @@ class AdminActionModal(discord.ui.Modal):
             self.add_item(field)
 
     async def on_submit(self, interaction: discord.Interaction):
-        if not is_guild_admin(interaction):
-            await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+        if not can_manage_crafting(interaction):
+            await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
             return
 
-        data = load_recipe_data()
+        data = ensure_stable_ids(load_recipe_data())
         before_data = json.loads(json.dumps(data, ensure_ascii=False))
         if self.action == "add_table":
             name = self.table_name.value.strip()
             if not name or any(t["name"].casefold() == name.casefold() for t in data["tables"]):
                 await interaction.response.send_message("Enter a unique table name.", ephemeral=True)
                 return
-            data["tables"].append({"name": name, "recipes": []})
+            data["tables"].append({"id": __import__("uuid").uuid4().hex, "name": name, "recipes": []})
             record_recipe_change(before_data, "add_table", interaction.user.id, f"Added table: {name}")
             save_recipe_data(data)
             refresh_recipe_data()
@@ -294,6 +333,7 @@ class AdminActionModal(discord.ui.Modal):
                 return
             name = self.recipe_name.value.strip()
             table["recipes"].append({
+                "id": __import__("uuid").uuid4().hex,
                 "name": name, "ingredients": ingredients,
                 "tools": [x.strip() for x in self.tools.value.split(",") if x.strip()],
                 "review": "Added by server administrator", "source": "CraftingBot admin menu",
@@ -378,6 +418,9 @@ class AdminMenuView(discord.ui.View):
         super().__init__(timeout=300)
         self.owner_id = owner_id
         options = [
+            discord.SelectOption(label="Import / merge recipe JSON", value="import_json", emoji="📥"),
+            discord.SelectOption(label="Configure staff roles", value="set_roles", emoji="👥"),
+            discord.SelectOption(label="View crafting analytics", value="analytics", emoji="📈"),
             discord.SelectOption(label="Add a crafting table", value="add_table", emoji="➕"),
             discord.SelectOption(label="Add a recipe", value="add_recipe", emoji="🧪"),
             discord.SelectOption(label="Edit a recipe", value="edit_recipe", emoji="✏️"),
@@ -402,17 +445,29 @@ class AdminMenuView(discord.ui.View):
         if interaction.user.id != self.owner_id:
             await interaction.response.send_message("This private menu belongs to someone else.", ephemeral=True)
             return False
-        if not is_guild_admin(interaction):
-            await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+        if not can_manage_crafting(interaction):
+            await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
             return False
         return True
 
     async def choose_action(self, interaction: discord.Interaction):
         action = interaction.data["values"][0]
         if action == "back":
-            await interaction.response.edit_message(embed=help_embed(), view=MainMenuView(self.owner_id, is_guild_admin(interaction)))
+            await interaction.response.edit_message(embed=help_embed(), view=MainMenuView(self.owner_id, can_manage_crafting(interaction)))
         elif action in {"add_table", "add_recipe", "edit_recipe", "remove_recipe", "resolve_report", "restore_history"}:
             await interaction.response.send_modal(AdminActionModal(action))
+        elif action == "import_json":
+            if not is_guild_admin(interaction):
+                await interaction.response.send_message("Only Manage Server members can import data.", ephemeral=True)
+                return
+            await interaction.response.send_modal(ImportRecipeModal())
+        elif action == "set_roles":
+            if not is_guild_admin(interaction):
+                await interaction.response.send_message("Only Manage Server members can configure roles.", ephemeral=True)
+                return
+            await interaction.response.send_modal(StaffRolesModal())
+        elif action == "analytics":
+            await interaction.response.send_message(embed=analytics_embed(load_recipe_data(), read_json(STATS_FILE, {})), ephemeral=True)
         elif action == "backup":
             path = create_backup()
             await interaction.response.send_message(f"Backup created: **{path.name}**", ephemeral=True)
@@ -532,6 +587,12 @@ class MainMenuView(discord.ui.View):
             discord.SelectOption(label="All ingredients", value="all_ingredients", description="Browse or download the complete ingredient list", emoji="📋"),
             discord.SelectOption(label="Recipe shopping list", value="shopping_list", description="Calculate ingredients for a chosen batch count", emoji="🧮"),
             discord.SelectOption(label="Crafting table comparison", value="compare_tables", description="See shared and table-exclusive ingredients", emoji="⚖️"),
+            discord.SelectOption(label="Production chains", value="dependency", description="Trace outputs to base ingredients", emoji="🔗"),
+            discord.SelectOption(label="Inventory calculator", value="inventory", description="Calculate batches from current stock", emoji="🎒"),
+            discord.SelectOption(label="Multi-recipe planner", value="multi_plan", description="Combine several recipes into one list", emoji="🧾"),
+            discord.SelectOption(label="Advanced search", value="advanced_search", description="Filter recipes by multiple criteria", emoji="🧰"),
+            discord.SelectOption(label="Item database", value="item_page", description="Open an item's production and usage page", emoji="📖"),
+            discord.SelectOption(label="Recipe comparison", value="recipe_compare", description="Compare two recipes", emoji="⚖️"),
             discord.SelectOption(label="Help and instructions", value="help", description="How to use the crafting directory", emoji="📘"),
             discord.SelectOption(label="Report a recipe issue", value="report", description="Privately report missing or incorrect data", emoji="📨"),
         ]
@@ -566,16 +627,183 @@ class MainMenuView(discord.ui.View):
             await interaction.response.send_modal(RecipeCalculatorModal())
         elif action == "compare_tables":
             await interaction.response.edit_message(embed=table_comparison_embed(bot.recipe_data), view=self)
+        elif action == "dependency":
+            await interaction.response.send_modal(DependencyModal())
+        elif action == "inventory":
+            await interaction.response.send_modal(InventoryModal())
+        elif action == "multi_plan":
+            await interaction.response.send_modal(MultiRecipeModal())
+        elif action == "advanced_search":
+            await interaction.response.send_modal(AdvancedSearchModal())
+        elif action == "item_page":
+            await interaction.response.send_modal(ItemPageModal())
+        elif action == "recipe_compare":
+            await interaction.response.send_modal(RecipeCompareModal())
         elif action == "help":
             await interaction.response.edit_message(embed=help_embed(), view=self)
         elif action == "report":
             await interaction.response.send_modal(ReportModal())
         elif action == "admin":
-            if not is_guild_admin(interaction):
-                await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+            if not can_manage_crafting(interaction):
+                await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
                 return
             embed = discord.Embed(title="⚙️ Crafting Admin Tools", description="Choose an action below. Changes automatically create a backup before saving.", color=COLOR)
             await interaction.response.edit_message(embed=embed, view=AdminMenuView(self.owner_id))
+
+
+
+class DependencyModal(discord.ui.Modal, title="Trace a production chain"):
+    item = discord.ui.TextInput(label="Item / recipe output name", max_length=100)
+    async def on_submit(self, interaction):
+        lines = dependency_lines(dependency_chain(bot.recipe_data, self.item.value.strip()))
+        embed = discord.Embed(title="Production chain: " + self.item.value.strip()[:180], description="\n".join(lines)[:3900], color=COLOR)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class InventoryModal(discord.ui.Modal, title="Inventory calculator"):
+    table = discord.ui.TextInput(label="Exact crafting table", max_length=100)
+    recipe = discord.ui.TextInput(label="Exact recipe name", max_length=100)
+    batches = discord.ui.TextInput(label="Target batches", default="1", max_length=3)
+    inventory = discord.ui.TextInput(label="Current stock: Item x5, Item x10", style=discord.TextStyle.paragraph, max_length=1500)
+    async def on_submit(self, interaction):
+        try:
+            result = inventory_plan(bot.recipe_data, self.table.value, self.recipe.value, int(self.batches.value.strip()), self.inventory.value)
+        except (ValueError, TypeError) as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        embed = discord.Embed(title="Inventory plan: " + self.recipe.value, description="Craftable batches: " + str(result["available_batches"]) + " / " + str(result["target_batches"]), color=COLOR)
+        embed.add_field(name="Missing for target", value="\n".join(str(n) + " x" + str(q) for n,q in result["missing"].items()) or "Nothing missing.", inline=False)
+        embed.add_field(name="Required total", value="\n".join(str(n) + " x" + str(q) for n,q in result["required"].items())[:1024], inline=False)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class MultiRecipeModal(discord.ui.Modal, title="Multi-recipe planner"):
+    requests = discord.ui.TextInput(label="One per line: Table | Recipe | batches", style=discord.TextStyle.paragraph, max_length=1800)
+    async def on_submit(self, interaction):
+        try:
+            parsed = []
+            for line in self.requests.value.splitlines():
+                if not line.strip():
+                    continue
+                parts = [p.strip() for p in line.split("|")]
+                if len(parts) != 3:
+                    raise ValueError("Use: Table | Recipe | batches")
+                parsed.append((parts[0], parts[1], int(parts[2])))
+            result = multi_recipe_plan(bot.recipe_data, parsed)
+        except (ValueError, TypeError) as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        embed = discord.Embed(title="Combined production plan", description="\n".join(result["selected"])[:1000], color=COLOR)
+        embed.add_field(name="Combined ingredients", value="\n".join(str(n) + " x" + str(q) for n,q in result["ingredients"].items())[:1024], inline=False)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class AdvancedSearchModal(discord.ui.Modal, title="Advanced search"):
+    keyword = discord.ui.TextInput(label="Keyword (optional)", required=False, max_length=100)
+    table = discord.ui.TextInput(label="Table contains (optional)", required=False, max_length=100)
+    ingredient = discord.ui.TextInput(label="Ingredient contains (optional)", required=False, max_length=100)
+    tool = discord.ui.TextInput(label="Tool contains (optional)", required=False, max_length=100)
+    minimum = discord.ui.TextInput(label="Minimum ingredient rows", default="0", max_length=3)
+    async def on_submit(self, interaction):
+        try:
+            results = advanced_search(bot.recipe_data, self.keyword.value.strip(), self.table.value.strip(), self.ingredient.value.strip(), self.tool.value.strip(), int(self.minimum.value.strip()))
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        embed = discord.Embed(title="Advanced search results", description="Found " + str(len(results)) + " recipe(s).", color=COLOR)
+        for table, recipe in results[:10]:
+            text = ", ".join(str(n) + " x" + str(q) for n,q in recipe.get("ingredients", []))
+            embed.add_field(name=(recipe.get("name", "Unnamed") + " - " + table)[:256], value=text[:1024] or "No ingredients", inline=False)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class ItemPageModal(discord.ui.Modal, title="Item database page"):
+    item = discord.ui.TextInput(label="Exact item / ingredient name", max_length=100)
+    async def on_submit(self, interaction):
+        await interaction.response.send_message(embed=ingredient_usage_embed(bot.recipe_data, self.item.value.strip()), ephemeral=True)
+
+
+class RecipeCompareModal(discord.ui.Modal, title="Compare two recipes"):
+    table_a = discord.ui.TextInput(label="First crafting table", max_length=100)
+    recipe_a = discord.ui.TextInput(label="First recipe", max_length=100)
+    table_b = discord.ui.TextInput(label="Second crafting table", max_length=100)
+    recipe_b = discord.ui.TextInput(label="Second recipe", max_length=100)
+    async def on_submit(self, interaction):
+        try:
+            result = recipe_comparison(bot.recipe_data, self.table_a.value, self.recipe_a.value, self.table_b.value, self.recipe_b.value)
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        embed = discord.Embed(title="Recipe comparison", description="A: " + result["a"]["recipe"] + " / " + result["a"]["table"] + "\nB: " + result["b"]["recipe"] + " / " + result["b"]["table"], color=COLOR)
+        embed.add_field(name="Shared ingredients", value=", ".join(result["shared"]) or "None", inline=False)
+        embed.add_field(name="Only in A", value=", ".join(result["only_a"]) or "None", inline=False)
+        embed.add_field(name="Only in B", value=", ".join(result["only_b"]) or "None", inline=False)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+
+class StaffRolesModal(discord.ui.Modal, title="Configure crafting staff roles"):
+    role_ids = discord.ui.TextInput(label="Allowed role IDs (comma-separated)", required=False, max_length=1000)
+    async def on_submit(self, interaction):
+        if not is_guild_admin(interaction):
+            await interaction.response.send_message("Only Manage Server members can configure staff roles.", ephemeral=True)
+            return
+        values = []
+        for raw in self.role_ids.value.split(","):
+            raw = raw.strip()
+            if raw and not raw.isdigit():
+                await interaction.response.send_message("Role IDs must be numeric and separated by commas.", ephemeral=True)
+                return
+            if raw:
+                values.append(int(raw))
+        write_json(PERMISSIONS_FILE, {"role_ids": sorted(set(values))})
+        await interaction.response.send_message("Saved " + str(len(set(values))) + " approved crafting staff role(s).", ephemeral=True)
+
+
+class ImportRecipeModal(discord.ui.Modal, title="Import / merge recipe JSON"):
+    json_text = discord.ui.TextInput(label="Paste JSON with a top-level tables list", style=discord.TextStyle.paragraph, max_length=4000)
+    mode = discord.ui.TextInput(label="Name conflicts: skip or replace", default="skip", max_length=10)
+    async def on_submit(self, interaction):
+        if not is_guild_admin(interaction):
+            await interaction.response.send_message("Only Manage Server members can import recipe data.", ephemeral=True)
+            return
+        try:
+            incoming = json.loads(self.json_text.value)
+            mode = self.mode.value.strip().casefold()
+            if mode not in {"skip", "replace"}:
+                raise ValueError("Conflict mode must be skip or replace.")
+            merged, summary = merge_recipe_import(ensure_stable_ids(load_recipe_data()), incoming, mode)
+        except (json.JSONDecodeError, ValueError, TypeError) as exc:
+            await interaction.response.send_message("Import rejected: " + str(exc), ephemeral=True)
+            return
+        description = "Tables added: " + str(summary["tables_added"]) + "\nRecipes added: " + str(summary["recipes_added"]) + "\nConflicts skipped: " + str(summary["skipped"]) + "\nReplaced: " + str(summary["replaced"]) + "\nValidation warnings: " + str(summary["warnings"]) + "\n\nNothing changed yet. Confirm to apply."
+        embed = discord.Embed(title="Import preview", description=description, color=COLOR)
+        await interaction.response.send_message(embed=embed, view=ImportConfirmView(interaction.user.id, merged, summary), ephemeral=True)
+
+
+class ImportConfirmView(discord.ui.View):
+    def __init__(self, owner_id, merged, summary):
+        super().__init__(timeout=120)
+        self.owner_id, self.merged, self.summary = owner_id, merged, summary
+    async def interaction_check(self, interaction):
+        if interaction.user.id != self.owner_id or not is_guild_admin(interaction):
+            await interaction.response.send_message("Only the importing Manage Server member can confirm.", ephemeral=True)
+            return False
+        return True
+    @discord.ui.button(label="Confirm import", style=discord.ButtonStyle.success)
+    async def confirm(self, interaction, button):
+        current = ensure_stable_ids(load_recipe_data())
+        record_recipe_change(current, "import_merge", interaction.user.id, "Imported " + str(self.summary["recipes_added"]) + " recipes")
+        save_recipe_data(ensure_stable_ids(self.merged))
+        refresh_recipe_data()
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(content="Import applied. A backup and reversible history snapshot were created.", embed=None, view=self)
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def cancel(self, interaction, button):
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(content="Import cancelled. No recipe data was changed.", embed=None, view=self)
 
 
 @bot.tree.command(name="crafting", description="Open the private FiveM crafting menu.")
@@ -586,7 +814,7 @@ async def crafting_command(interaction: discord.Interaction):
     record_usage("open")
     await interaction.response.send_message(
         embed=help_embed(),
-        view=MainMenuView(interaction.user.id, is_guild_admin(interaction)),
+        view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
         ephemeral=True,
     )
 

@@ -14,7 +14,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_001_0001"
         },
         {
           "name": "Amyl Nitrite",
@@ -34,7 +35,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_001_0002"
         },
         {
           "name": "BZP HCl",
@@ -54,7 +56,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_001_0003"
         },
         {
           "name": "Tianeptine Sodium",
@@ -74,9 +77,11 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_001_0004"
         }
-      ]
+      ],
+      "id": "table_001"
     },
     {
       "name": "Coke Table",
@@ -91,7 +96,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0001"
         },
         {
           "name": "Bath Salts",
@@ -111,7 +117,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0002"
         },
         {
           "name": "Flakka",
@@ -131,7 +138,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0003"
         },
         {
           "name": "Hashish",
@@ -143,7 +151,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0004"
         },
         {
           "name": "MDA",
@@ -163,7 +172,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0005"
         },
         {
           "name": "Mephedrone",
@@ -183,7 +193,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0006"
         },
         {
           "name": "Methylone",
@@ -203,7 +214,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0007"
         },
         {
           "name": "Methcathinone",
@@ -223,7 +235,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0008"
         },
         {
           "name": "4-FA Powder",
@@ -243,7 +256,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0009"
         },
         {
           "name": "MXE",
@@ -263,7 +277,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0010"
         },
         {
           "name": "Suboxone",
@@ -283,7 +298,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0011"
         },
         {
           "name": "Meth",
@@ -303,7 +319,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0012"
         },
         {
           "name": "Raw Cocaine",
@@ -323,7 +340,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0013"
         },
         {
           "name": "Heroin",
@@ -343,7 +361,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0014"
         },
         {
           "name": "Ecstasy crystals",
@@ -363,7 +382,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0015"
         },
         {
           "name": "Meth bag",
@@ -381,7 +401,8 @@
             "Scale"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0016"
         },
         {
           "name": "Cocaine bag",
@@ -399,7 +420,8 @@
             "Scale"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0017"
         },
         {
           "name": "Crack bag",
@@ -417,7 +439,8 @@
             "Scale"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0018"
         },
         {
           "name": "Weed bag",
@@ -435,7 +458,8 @@
             "Scale"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0019"
         },
         {
           "name": "Heroin bag",
@@ -453,7 +477,8 @@
             "Scale"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0020"
         },
         {
           "name": "Ketamine bag",
@@ -471,7 +496,8 @@
             "Scale"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0021"
         },
         {
           "name": "Paco",
@@ -487,9 +513,11 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_002_0022"
         }
-      ]
+      ],
+      "id": "table_002"
     },
     {
       "name": "Weed Table",
@@ -512,7 +540,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_003_0001"
         },
         {
           "name": "Spice (K2)",
@@ -528,7 +557,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_003_0002"
         },
         {
           "name": "Betel Quid",
@@ -548,7 +578,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_003_0003"
         },
         {
           "name": "Nyaope",
@@ -568,7 +599,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_003_0004"
         },
         {
           "name": "Moonrocks",
@@ -588,7 +620,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_003_0005"
         },
         {
           "name": "Magic Truffles",
@@ -604,7 +637,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_003_0006"
         },
         {
           "name": "Changa",
@@ -624,9 +658,11 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_003_0007"
         }
-      ]
+      ],
+      "id": "table_003"
     },
     {
       "name": "Chemistry Table",
@@ -645,7 +681,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0001"
         },
         {
           "name": "Opium",
@@ -657,7 +694,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0002"
         },
         {
           "name": "Ecstasy pill",
@@ -669,7 +707,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0003"
         },
         {
           "name": "Mushroom powder",
@@ -681,7 +720,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0004"
         },
         {
           "name": "Mushroom chocolate",
@@ -697,7 +737,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0005"
         },
         {
           "name": "Methadone",
@@ -717,7 +758,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0006"
         },
         {
           "name": "PCP",
@@ -733,7 +775,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0007"
         },
         {
           "name": "2C-B Powder",
@@ -751,7 +794,8 @@
             "Gas Mask"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0008"
         },
         {
           "name": "2-Bromo-4'-methylpropiophenone",
@@ -769,7 +813,8 @@
             "Gas Mask"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0009"
         },
         {
           "name": "Crude Fenethylline",
@@ -789,7 +834,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0010"
         },
         {
           "name": "Benzhydrylthioacetic Acid",
@@ -805,7 +851,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0011"
         },
         {
           "name": "2C-I Powder",
@@ -821,7 +868,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0012"
         },
         {
           "name": "LSA",
@@ -837,7 +885,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0013"
         },
         {
           "name": "6-APB Succinate",
@@ -857,7 +906,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0014"
         },
         {
           "name": "MXE Freebase",
@@ -873,7 +923,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0015"
         },
         {
           "name": "Buprenorphine HCl",
@@ -893,7 +944,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0016"
         },
         {
           "name": "Filtered Steroid Oil",
@@ -913,7 +965,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0017"
         },
         {
           "name": "Ketamine",
@@ -929,9 +982,11 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_004_0018"
         }
-      ]
+      ],
+      "id": "table_004"
     },
     {
       "name": "Glovebox Table",
@@ -957,7 +1012,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0001"
         },
         {
           "name": "NBOMe Solution",
@@ -976,7 +1032,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0002"
         },
         {
           "name": "LSD liquid",
@@ -999,7 +1056,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0003"
         },
         {
           "name": "Fentanyl",
@@ -1018,7 +1076,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0004"
         },
         {
           "name": "Fentanyl bag",
@@ -1038,7 +1097,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0005"
         },
         {
           "name": "1P-LSD Solution",
@@ -1061,7 +1121,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0006"
         },
         {
           "name": "Carfentanil Base",
@@ -1084,7 +1145,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0007"
         },
         {
           "name": "Carfentanil",
@@ -1107,7 +1169,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0008"
         },
         {
           "name": "Isotonitazene Powder",
@@ -1130,7 +1193,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0009"
         },
         {
           "name": "Isotonitazene",
@@ -1153,7 +1217,8 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0010"
         },
         {
           "name": "Xylazine HCl",
@@ -1176,9 +1241,11 @@
             "Nitrile Gloves"
           ],
           "review": "Transcribed from supplied screenshot",
-          "source": "User screenshot"
+          "source": "User screenshot",
+          "id": "recipe_005_0011"
         }
-      ]
+      ],
+      "id": "table_005"
     },
     {
       "name": "Extraction Bench",
@@ -1204,7 +1271,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0001"
         },
         {
           "name": "DMT Solution",
@@ -1223,7 +1291,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0002"
         },
         {
           "name": "5-MeO-DMT Solution",
@@ -1242,7 +1311,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0003"
         },
         {
           "name": "Ibogaine",
@@ -1265,7 +1335,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0004"
         },
         {
           "name": "LSA Solution",
@@ -1288,7 +1359,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0005"
         },
         {
           "name": "Scopolamine",
@@ -1311,7 +1383,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0006"
         },
         {
           "name": "Methcathinone Freebase",
@@ -1334,7 +1407,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0007"
         },
         {
           "name": "Salvia Divinorum",
@@ -1353,7 +1427,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0008"
         },
         {
           "name": "Myristicin Oil",
@@ -1372,7 +1447,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0009"
         },
         {
           "name": "Krokodil",
@@ -1395,7 +1471,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0010"
         },
         {
           "name": "MDA",
@@ -1418,7 +1495,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0011"
         },
         {
           "name": "Mephedrone",
@@ -1441,7 +1519,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0012"
         },
         {
           "name": "Methylone",
@@ -1464,7 +1543,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0013"
         },
         {
           "name": "Bath Salts",
@@ -1487,7 +1567,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0014"
         },
         {
           "name": "Flakka",
@@ -1510,7 +1591,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0015"
         },
         {
           "name": "Methcathinone",
@@ -1533,7 +1615,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0016"
         },
         {
           "name": "MXE",
@@ -1556,7 +1639,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0017"
         },
         {
           "name": "Cocaine paste",
@@ -1579,7 +1663,8 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0018"
         },
         {
           "name": "THC Wax",
@@ -1598,9 +1683,11 @@
             "pH Meter"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_006_0019"
         }
-      ]
+      ],
+      "id": "table_006"
     },
     {
       "name": "Capsule Filler",
@@ -1619,7 +1706,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0001"
         },
         {
           "name": "4-FA",
@@ -1635,7 +1723,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0002"
         },
         {
           "name": "Nutmeg",
@@ -1651,7 +1740,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0003"
         },
         {
           "name": "Tianeptine",
@@ -1667,7 +1757,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0004"
         },
         {
           "name": "2C-E",
@@ -1683,7 +1774,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0005"
         },
         {
           "name": "4-AcO-DMT",
@@ -1699,7 +1791,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0006"
         },
         {
           "name": "Pregabalin",
@@ -1715,7 +1808,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0007"
         },
         {
           "name": "Secobarbital",
@@ -1731,7 +1825,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0008"
         },
         {
           "name": "2C-B",
@@ -1747,7 +1842,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0009"
         },
         {
           "name": "DXM",
@@ -1763,7 +1859,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0010"
         },
         {
           "name": "Kratom",
@@ -1779,7 +1876,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0011"
         },
         {
           "name": "Gabapentin",
@@ -1795,9 +1893,11 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_007_0012"
         }
-      ]
+      ],
+      "id": "table_007"
     },
     {
       "name": "Pill Press",
@@ -1815,7 +1915,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0001"
         },
         {
           "name": "Valium",
@@ -1830,7 +1931,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0002"
         },
         {
           "name": "Adderall",
@@ -1845,7 +1947,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0003"
         },
         {
           "name": "Quaaludes",
@@ -1860,7 +1963,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0004"
         },
         {
           "name": "Tramadol",
@@ -1875,7 +1979,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0005"
         },
         {
           "name": "Ritalin",
@@ -1890,7 +1995,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0006"
         },
         {
           "name": "Captagon",
@@ -1905,7 +2011,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0007"
         },
         {
           "name": "Modafinil",
@@ -1920,7 +2027,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0008"
         },
         {
           "name": "DOM",
@@ -1935,7 +2043,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0009"
         },
         {
           "name": "Hydrocodone",
@@ -1954,7 +2063,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0010"
         },
         {
           "name": "Dilaudid",
@@ -1969,7 +2079,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0011"
         },
         {
           "name": "Opana",
@@ -1984,7 +2095,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0012"
         },
         {
           "name": "Klonopin",
@@ -1999,7 +2111,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0013"
         },
         {
           "name": "Ambien",
@@ -2014,7 +2127,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0014"
         },
         {
           "name": "Soma",
@@ -2029,7 +2143,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0015"
         },
         {
           "name": "6-APB",
@@ -2044,7 +2159,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0016"
         },
         {
           "name": "BZP",
@@ -2063,7 +2179,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0017"
         },
         {
           "name": "Ecstasy pill",
@@ -2078,7 +2195,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0018"
         },
         {
           "name": "Suboxone",
@@ -2097,7 +2215,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0019"
         },
         {
           "name": "Yaba",
@@ -2116,7 +2235,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0020"
         },
         {
           "name": "Codeine Pills",
@@ -2135,7 +2255,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0021"
         },
         {
           "name": "Demerol",
@@ -2150,7 +2271,8 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0022"
         },
         {
           "name": "Etizolam",
@@ -2165,9 +2287,11 @@
             "Tablet Die Set"
           ],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_008_0023"
         }
-      ]
+      ],
+      "id": "table_008"
     },
     {
       "name": "Lab Freezer",
@@ -2182,7 +2306,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_009_0001"
         },
         {
           "name": "5-MeO-DMT",
@@ -2194,7 +2319,8 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_009_0002"
         },
         {
           "name": "Hashish",
@@ -2210,9 +2336,11 @@
           ],
           "tools": [],
           "review": "User-provided FiveM recipe",
-          "source": "User supplied text"
+          "source": "User supplied text",
+          "id": "recipe_009_0003"
         }
-      ]
+      ],
+      "id": "table_009"
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
