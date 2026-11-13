@@ -125,7 +125,7 @@ def validate_recipe_data(data: dict[str, Any]):
         for right in names[index + 1:]:
             if left.casefold() == right.casefold():
                 continue
-            if SequenceMatcher(None, left.casefold(), right.casefold()).ratio() >= 0.94:
+            if SequenceMatcher(None, left.casefold(), right.casefold()).ratio() >= 0.75:
                 findings.append({"severity": "warning", "message": f"Possible spelling variation: '{left}' vs '{right}'. Review manually; neither name was changed."})
     if not findings:
         findings.append({"severity": "success", "message": "No obvious recipe-data issues found."})

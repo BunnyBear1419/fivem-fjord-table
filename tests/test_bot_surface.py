@@ -35,7 +35,7 @@ def test_all_features_are_in_private_dropdown_menus():
         assert feature in source
     for action in ("add_table", "add_recipe", "edit_recipe", "remove_recipe", "backup", "export", "export_csv", "export_xlsx", "validate", "history", "restore_history", "stats", "reports", "resolve_report"):
         assert f'"{action}"' in source
-    assert "Manage Server permission is required." in source
+    assert "Manage Server permission or an approved crafting staff role" in source
 
 
 def test_legacy_guild_commands_are_cleared_on_ready():
