@@ -11,7 +11,7 @@ def test_glovebox_table_loads_from_json():
 
 def test_recipe_embed_separates_consumables_and_tools():
     data = load_recipe_data()
-    table = data["tables"][0]
+    table = next(table for table in data["tables"] if table["name"] == "Glovebox Table")
     recipe = next(item for item in table["recipes"] if item["name"] == "Fentanyl bag")
     embed = recipe_embed(table["name"], recipe)
     fields = {field.name: field.value for field in embed.fields}
