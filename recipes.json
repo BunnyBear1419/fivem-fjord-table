@@ -4573,6 +4573,400 @@
           "source": "User supplied text"
         }
       ]
+    },
+    {
+      "name": "Capsule Filler #1",
+      "recipes": [
+        {
+          "name": "Phenibut",
+          "ingredients": [
+            [
+              "Phenibut HCl",
+              1
+            ],
+            [
+              "Empty Capsules",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-FA",
+          "ingredients": [
+            [
+              "4-FA Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              9
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Nutmeg",
+          "ingredients": [
+            [
+              "Myristicin Oil",
+              1
+            ],
+            [
+              "Empty Capsules",
+              8
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Tianeptine",
+          "ingredients": [
+            [
+              "Tianeptine Sodium",
+              1
+            ],
+            [
+              "Empty Capsules",
+              12
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "2C-E",
+          "ingredients": [
+            [
+              "2C-E Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              6
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-AcO-DMT",
+          "ingredients": [
+            [
+              "4-AcO-DMT Freebase",
+              1
+            ],
+            [
+              "Empty Capsules",
+              8
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Pregabalin",
+          "ingredients": [
+            [
+              "Pregabalin Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Secobarbital",
+          "ingredients": [
+            [
+              "Secobarbital Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              9
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "2C-B",
+          "ingredients": [
+            [
+              "2C-B Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              6
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "DXM",
+          "ingredients": [
+            [
+              "DXM Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Kratom",
+          "ingredients": [
+            [
+              "Dried Kratom",
+              2
+            ],
+            [
+              "Empty Capsules",
+              8
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Gabapentin",
+          "ingredients": [
+            [
+              "Gabapentin Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Capsule Filler #2",
+      "recipes": [
+        {
+          "name": "Phenibut",
+          "ingredients": [
+            [
+              "Phenibut HCl",
+              1
+            ],
+            [
+              "Empty Capsules",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-FA",
+          "ingredients": [
+            [
+              "4-FA Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              9
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Nutmeg",
+          "ingredients": [
+            [
+              "Myristicin Oil",
+              1
+            ],
+            [
+              "Empty Capsules",
+              8
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Tianeptine",
+          "ingredients": [
+            [
+              "Tianeptine Sodium",
+              1
+            ],
+            [
+              "Empty Capsules",
+              12
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "2C-E",
+          "ingredients": [
+            [
+              "2C-E Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              6
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-AcO-DMT",
+          "ingredients": [
+            [
+              "4-AcO-DMT Freebase",
+              1
+            ],
+            [
+              "Empty Capsules",
+              8
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Pregabalin",
+          "ingredients": [
+            [
+              "Pregabalin Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Secobarbital",
+          "ingredients": [
+            [
+              "Secobarbital Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              9
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "2C-B",
+          "ingredients": [
+            [
+              "2C-B Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              6
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "DXM",
+          "ingredients": [
+            [
+              "DXM Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Kratom",
+          "ingredients": [
+            [
+              "Dried Kratom",
+              2
+            ],
+            [
+              "Empty Capsules",
+              8
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Gabapentin",
+          "ingredients": [
+            [
+              "Gabapentin Powder",
+              1
+            ],
+            [
+              "Empty Capsules",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
