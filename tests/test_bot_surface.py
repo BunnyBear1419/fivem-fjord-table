@@ -1,4 +1,5 @@
 import ast
+import json
 from pathlib import Path
 
 
@@ -56,3 +57,21 @@ def test_ingredient_lookup_is_available_from_main_menu():
     assert 'value="ingredient_lookup"' in source
     assert "IngredientLookupModal" in source
     assert "ingredient_usage_embed(bot.recipe_data, ingredient)" in source
+
+
+
+def test_recipe_data_has_no_exact_duplicate_recipe_records():
+    data = json.loads(Path("recipes.json").read_text(encoding="utf-8"))
+    for table in data["tables"]:
+        fingerprints = [
+            json.dumps(recipe, ensure_ascii=False, sort_keys=True)
+            for recipe in table.get("recipes", [])
+        ]
+        assert len(fingerprints) == len(set(fingerprints)), table["name"]
+
+
+def test_duplicate_ingredients_inside_a_recipe_are_not_normalized_away():
+    source = Path("crafting.py").read_text(encoding="utf-8")
+    assert "def remove_exact_duplicate_recipes(" in source
+    assert "Duplicate ingredients inside a recipe are deliberately preserved." in source
+    assert "table[\"recipes\"] = unique_recipes" in source
