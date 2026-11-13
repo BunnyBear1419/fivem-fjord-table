@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "tables": [
+    {
+      "name": "Glovebox Table",
+      "recipes": [
+        {"name":"Tranq (Xylazine)","ingredients":[["Xylazine HCl",1],["Fentanyl",2],["Mannitol",4]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"NBOMe Solution","ingredients":[["NBOMe Freebase",1],["Isopropyl Alcohol",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"LSD liquid","ingredients":[["Lysergic Acid",1],["Diethylamine",1],["Acetone",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"Fentanyl","ingredients":[["4-ANPP",1],["Propionyl Chloride",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"Fentanyl bag","ingredients":[["Fentanyl",50],["Plastic bag",5]],"tools":["Scale","Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"1P-LSD Solution","ingredients":[["Lysergic Acid",1],["Diethylamine",1],["Propionic Anhydride",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"Carfentanil Base","ingredients":[["Crude Carfentanil",1],["Acetone",1],["Filter Paper",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"Carfentanil","ingredients":[["Carfentanil Base",1],["Mannitol",10],["Plastic bag",2]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"Isotonitazene Powder","ingredients":[["Crude Isotonitazene",1],["Isopropyl Alcohol",1],["Filter Paper",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"Isotonitazene","ingredients":[["Isotonitazene Powder",1],["Mannitol",8],["Plastic bag",2]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
+        {"name":"Xylazine HCl","ingredients":[["Crude Xylazine",1],["Acetone",1],["Filter Paper",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"}
+      ]
+    }
+  ],
+  "notes": "FiveM roleplay game reference only. Entries were transcribed from the supplied in-game screenshots; verify against the live server."
+}
