@@ -31,7 +31,7 @@ def test_only_one_public_slash_command_is_registered():
 
 def test_all_features_are_in_private_dropdown_menus():
     source = Path("bot.py").read_text(encoding="utf-8")
-    for feature in ("Browse recipes", "Search recipes", "Find ingredient across tables", "Help and instructions", "Report a recipe issue", "Admin tools"):
+    for feature in ("Browse recipes", "Search recipes", "Find ingredient across tables", "All ingredients", "Help and instructions", "Report a recipe issue", "Admin tools"):
         assert feature in source
     for action in ("add_table", "add_recipe", "edit_recipe", "remove_recipe", "backup", "export", "stats", "reports", "resolve_report"):
         assert f'"{action}"' in source
@@ -84,3 +84,28 @@ def test_ingredient_lookup_shows_where_item_is_made_and_used():
     assert "Where {ingredient_name.strip()[:80]} is made" in source
     assert "Used at: {group['table']}" in source
     assert "Requires: {ingredients}" in source
+
+
+
+def test_all_ingredients_menu_has_downloadable_document():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'value="all_ingredients"' in source
+    assert "IngredientDirectoryView" in source
+    assert "Download full list" in source
+    assert "fivem-all-ingredients-directory.txt" in source
+
+
+def test_ingredient_directory_preserves_exact_names_and_duplicate_entries():
+    from crafting import build_ingredient_directory, ingredient_directory_document
+
+    data = {"tables": [{"name": "Test Table", "recipes": [
+        {"name": "Test Recipe", "ingredients": [["Coca Leaf", 1], ["Coca Leaves", 2], ["Coca Leaf", 3]]}
+    ]}]}
+    directory = build_ingredient_directory(data)
+    by_name = {item["ingredient"]: item["uses"] for item in directory}
+    assert set(by_name) == {"Coca Leaf", "Coca Leaves"}
+    assert len(by_name["Coca Leaf"]) == 2
+    assert [use["quantity"] for use in by_name["Coca Leaf"]] == [1, 3]
+    document = ingredient_directory_document(data)
+    assert "Coca Leaf" in document and "Coca Leaves" in document
+    assert document.count("Coca Leaf | Test Recipe") == 2
