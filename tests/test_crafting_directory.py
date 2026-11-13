@@ -1,3 +1,5 @@
+import pytest
+
 from crafting import CraftingDirectoryView, load_recipe_data, recipe_embed, search_embed
 
 
@@ -26,9 +28,11 @@ def test_search_matches_recipe_ingredients():
     assert any("Tranq" in field.name or "Carfentanil" in field.name for field in embed.fields)
 
 
-def test_private_menu_view_builds_dropdown_controls():
+@pytest.mark.asyncio
+async def test_private_menu_view_builds_dropdown_controls():
     data = load_recipe_data()
     view = CraftingDirectoryView(123456789, data)
     assert len(view.children) == 4
     assert view.children[0].placeholder == "Choose a crafting table"
     assert view.children[1].placeholder == "Choose a recipe"
+    view.stop()
