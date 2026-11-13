@@ -24,6 +24,5 @@ def _commands(path):
     return found
 
 
-def test_public_command_surface_is_dashboard_only():
-    assert sorted(_commands("bot.py")) == ["dashboard", "tools"]
-    assert _commands("alu_tools.py") == []
+def test_public_command_surface_is_private_crafting_directory_only():
+    assert _commands("bot.py") == ["crafting"]
