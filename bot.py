@@ -57,7 +57,7 @@ def read_json(path: Path, default):
 
 def write_json(path: Path, data):
     temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     temporary.replace(path)
 
 
@@ -164,7 +164,7 @@ async def crafting_help_command(interaction: discord.Interaction):
 async def crafting_stats_command(interaction: discord.Interaction):
     stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}})
     top = sorted(stats.get("terms", {}).items(), key=lambda item: item[1], reverse=True)[:5]
-    top_text = "\\n".join(f"• {term} — {count}" for term, count in top) or "No searches recorded yet."
+    top_text = "\n".join(f"• {term} — {count}" for term, count in top) or "No searches recorded yet."
     embed = discord.Embed(title="📊 CraftingBot Usage", color=discord.Color.from_rgb(57, 75, 111))
     embed.add_field(name="Commands used", value=str(stats.get("commands", 0)))
     embed.add_field(name="Searches", value=str(stats.get("searches", 0)))
@@ -310,7 +310,7 @@ async def admin_stats(interaction: discord.Interaction):
         return
     data = load_recipe_data()
     count = sum(len(t.get("recipes", [])) for t in data["tables"])
-    lines = "\\n".join(f"• {t['name']}: {len(t.get('recipes', []))} recipes" for t in data["tables"])
+    lines = "\n".join(f"• {t['name']}: {len(t.get('recipes', []))} recipes" for t in data["tables"])
     embed = discord.Embed(title="Crafting Directory Admin", description=lines, color=discord.Color.from_rgb(57, 75, 111))
     embed.add_field(name="Tables", value=str(len(data["tables"])))
     embed.add_field(name="Recipes", value=str(count))
