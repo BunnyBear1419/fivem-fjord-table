@@ -4021,6 +4021,558 @@
           "source": "User supplied text"
         }
       ]
+    },
+    {
+      "name": "Extraction Table #1",
+      "recipes": [
+        {
+          "name": "DXM Powder",
+          "ingredients": [
+            [
+              "Dextromethorphan Cough Syrup",
+              3
+            ],
+            [
+              "Sodium Hydroxide (Lye)",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "DMT Solution",
+          "ingredients": [
+            [
+              "Basified Root Bark",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "5-MeO-DMT Solution",
+          "ingredients": [
+            [
+              "5-MeO-DMT Freebase",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ibogaine",
+          "ingredients": [
+            [
+              "Crude Ibogaine",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "LSA Solution",
+          "ingredients": [
+            [
+              "Morning Glory Seeds (Shelled)",
+              3
+            ],
+            [
+              "Naphtha",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Scopolamine",
+          "ingredients": [
+            [
+              "Scopolamine Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Extraction Table #2",
+      "recipes": [
+        {
+          "name": "LSA Solution",
+          "ingredients": [
+            [
+              "Morning Glory Seeds (Shelled)",
+              3
+            ],
+            [
+              "Naphtha",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Scopolamine",
+          "ingredients": [
+            [
+              "Scopolamine Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methcathinone Freebase",
+          "ingredients": [
+            [
+              "Crude Methcathinone",
+              1
+            ],
+            [
+              "Sodium Hydroxide (Lye)",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Salvia Divinorum",
+          "ingredients": [
+            [
+              "Dried Salvia",
+              3
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Myristicin Oil",
+          "ingredients": [
+            [
+              "Ground Nutmeg",
+              3
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Krokodil",
+          "ingredients": [
+            [
+              "Krokodil Sludge",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Extraction Table #3",
+      "recipes": [
+        {
+          "name": "Krokodil",
+          "ingredients": [
+            [
+              "Krokodil Sludge",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MDA",
+          "ingredients": [
+            [
+              "MDA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Mephedrone",
+          "ingredients": [
+            [
+              "Mephedrone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methylone",
+          "ingredients": [
+            [
+              "Methylone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Bath Salts",
+          "ingredients": [
+            [
+              "MDPV Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Flakka",
+          "ingredients": [
+            [
+              "Alpha-PVP Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Extraction Table #4",
+      "recipes": [
+        {
+          "name": "Bath Salts",
+          "ingredients": [
+            [
+              "MDPV Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Flakka",
+          "ingredients": [
+            [
+              "Alpha-PVP Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methcathinone",
+          "ingredients": [
+            [
+              "Methcathinone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MXE",
+          "ingredients": [
+            [
+              "MXE Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Cocaine paste",
+          "ingredients": [
+            [
+              "Cocaine leaf",
+              12
+            ],
+            [
+              "Naphtha",
+              1
+            ],
+            [
+              "Slaked Lime",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "THC Wax",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              6
+            ],
+            [
+              "Butane Canister",
+              1
+            ]
+          ],
+          "tools": [
+            "Lab Glassware Set",
+            "pH Meter"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
