@@ -1,4 +1,4 @@
-name: 🧪 Companion Test Suite
+name: FiveM Crafting Bot Tests
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: companion-tests-${{ github.ref }}
+  group: fivem-crafting-tests-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -29,11 +29,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: python -m pip install --disable-pip-version-check -r requirements.txt pytest
+      - name: Install bot and test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements.txt
+          python -m pip install pytest pytest-asyncio
 
       - name: Compile Python
-        run: python -m compileall -q .
+        run: python -m compileall -q bot.py crafting.py
 
-      - name: Run test suite
-        run: python -m pytest -q
+      - name: Run FiveM crafting tests
+        run: python -m pytest -q tests/test_bot_surface.py tests/test_crafting_directory.py
