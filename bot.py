@@ -26,7 +26,8 @@ from discord.ext import commands
 
 from crafting import (
     OVERRIDE_FILE, CraftingDirectoryView, create_backup, load_recipe_data,
-    parse_ingredients, save_recipe_data, search_embed, ingredient_usage_embed,\n    build_ingredient_directory, ingredient_directory_embed, ingredient_directory_document,
+    parse_ingredients, save_recipe_data, search_embed, ingredient_usage_embed,
+    build_ingredient_directory, ingredient_directory_embed, ingredient_directory_document,
 )
 
 PROJECT_NAME = "FiveM Crafting Directory"
@@ -117,7 +118,8 @@ def help_embed():
     )
     embed.add_field(name="Browse recipes", value="Choose a crafting table, then a recipe to view ingredients and tools.", inline=False)
     embed.add_field(name="Search", value="Find recipes by name, ingredient, tool, or table.", inline=False)
-    embed.add_field(name="Find ingredient across tables", value="Enter an exact ingredient name to see where it is crafted, which ingredients make it, and every table/recipe that uses it. Similar spellings remain separate.", inline=False)\n    embed.add_field(name="All ingredients", value="Browse the complete ingredient directory by name, table, recipe, and quantity. Download the full plain-text list.", inline=False)
+    embed.add_field(name="Find ingredient across tables", value="Enter an exact ingredient name to see where it is crafted, which ingredients make it, and every table/recipe that uses it. Similar spellings remain separate.", inline=False)
+    embed.add_field(name="All ingredients", value="Browse the complete ingredient directory by name, table, recipe, and quantity. Download the full plain-text list.", inline=False)
     embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry.", inline=False)
     embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server permission required.", inline=False)
     embed.set_footer(text="Private menu • Only you can see and use this session")
@@ -435,7 +437,8 @@ class MainMenuView(discord.ui.View):
         options = [
             discord.SelectOption(label="Browse recipes", value="browse", description="Choose a table and recipe", emoji="📚"),
             discord.SelectOption(label="Search recipes", value="search", description="Search names, ingredients, tools, or tables", emoji="🔎"),
-            discord.SelectOption(label="Find ingredient across tables", value="ingredient_lookup", description="See every table and recipe that uses an exact ingredient", emoji="🧩"),\n            discord.SelectOption(label="All ingredients", value="all_ingredients", description="Browse or download the complete ingredient list", emoji="📋"),
+            discord.SelectOption(label="Find ingredient across tables", value="ingredient_lookup", description="See every table and recipe that uses an exact ingredient", emoji="🧩"),
+            discord.SelectOption(label="All ingredients", value="all_ingredients", description="Browse or download the complete ingredient list", emoji="📋"),
             discord.SelectOption(label="Help and instructions", value="help", description="How to use the crafting directory", emoji="📘"),
             discord.SelectOption(label="Report a recipe issue", value="report", description="Privately report missing or incorrect data", emoji="📨"),
         ]
