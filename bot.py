@@ -117,7 +117,7 @@ def help_embed():
     )
     embed.add_field(name="Browse recipes", value="Choose a crafting table, then a recipe to view ingredients and tools.", inline=False)
     embed.add_field(name="Search", value="Find recipes by name, ingredient, tool, or table.", inline=False)
-    embed.add_field(name="Find ingredient across tables", value="Enter an exact ingredient name to see every table and recipe that requires it. Similar spellings remain separate.", inline=False)
+    embed.add_field(name="Find ingredient across tables", value="Enter an exact ingredient name to see where it is crafted, which ingredients make it, and every table/recipe that uses it. Similar spellings remain separate.", inline=False)
     embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry.", inline=False)
     embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server permission required.", inline=False)
     embed.set_footer(text="Private menu • Only you can see and use this session")
