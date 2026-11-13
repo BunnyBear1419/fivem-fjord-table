@@ -49,13 +49,13 @@ jobs:
             await discloud.login(process.env.DISCLOUD_TOKEN);
             const apps = await discloud.apps.fetch("all");
             const entries = [...apps.entries()];
-            const target = entries.find(([, app]) => app.name === "AsphaltBot");
+            const target = entries.find(([, app]) => app.name === "AsphaltRedeemBot");
 
             if (!target) {
-            throw new Error("Could not find the existing Discloud app named AsphaltBot; refusing to create a duplicate.");
+            throw new Error("Could not find the existing Discloud app named AsphaltRedeemBot; refusing to create a duplicate.");
             }
 
-           console.log("Found existing AsphaltBot:", target[0]);
+           console.log("Found existing AsphaltRedeemBot:", target[0]);
 
            await discloud.apps.update(target[0], { file: "./deploy.zip" });
             console.log(`Discloud app ${target[0]} updated successfully.`);
