@@ -1,41 +1,49 @@
-# FiveM Crafting Directory
+# FiveM Crafting Directory Discord Bot
 
-A standalone, searchable reference for fictional crafting recipes used in FiveM roleplay servers.
+A Discord bot that provides a private, interactive reference for crafting tables and recipes used in FiveM roleplay servers.
 
-## Current site
+## Discord command
 
-- `index.html` — responsive directory interface with table and recipe dropdowns, searchable recipe cards, and a recipe detail panel.
+- `/crafting` — opens a private menu visible only to the person who ran the command.
+- `/crafting search:<term>` — privately searches recipe names, table names, ingredients, and reusable tools.
+
+The private menu uses Discord dropdowns:
+1. Choose a crafting table.
+2. Choose a recipe.
+3. View required ingredients and quantities.
+4. View tools separately; tools are marked as not consumed.
+
+The menu is locked to the user who opened it. Other members cannot operate that user's private menu. Each person can run `/crafting` to open their own.
+
+## Recipe data
+
 - `recipes.json` — crafting table and recipe data.
-- `server.py` — optional lightweight Python static-file server (listens on `0.0.0.0:$PORT`, default `8080`).
+- `crafting.py` — private Discord menu, recipe embeds, and search.
+- `bot.py` — Discord bot entry point.
 
-## Included data
+The initial Glovebox Table data was transcribed from the in-game screenshots supplied for this project. OCR-derived entries from older workbooks will be added only after checking the source screenshots. Always verify recipes against the current server because resource configurations can change.
 
-The first imported table is **Glovebox Table**, transcribed from the in-game screenshots supplied for this project. Each recipe shows its required items and quantities separately from reusable tools (tools are not consumed).
+## Hosting
 
-More crafting tables will be added from the existing screenshot workbook after their OCR text is checked against the original images. The earlier workbook contains uncertain OCR, so those entries are not silently published as verified recipes.
+This repository is configured as a **Discloud Discord bot**:
 
-## Run locally
+- `TYPE=bot`
+- `MAIN=bot.py`
+- `DISCORD_BOT_TOKEN` must be set in the app's environment/secrets.
+- The existing Discloud app name is retained so the deployment workflow can update that bot rather than create a website.
 
-Python 3.10+:
+The GitHub Actions deployment workflow runs after the test suite succeeds and packages the Python bot, recipe data, and Discloud configuration.
+
+## Local run
+
+Install dependencies from `requirements.txt`, set `DISCORD_BOT_TOKEN`, then run:
 
 ```bash
-python server.py
+python bot.py
 ```
 
-Then open `http://localhost:8080`.
+## Scope
 
-You can also open `index.html` directly in a browser, provided `recipes.json` stays beside it.
+This project is now focused on the FiveM crafting directory. The former ALU code is retained in the Git history and repository during the migration, but the active bot entry point no longer loads the ALU dashboard or its MongoDB player-state features.
 
-## Deploying to Discloud
-
-This is now a website, not a Discord bot. Discloud website hosting requires a `TYPE=site` configuration, a registered site ID/subdomain, port 8080 for dynamic servers, and (according to current Discloud documentation) a Platinum plan or higher. A static HTML site can use `MAIN=index.html`.
-
-Before switching the existing Discloud app, confirm the registered Discloud site ID and hosting plan. The current `discloud.config` and automated deployment workflow are intentionally left unchanged for now so the existing live app is not accidentally overwritten or broken.
-
-## Data quality
-
-- **Screenshot transcribed:** readable entries captured from the supplied in-game screenshot.
-- **Needs review:** OCR-derived entries must be checked against their original screenshots before publication.
-- Server resources can change recipe names, quantities, and required tools. Treat this as a community reference and verify in-game.
-
-This directory is for FiveM roleplay game data only; it does not describe real-world procedures.
+This is a FiveM roleplay game reference only, not real-world instructions.
