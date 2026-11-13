@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>FiveM Crafting Directory</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1220;--panel:#172235;--panel2:#202d43;--line:#34445e;--muted:#a9b6c9;--text:#f3f6fb;--accent:#7c9cff;--good:#74d6a1;--warn:#f3c56b}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 15% -10%,#273b62 0,transparent 42%),var(--bg);color:var(--text);font:15px/1.5 Inter,Segoe UI,Arial,sans-serif}
+header{padding:28px 22px 20px;border-bottom:1px solid #29384e;background:#0c1524d9;position:sticky;top:0;z-index:5;backdrop-filter:blur(14px)}
+.wrap{max-width:1100px;margin:auto}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;border-radius:13px;background:linear-gradient(145deg,#89a8ff,#536bd0);display:grid;place-items:center;font-size:21px;font-weight:900;color:#081225}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9fb4e9;font-weight:800}.brand h1{font-size:21px;margin:0;letter-spacing:.01em}.sub{color:var(--muted);font-size:13px;margin:3px 0 0}
+main{padding:28px 22px 60px}.intro{margin-bottom:22px}.intro h2{font-size:27px;margin:0 0 5px}.intro p{margin:0;color:var(--muted)}
+.controls{display:grid;grid-template-columns:1.1fr 1.1fr 1.6fr;gap:12px;background:#131f32;border:1px solid var(--line);padding:16px;border-radius:18px;margin:22px 0}
+label{display:block;font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:#aab9d1;font-weight:800;margin:0 0 7px}
+select,input{width:100%;height:44px;border-radius:10px;border:1px solid #43536c;background:#0e192a;color:var(--text);padding:0 12px;font:inherit;outline:none}
+select:focus,input:focus{border-color:var(--accent);box-shadow:0 0 0 3px #7c9cff26}
+.stats{display:flex;gap:9px;flex-wrap:wrap;margin:0 0 18px}.pill{border:1px solid #34455f;background:#17243a;border-radius:99px;padding:6px 11px;color:#c8d5e9;font-size:12px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:16px;align-items:start}.section-title{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:#aebed7;margin:0 0 10px}
+.recipe-list{display:grid;gap:10px}.recipe{border:1px solid #34445e;background:linear-gradient(145deg,#1c2940,#151f31);border-radius:14px;padding:15px 16px;cursor:pointer;transition:.15s}.recipe:hover{border-color:#7896eb;transform:translateY(-1px)}.recipe.active{border-color:#8ba5ff;box-shadow:0 0 0 2px #8ba5ff22}
+.recipe-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.recipe h3{font-size:15px;margin:0}.arrow{color:#9db2e9;font-size:19px}.meta{color:var(--muted);font-size:12px;margin-top:5px}
+.detail{border:1px solid var(--line);background:#172338;border-radius:17px;padding:18px;position:sticky;top:145px}.detail h3{font-size:19px;margin:0 0 5px}.detail .hint{color:var(--muted);font-size:12px;margin:0 0 16px}.group{margin-top:16px}.group h4{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:#aebed7;margin:0 0 8px}.item{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #2b3a50}.item:last-child{border:0}.qty{color:#b7c8f7;font-variant-numeric:tabular-nums;font-weight:800;white-space:nowrap}.tool{display:inline-block;border:1px solid #43536c;background:#202e45;border-radius:8px;padding:5px 8px;margin:3px 4px 0 0;font-size:12px}
+.status{display:inline-block;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase}.verified{background:#163d32;color:#91e4bd}.review{background:#49391d;color:#f5d28b}
+.notice{margin-top:14px;padding:11px 12px;border:1px solid #66522b;background:#352b1a;border-radius:10px;color:#f3d79c;font-size:12px}
+.empty{border:1px dashed #40516b;border-radius:14px;padding:25px;color:var(--muted);text-align:center}
+footer{border-top:1px solid #26354a;padding:20px 22px;color:#8999b2;font-size:12px}.foot{max-width:1100px;margin:auto;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+@media(max-width:780px){header{position:static}.controls{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.detail{position:static;order:-1}.intro h2{font-size:23px}}
+</style>
+</head>
+<body>
+<header><div class="wrap brand"><div class="mark">F</div><div><div class="eyebrow">Roleplay reference</div><h1>FiveM Crafting Directory</h1><p class="sub">Crafting tables · Recipes · Ingredients · Reusable tools</p></div></div></header>
+<main class="wrap">
+<section class="intro"><h2>Find a crafting recipe</h2><p>Choose a table, select a recipe, or search by recipe name or ingredient.</p></section>
+<section class="controls">
+<div><label for="tableSelect">Crafting table</label><select id="tableSelect"><option value="">Loading tables…</option></select></div>
+<div><label for="recipeSelect">Recipe</label><select id="recipeSelect" disabled><option value="">Select a table first</option></select></div>
+<div><label for="search">Search recipes or ingredients</label><input id="search" type="search" placeholder="e.g. Glovebox, Mannitol, Filter Paper…"></div>
+</section>
+<div class="stats" id="stats"></div>
+<div class="layout">
+<section><h3 class="section-title" id="listTitle">Recipes</h3><div class="recipe-list" id="recipeList"><div class="empty">Loading recipe directory…</div></div></section>
+<aside class="detail" id="detail"><h3>Choose a recipe</h3><p class="hint">Recipe ingredients and tools will appear here.</p><div class="empty">Select a recipe card to view its details.</div></aside>
+</div>
+</main>
+<footer><div class="foot"><span>FiveM Crafting Directory · Unofficial community reference</span><span>Game roleplay data only · Always verify against your server's resources</span></div></footer>
+<script>
+const $=id=>document.getElementById(id);let db={tables:[]},selectedTable="",selectedRecipe="";
+const norm=s=>(s||"").toLowerCase();
+function allRecipes(){return db.tables.flatMap(t=>t.recipes.map(r=>({...r,table:t.name})))}
+function stats(){const all=allRecipes();$("stats").innerHTML='<span class="pill">'+db.tables.length+' crafting tables</span><span class="pill">'+all.length+' recipes indexed</span><span class="pill">'+all.filter(r=>r.ingredients).length+' screenshot-transcribed entries</span>'}
+function fillTables(){const sel=$("tableSelect");sel.innerHTML='<option value="">Choose a crafting table</option>'+db.tables.map(t=>'<option>'+esc(t.name)+'</option>').join("");}
+function recipesForTable(){const t=db.tables.find(x=>x.name===selectedTable);return t?t.recipes:[]}
+function fillRecipes(){const rs=recipesForTable();$("recipeSelect").disabled=!rs.length;$("recipeSelect").innerHTML='<option value="">Choose a recipe</option>'+rs.map(r=>'<option>'+esc(r.name)+'</option>').join("")}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function card(r){const ok=!!r.ingredients;return '<article class="recipe '+(selectedRecipe===r.name&&selectedTable===r.table?'active':'')+'" data-table="'+esc(r.table)+'" data-name="'+esc(r.name)+'"><div class="recipe-head"><h3>'+esc(r.name)+'</h3><span class="arrow">›</span></div><div class="meta">'+esc(r.table)+' · '+(ok?'Ingredients and tools listed':'Imported text needs review')+'</div></article>'}
+function renderList(){let q=norm($("search").value);let list=selectedTable?recipesForTable().map(r=>({...r,table:selectedTable})):allRecipes();if(q)list=list.filter(r=>norm(r.name+" "+r.table+" "+(r.rawRequired||"")+" "+(r.ingredients||[]).map(x=>x[0]).join(" ")+" "+(r.tools||[]).join(" ")).includes(q));$("listTitle").textContent=(selectedTable||"All crafting tables")+" · "+list.length+" recipes";$("recipeList").innerHTML=list.length?list.map(card).join(""):'<div class="empty">No matching recipes. Try another search or choose a different table.</div>';document.querySelectorAll(".recipe").forEach(el=>el.addEventListener("click",()=>selectRecipe(el.dataset.table,el.dataset.name)))}
+function selectRecipe(table,name){selectedTable=table;selectedRecipe=name;$("tableSelect").value=table;fillRecipes();$("recipeSelect").value=name;renderList();const r=recipesForTable().find(x=>x.name===name);renderDetail(r,table)}
+function renderDetail(r,table){if(!r){$("detail").innerHTML='<h3>Choose a recipe</h3><p class="hint">Recipe ingredients and tools will appear here.</p>';return}
+let html='<h3>'+esc(r.name)+'</h3><p class="hint">'+esc(table)+'</p><span class="status '+(r.ingredients?'verified':'review')+'">'+(r.ingredients?'Screenshot transcribed':'Needs screenshot verification')+'</span>';
+if(r.ingredients){html+='<div class="group"><h4>Required ingredients</h4>'+r.ingredients.map(x=>'<div class="item"><span>'+esc(x[0])+'</span><span class="qty">'+x[1]+'×</span></div>').join("")+'</div>'}
+if(r.tools?.length){html+='<div class="group"><h4>Tools · not consumed</h4>'+r.tools.map(x=>'<span class="tool">'+esc(x)+'</span>').join("")+'</div>'}
+if(r.rawRequired){html+='<div class="group"><h4>Extracted source text</h4><div class="meta">'+esc(r.rawRequired)+'</div></div>'}
+if(!r.ingredients)html+='<div class="notice">This entry came from OCR extraction. Names, quantities, and item boundaries may be incorrect. Compare it with the original in-game screenshot before relying on it.</div>';
+else html+='<div class="notice">Transcribed from the screenshots you supplied. Check the recipe in your server in case its resource has changed.</div>';
+$("detail").innerHTML=html}
+$("tableSelect").addEventListener("change",e=>{selectedTable=e.target.value;selectedRecipe="";fillRecipes();renderList();renderDetail(null)});
+$("recipeSelect").addEventListener("change",e=>{if(e.target.value)selectRecipe(selectedTable,e.target.value)});
+$("search").addEventListener("input",renderList);
+fetch("recipes.json").then(r=>{if(!r.ok)throw new Error("Could not load recipes.json");return r.json()}).then(data=>{db=data;fillTables();stats();renderList();}).catch(err=>{$("recipeList").innerHTML='<div class="empty">The recipe data could not be loaded. Please refresh the page or check the deployment files.</div>';console.error(err)});
+</script>
+</body></html>
