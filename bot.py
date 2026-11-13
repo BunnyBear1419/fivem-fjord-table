@@ -1,6 +1,23 @@
 import os
 import threading
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# Load deployment-provided .env values before reading the Discord token.
+# Existing platform environment variables take precedence.
+env_file = Path(__file__).with_name(".env")
+if env_file.is_file():
+    for raw_line in env_file.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip()
+        if len(value) >= 2 and value[0] == value[-1] and value[0] in ("'", '"'):
+            value = value[1:-1]
+        if key:
+            os.environ.setdefault(key, value)
 
 import discord
 from discord import app_commands
@@ -85,5 +102,5 @@ async def on_app_command_error(interaction: discord.Interaction, error: app_comm
 if __name__ == "__main__":
     token = os.environ.get("DISCORD_BOT_TOKEN")
     if not token:
-        raise ValueError("DISCORD_BOT_TOKEN is required.")
+        raise ValueError("DISCORD_BOT_TOKEN is required. Check the Discloud deployment environment.")
     bot.run(token)
