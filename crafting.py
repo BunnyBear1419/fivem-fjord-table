@@ -12,12 +12,34 @@ OVERRIDE_FILE = BASE_DIR / "crafting-data.json"  # Runtime admin edits; excluded
 BACKUP_DIR = BASE_DIR / "backups"
 
 
+def remove_exact_duplicate_recipes(data: dict[str, Any]) -> int:
+    """Remove repeated whole recipe records without changing ingredient lists.
+
+    Two recipes are duplicates only when their complete records are identical.
+    Duplicate ingredients inside a recipe are deliberately preserved.
+    """
+    removed = 0
+    for table in data.get("tables", []):
+        seen = set()
+        unique_recipes = []
+        for recipe in table.get("recipes", []):
+            fingerprint = json.dumps(recipe, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+            if fingerprint in seen:
+                removed += 1
+                continue
+            seen.add(fingerprint)
+            unique_recipes.append(recipe)
+        table["recipes"] = unique_recipes
+    return removed
+
+
 def load_recipe_data() -> dict[str, Any]:
     source = OVERRIDE_FILE if OVERRIDE_FILE.is_file() else DATA_FILE
     with source.open("r", encoding="utf-8") as handle:
         data = json.load(handle)
     if not isinstance(data.get("tables"), list):
         raise ValueError("Recipe data must contain a tables list")
+    remove_exact_duplicate_recipes(data)
     return data
 
 
