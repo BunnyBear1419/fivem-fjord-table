@@ -27,7 +27,16 @@ jobs:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
       - name: Create Discloud bot bundle
-        run: zip deploy.zip bot.py crafting.py recipes.json discloud.config requirements.txt
+        env:
+          DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+        run: |
+          test -n "$DISCORD_BOT_TOKEN" || {
+            echo "ERROR: DISCORD_BOT_TOKEN GitHub secret is missing."
+            exit 1
+          }
+          printf 'DISCORD_BOT_TOKEN=%s\n' "$DISCORD_BOT_TOKEN" > .env
+          zip deploy.zip bot.py crafting.py recipes.json discloud.config requirements.txt .env
+          rm -f .env
 
       - name: Setup Node
         uses: actions/setup-node@v4.4.0
@@ -41,7 +50,10 @@ jobs:
         env:
           DISCLOUD_TOKEN: ${{ secrets.DISCLOUD_TOKEN }}
         run: |
-          test -n "$DISCLOUD_TOKEN"
+          test -n "$DISCLOUD_TOKEN" || {
+            echo "ERROR: DISCLOUD_TOKEN GitHub secret is missing."
+            exit 1
+          }
           node <<'NODE'
           const { discloud } = require("discloud.app");
 
@@ -49,15 +61,14 @@ jobs:
             await discloud.login(process.env.DISCLOUD_TOKEN);
             const apps = await discloud.apps.fetch("all");
             const entries = [...apps.entries()];
-            const target = entries.find(([, app]) => app.name === "AsphaltRedeemBot");
+            const target = entries.find(([, app]) => app.name === "CraftingBot");
 
             if (!target) {
-            throw new Error("Could not find the existing Discloud app named AsphaltRedeemBot; refusing to create a duplicate.");
+              throw new Error("Could not find the existing Discloud app named CraftingBot; refusing to create a duplicate.");
             }
 
-           console.log("Found existing AsphaltRedeemBot:", target[0]);
-
-           await discloud.apps.update(target[0], { file: "./deploy.zip" });
+            console.log("Found existing CraftingBot:", target[0]);
+            await discloud.apps.update(target[0], { file: "./deploy.zip" });
             console.log(`Discloud app ${target[0]} updated successfully.`);
           }
 
