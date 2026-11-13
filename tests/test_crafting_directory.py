@@ -2,7 +2,7 @@ import pytest
 
 from crafting import (
     CraftingDirectoryView, find_matches, load_recipe_data, parse_ingredients,
-    recipe_embed, search_embed,
+    recipe_embed, search_embed, build_ingredient_directory, ingredient_directory_document, ingredient_directory_embed,
 )
 
 
@@ -60,3 +60,20 @@ async def test_private_menu_view_builds_dropdown_controls():
     assert view.children[0].placeholder == "Choose a crafting table"
     assert view.children[1].placeholder == "Choose a recipe"
     view.stop()
+
+
+
+def test_all_ingredient_directory_groups_exact_names_and_preserves_occurrences():
+    data = {"tables": [{"name": "Test Table", "recipes": [
+        {"name": "Test Recipe", "ingredients": [["Coca Leaf", 1], ["Coca Leaves", 2], ["Coca Leaf", 3]]}
+    ]}]}
+    directory = build_ingredient_directory(data)
+    by_name = {item["ingredient"]: item["uses"] for item in directory}
+    assert set(by_name) == {"Coca Leaf", "Coca Leaves"}
+    assert [use["quantity"] for use in by_name["Coca Leaf"]] == [1, 3]
+    document = ingredient_directory_document(data)
+    assert "Coca Leaf | Test Recipe" in document
+    assert "Coca Leaves | Test Recipe" in document
+    assert document.count("Coca Leaf | Test Recipe") == 2
+    embed = ingredient_directory_embed(data)
+    assert embed.fields
