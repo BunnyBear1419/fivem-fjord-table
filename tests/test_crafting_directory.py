@@ -56,7 +56,9 @@ def test_ingredient_parser_rejects_zero_quantity():
 async def test_private_menu_view_builds_dropdown_controls():
     data = load_recipe_data()
     view = CraftingDirectoryView(123456789, data)
-    assert len(view.children) == 4
+    assert len(view.children) == 6
+    assert view.children[4].label == '◀ Tables'
+    assert view.children[5].label == 'More tables ▶'
     assert view.children[0].placeholder == "Choose a crafting table"
     assert view.children[1].placeholder == "Choose a recipe"
     view.stop()

@@ -316,7 +316,8 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
             ingredients = ", ".join(
                 f"{name} ×{quantity}" for name, quantity in output["ingredients"]
             ) or "Ingredients need review"
-            made_lines.append(f"• **{output['recipe'].get('name', 'Unnamed recipe')}** at **{output['table']}**\n  Requires: {ingredients[:350]}")
+            ingredients = ingredients[:350]
+            made_lines.append(f"• **{output['recipe'].get('name', 'Unnamed recipe')}** at **{output['table']}**\n  Requires: {ingredients}")
         embed.add_field(name=f"Where {ingredient_name.strip()[:80]} is made", value="\n".join(made_lines)[:850], inline=False)
 
     for group in matches[:5]:
