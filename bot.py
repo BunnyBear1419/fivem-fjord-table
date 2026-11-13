@@ -29,11 +29,16 @@ from crafting import (
     parse_ingredients, save_recipe_data, search_embed, ingredient_usage_embed,
     build_ingredient_directory, ingredient_directory_embed, ingredient_directory_document,
 )
+from enhancements import (
+    calculate_recipe_ingredients, recipe_shopping_embed, table_comparison_embed,
+    validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
+)
 
 PROJECT_NAME = "FiveM Crafting Directory"
 BASE_DIR = Path(__file__).resolve().parent
 STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
+HISTORY_FILE = BASE_DIR / "history.json"
 LOG_FILE = BASE_DIR / "bot.log"
 COLOR = discord.Color.from_rgb(57, 75, 111)
 
@@ -80,6 +85,22 @@ def record_table_usage(table_name: str):
     write_json(STATS_FILE, stats)
 
 
+def record_recipe_change(before_data: dict, action: str, actor_id: int, summary: str):
+    """Keep a reversible snapshot before each administrator data change."""
+    history = read_json(HISTORY_FILE, [])
+    entry_id = max((int(item.get("id", 0)) for item in history), default=0) + 1
+    history.append({
+        "id": entry_id,
+        "action": action,
+        "actor_id": actor_id,
+        "summary": summary[:300],
+        "created_at": discord.utils.utcnow().isoformat(),
+        "snapshot": before_data,
+    })
+    write_json(HISTORY_FILE, history)
+    return entry_id
+
+
 def is_guild_admin(interaction: discord.Interaction) -> bool:
     return bool(interaction.guild and interaction.user.guild_permissions.manage_guild)
 
@@ -120,7 +141,9 @@ def help_embed():
     embed.add_field(name="Search", value="Find recipes by name, ingredient, tool, or table.", inline=False)
     embed.add_field(name="Find ingredient across tables", value="Enter an exact ingredient name to see where it is crafted, which ingredients make it, and every table/recipe that uses it. Similar spellings remain separate.", inline=False)
     embed.add_field(name="All ingredients", value="Browse the complete ingredient directory by name, table, recipe, and quantity. Download the full plain-text list.", inline=False)
-    embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry.", inline=False)
+    embed.add_field(name="Recipe shopping list", value="Choose a recipe and batch count to calculate the total ingredients needed.", inline=False)
+    embed.add_field(name="Crafting table comparison", value="Compare shared ingredients and ingredients unique to each table.", inline=False)
+    embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry with table and recipe details.", inline=False)
     embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server permission required.", inline=False)
     embed.set_footer(text="Private menu • Only you can see and use this session")
     return embed
@@ -184,7 +207,10 @@ class IngredientLookupModal(discord.ui.Modal, title="Find ingredient across tabl
 
 
 class ReportModal(discord.ui.Modal, title="Report a recipe issue"):
-    details = discord.ui.TextInput(label="What needs correcting or adding?", style=discord.TextStyle.paragraph, placeholder="Include the table, recipe name, and what is wrong or missing.", max_length=1500)
+    issue_type = discord.ui.TextInput(label="Issue type", placeholder="Missing recipe / wrong ingredient / wrong quantity / other", max_length=80)
+    table = discord.ui.TextInput(label="Crafting table (optional)", placeholder="Exact table name, if known", required=False, max_length=100)
+    recipe = discord.ui.TextInput(label="Recipe name (optional)", placeholder="Exact recipe name, if known", required=False, max_length=100)
+    details = discord.ui.TextInput(label="What needs correcting or adding?", style=discord.TextStyle.paragraph, placeholder="Describe what is wrong or missing.", max_length=1200)
 
     async def on_submit(self, interaction: discord.Interaction):
         reports = read_json(REPORTS_FILE, [])
@@ -193,6 +219,9 @@ class ReportModal(discord.ui.Modal, title="Report a recipe issue"):
             "id": report_id,
             "guild_id": interaction.guild_id,
             "user_id": interaction.user.id,
+            "issue_type": self.issue_type.value.strip(),
+            "table": self.table.value.strip(),
+            "recipe": self.recipe.value.strip(),
             "details": self.details.value.strip(),
             "created_at": discord.utils.utcnow().isoformat(),
             "status": "open",
@@ -225,6 +254,7 @@ class AdminActionModal(discord.ui.Modal):
                 ("recipe_name", "Exact recipe name", True, 100),
             ]),
             "resolve_report": ("Resolve recipe report", [("report_id", "Report number", True, 10)]),
+            "restore_history": ("Restore a previous version", [("history_id", "History entry number", True, 10)]),
         }
         title, inputs = fields[action]
         super().__init__(title=title)
@@ -239,15 +269,17 @@ class AdminActionModal(discord.ui.Modal):
             return
 
         data = load_recipe_data()
+        before_data = json.loads(json.dumps(data, ensure_ascii=False))
         if self.action == "add_table":
             name = self.table_name.value.strip()
             if not name or any(t["name"].casefold() == name.casefold() for t in data["tables"]):
                 await interaction.response.send_message("Enter a unique table name.", ephemeral=True)
                 return
             data["tables"].append({"name": name, "recipes": []})
+            record_recipe_change(before_data, "add_table", interaction.user.id, f"Added table: {name}")
             save_recipe_data(data)
             refresh_recipe_data()
-            await interaction.response.send_message(f"Added **{name}**. An automatic backup was created.", ephemeral=True)
+            await interaction.response.send_message(f"Added **{name}**. An automatic backup and change-history entry were created.", ephemeral=True)
             return
 
         if self.action == "add_recipe":
@@ -266,6 +298,7 @@ class AdminActionModal(discord.ui.Modal):
                 "tools": [x.strip() for x in self.tools.value.split(",") if x.strip()],
                 "review": "Added by server administrator", "source": "CraftingBot admin menu",
             })
+            record_recipe_change(before_data, "add_recipe", interaction.user.id, f"Added {name} to {table['name']}")
             save_recipe_data(data)
             refresh_recipe_data()
             await interaction.response.send_message(f"Added **{name}** to **{table['name']}**. Duplicate ingredients are retained.", ephemeral=True)
@@ -287,9 +320,10 @@ class AdminActionModal(discord.ui.Modal):
                     return
             if self.tools.value.strip():
                 recipe["tools"] = [x.strip() for x in self.tools.value.split(",") if x.strip()]
+            record_recipe_change(before_data, "edit_recipe", interaction.user.id, f"Edited {recipe['name']} in {table['name']}")
             save_recipe_data(data)
             refresh_recipe_data()
-            await interaction.response.send_message(f"Updated **{recipe['name']}**. An automatic backup was created.", ephemeral=True)
+            await interaction.response.send_message(f"Updated **{recipe['name']}**. An automatic backup and change-history entry were created.", ephemeral=True)
             return
 
         if self.action == "remove_recipe":
@@ -299,9 +333,27 @@ class AdminActionModal(discord.ui.Modal):
                 await interaction.response.send_message("Recipe not found in that table.", ephemeral=True)
                 return
             removed = table["recipes"].pop(index)
+            record_recipe_change(before_data, "remove_recipe", interaction.user.id, f"Removed {removed['name']} from {table['name']}")
             save_recipe_data(data)
             refresh_recipe_data()
-            await interaction.response.send_message(f"Removed **{removed['name']}**. An automatic backup was created.", ephemeral=True)
+            await interaction.response.send_message(f"Removed **{removed['name']}**. An automatic backup and change-history entry were created.", ephemeral=True)
+            return
+
+        if self.action == "restore_history":
+            try:
+                history_id = int(self.history_id.value.strip())
+            except ValueError:
+                await interaction.response.send_message("Enter a valid history entry number.", ephemeral=True)
+                return
+            history = read_json(HISTORY_FILE, [])
+            entry = next((item for item in history if int(item.get("id", 0)) == history_id), None)
+            if not entry or not isinstance(entry.get("snapshot"), dict):
+                await interaction.response.send_message("That history entry has no restorable snapshot.", ephemeral=True)
+                return
+            record_recipe_change(data, "restore", interaction.user.id, f"Restored before history entry #{history_id}")
+            save_recipe_data(entry["snapshot"])
+            refresh_recipe_data()
+            await interaction.response.send_message(f"Restored the snapshot from history entry **#{history_id}**. The state being replaced was also saved to history.", ephemeral=True)
             return
 
         if self.action == "resolve_report":
@@ -331,7 +383,12 @@ class AdminMenuView(discord.ui.View):
             discord.SelectOption(label="Edit a recipe", value="edit_recipe", emoji="✏️"),
             discord.SelectOption(label="Remove a recipe", value="remove_recipe", emoji="🗑️"),
             discord.SelectOption(label="Create a backup", value="backup", emoji="💾"),
-            discord.SelectOption(label="Export recipe data", value="export", emoji="📤"),
+            discord.SelectOption(label="Export recipe data (JSON)", value="export", emoji="📤"),
+            discord.SelectOption(label="Export ingredients (CSV)", value="export_csv", emoji="📄"),
+            discord.SelectOption(label="Export ingredients (Excel)", value="export_xlsx", emoji="📊"),
+            discord.SelectOption(label="Validate recipe data", value="validate", emoji="🧪"),
+            discord.SelectOption(label="View change history", value="history", emoji="🕘"),
+            discord.SelectOption(label="Restore a previous version", value="restore_history", emoji="↩️"),
             discord.SelectOption(label="View directory statistics", value="stats", emoji="📊"),
             discord.SelectOption(label="Review open reports", value="reports", emoji="📨"),
             discord.SelectOption(label="Resolve a report", value="resolve_report", emoji="✅"),
@@ -354,7 +411,7 @@ class AdminMenuView(discord.ui.View):
         action = interaction.data["values"][0]
         if action == "back":
             await interaction.response.edit_message(embed=help_embed(), view=MainMenuView(self.owner_id, is_guild_admin(interaction)))
-        elif action in {"add_table", "add_recipe", "edit_recipe", "remove_recipe", "resolve_report"}:
+        elif action in {"add_table", "add_recipe", "edit_recipe", "remove_recipe", "resolve_report", "restore_history"}:
             await interaction.response.send_modal(AdminActionModal(action))
         elif action == "backup":
             path = create_backup()
@@ -362,6 +419,24 @@ class AdminMenuView(discord.ui.View):
         elif action == "export":
             payload = json.dumps(load_recipe_data(), ensure_ascii=False, indent=2).encode("utf-8")
             await interaction.response.send_message("Current recipe directory export:", file=discord.File(io.BytesIO(payload), filename="crafting-recipes-export.json"), ephemeral=True)
+        elif action == "export_csv":
+            payload = recipes_csv_bytes(load_recipe_data())
+            await interaction.response.send_message("Complete ingredient occurrence export (duplicate entries are preserved):", file=discord.File(io.BytesIO(payload), filename="fivem-crafting-ingredients.csv"), ephemeral=True)
+        elif action == "export_xlsx":
+            payload = recipes_xlsx_bytes(load_recipe_data())
+            await interaction.response.send_message("Excel workbook with all ingredient occurrences:", file=discord.File(io.BytesIO(payload), filename="fivem-crafting-directory.xlsx"), ephemeral=True)
+        elif action == "validate":
+            findings = validate_recipe_data(load_recipe_data())
+            await interaction.response.send_message(embed=validation_embed(findings), ephemeral=True)
+        elif action == "history":
+            history = read_json(HISTORY_FILE, [])
+            if not history:
+                await interaction.response.send_message("No recipe changes have been recorded yet. Future admin edits will appear here.", ephemeral=True)
+                return
+            embed = discord.Embed(title="🕘 Recipe Change History", description=f"Showing the latest {min(10, len(history))} change(s). Use Restore a previous version with an entry number to roll back.", color=COLOR)
+            for item in reversed(history[-10:]):
+                embed.add_field(name=f"#{item['id']} · {item.get('action', 'change')}", value=f"{item.get('summary', '')}\nBy user ID: {item.get('actor_id', 'unknown')}\n{item.get('created_at', 'unknown')}", inline=False)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         elif action == "stats":
             data = load_recipe_data()
             total = sum(len(t.get("recipes", [])) for t in data["tables"])
@@ -379,9 +454,25 @@ class AdminMenuView(discord.ui.View):
                 return
             embed = discord.Embed(title="📨 Open Crafting Reports", color=COLOR)
             for report in reversed(open_reports):
-                embed.add_field(name=f"Report #{report['id']}", value=f"{report.get('details', '')[:700]}\nSubmitted: {report.get('created_at', 'unknown')}", inline=False)
+                context = " · ".join(x for x in [report.get("issue_type", ""), report.get("table", ""), report.get("recipe", "")] if x)
+                embed.add_field(name=f"Report #{report['id']} · {context[:180]}", value=f"{report.get('details', '')[:600]}\nSubmitted: {report.get('created_at', 'unknown')} · User ID: {report.get('user_id', 'unknown')}", inline=False)
             embed.set_footer(text="Choose Resolve a report in the admin menu when an issue is addressed.")
             await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class RecipeCalculatorModal(discord.ui.Modal, title="Calculate recipe shopping list"):
+    table = discord.ui.TextInput(label="Exact crafting table name", placeholder="Example: Glovebox Table", max_length=100)
+    recipe = discord.ui.TextInput(label="Exact recipe name", placeholder="Example: Example Recipe", max_length=100)
+    batches = discord.ui.TextInput(label="How many batches?", placeholder="1", default="1", max_length=3)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            batch_count = int(self.batches.value.strip())
+            result = calculate_recipe_ingredients(bot.recipe_data, self.table.value, self.recipe.value, batch_count)
+        except (ValueError, TypeError) as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        await interaction.response.send_message(embed=recipe_shopping_embed(result), ephemeral=True)
 
 
 class IngredientDirectoryView(discord.ui.View):
@@ -439,6 +530,8 @@ class MainMenuView(discord.ui.View):
             discord.SelectOption(label="Search recipes", value="search", description="Search names, ingredients, tools, or tables", emoji="🔎"),
             discord.SelectOption(label="Find ingredient across tables", value="ingredient_lookup", description="See every table and recipe that uses an exact ingredient", emoji="🧩"),
             discord.SelectOption(label="All ingredients", value="all_ingredients", description="Browse or download the complete ingredient list", emoji="📋"),
+            discord.SelectOption(label="Recipe shopping list", value="shopping_list", description="Calculate ingredients for a chosen batch count", emoji="🧮"),
+            discord.SelectOption(label="Crafting table comparison", value="compare_tables", description="See shared and table-exclusive ingredients", emoji="⚖️"),
             discord.SelectOption(label="Help and instructions", value="help", description="How to use the crafting directory", emoji="📘"),
             discord.SelectOption(label="Report a recipe issue", value="report", description="Privately report missing or incorrect data", emoji="📨"),
         ]
@@ -469,6 +562,10 @@ class MainMenuView(discord.ui.View):
                 embed=ingredient_directory_embed(bot.recipe_data, 0, view.page_size),
                 view=view,
             )
+        elif action == "shopping_list":
+            await interaction.response.send_modal(RecipeCalculatorModal())
+        elif action == "compare_tables":
+            await interaction.response.edit_message(embed=table_comparison_embed(bot.recipe_data), view=self)
         elif action == "help":
             await interaction.response.edit_message(embed=help_embed(), view=self)
         elif action == "report":

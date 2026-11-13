@@ -31,9 +31,9 @@ def test_only_one_public_slash_command_is_registered():
 
 def test_all_features_are_in_private_dropdown_menus():
     source = Path("bot.py").read_text(encoding="utf-8")
-    for feature in ("Browse recipes", "Search recipes", "Find ingredient across tables", "All ingredients", "Help and instructions", "Report a recipe issue", "Admin tools"):
+    for feature in ("Browse recipes", "Search recipes", "Find ingredient across tables", "All ingredients", "Recipe shopping list", "Crafting table comparison", "Help and instructions", "Report a recipe issue", "Admin tools"):
         assert feature in source
-    for action in ("add_table", "add_recipe", "edit_recipe", "remove_recipe", "backup", "export", "stats", "reports", "resolve_report"):
+    for action in ("add_table", "add_recipe", "edit_recipe", "remove_recipe", "backup", "export", "export_csv", "export_xlsx", "validate", "history", "restore_history", "stats", "reports", "resolve_report"):
         assert f'"{action}"' in source
     assert "Manage Server permission is required." in source
 

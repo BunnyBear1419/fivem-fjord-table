@@ -8,8 +8,12 @@ Members use only **`/crafting`**. It opens a private dropdown menu with:
 
 - **Browse recipes** — choose a crafting table, then a recipe to view ingredients and tools.
 - **Search recipes** — search by recipe name, ingredient, tool, or optional table filter.
+- **Find ingredient across tables** — locate an exact ingredient, where it is produced, and where it is consumed.
+- **All ingredients** — browse or download the complete exact-name ingredient directory.
+- **Recipe shopping list** — calculate required ingredients for 1–999 batches; repeated ingredient rows are summed for the requested total.
+- **Crafting table comparison** — compare shared and table-exclusive ingredients.
 - **Help and instructions** — see how to use the directory.
-- **Report a recipe issue** — privately submit a missing or incorrect entry.
+- **Report a recipe issue** — submit an issue type, optional table/recipe, and details.
 - **Admin tools** — shown only to members with Manage Server permission.
 
 ## Admin menu
@@ -19,11 +23,13 @@ The Admin tools submenu includes:
 - Add a crafting table.
 - Add, edit, or remove a recipe.
 - Create a manual backup.
-- Export the current recipe data as JSON.
+- Export JSON, CSV, and Excel workbooks (each ingredient occurrence is a separate row).
+- Validate recipe data for missing names/ingredients, invalid quantities, repeated recipe names, and possible spelling variations. Findings are review-only; nothing is auto-corrected.
+- View a reversible recipe change history and restore a prior snapshot.
 - View table and recipe totals.
-- Review open reports and resolve a report by number.
+- Review structured issue reports and resolve a report by number.
 
-Admin actions check the Manage Server permission again when submitted. Every recipe-data change creates a timestamped backup before saving.
+Admin actions check the Manage Server permission again when submitted. Every recipe-data change creates a timestamped backup and a history snapshot before saving.
 
 For ingredient input, use comma-separated entries such as `Plastic bag x2, Powder x1`. Repeated ingredient entries are intentionally preserved and never deduplicated.
 
@@ -47,6 +53,8 @@ Do not delete and reinvite the bot just to refresh commands.
 - `recipes.json` — original bundled crafting table and recipe data.
 - `crafting-data.json` — runtime admin-edited override, created after the first admin change.
 - `crafting.py` — directory UI, search, ingredient parsing, and backup/storage helpers.
+- `enhancements.py` — shopping-list calculations, table comparisons, validation, and CSV/Excel exports.
+- `history.json` — reversible administrator change snapshots, created when the first change is made.
 - `bot.py` — the one slash command, dropdown menus, admin controls, usage tracking, reports, and logging.
 
 Always verify recipes against the current server because resource configurations can change.
