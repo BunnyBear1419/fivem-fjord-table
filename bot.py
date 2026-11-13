@@ -62,13 +62,20 @@ def write_json(path: Path, data):
 
 
 def record_usage(kind: str, term: str | None = None):
-    stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}})
+    stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}})
     stats["commands"] = int(stats.get("commands", 0)) + 1
     if kind == "search":
         stats["searches"] = int(stats.get("searches", 0)) + 1
         if term:
             terms = stats.setdefault("terms", {})
             terms[term[:60]] = int(terms.get(term[:60], 0)) + 1
+    write_json(STATS_FILE, stats)
+
+
+def record_table_usage(table_name: str):
+    stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}})
+    tables = stats.setdefault("tables", {})
+    tables[table_name] = int(tables.get(table_name, 0)) + 1
     write_json(STATS_FILE, stats)
 
 
@@ -136,7 +143,7 @@ async def crafting_command(interaction: discord.Interaction, search: str | None 
     if search and search.strip():
         await interaction.response.send_message(embed=search_embed(bot.recipe_data, search.strip()), ephemeral=True)
         return
-    view = CraftingDirectoryView(interaction.user.id, bot.recipe_data)
+    view = CraftingDirectoryView(interaction.user.id, bot.recipe_data, on_table_selected=record_table_usage)
     await interaction.response.send_message(embed=view.current_embed(), view=view, ephemeral=True)
 
 
@@ -155,7 +162,7 @@ async def crafting_help_command(interaction: discord.Interaction):
     embed.add_field(name="/crafting-search", value="Search by recipe, ingredient, or tool, with an optional table filter.", inline=False)
     embed.add_field(name="/crafting-stats", value="View anonymous usage totals.", inline=False)
     embed.add_field(name="/crafting-report", value="Privately report missing or incorrect recipe information.", inline=False)
-    embed.add_field(name="/crafting-admin", value="Manage recipes (Manage Server permission required).", inline=False)
+    embed.add_field(name="/crafting-admin", value="Manage recipes, review reports, and create backups (Manage Server permission required).", inline=False)
     embed.set_footer(text="Directory and search replies are private to you.")
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -165,10 +172,13 @@ async def crafting_stats_command(interaction: discord.Interaction):
     stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}})
     top = sorted(stats.get("terms", {}).items(), key=lambda item: item[1], reverse=True)[:5]
     top_text = "\n".join(f"• {term} — {count}" for term, count in top) or "No searches recorded yet."
+    popular_tables = sorted(stats.get("tables", {}).items(), key=lambda item: item[1], reverse=True)[:5]
+    table_text = "\n".join(f"• {name} — {count}" for name, count in popular_tables) or "No table selections recorded yet."
     embed = discord.Embed(title="📊 CraftingBot Usage", color=discord.Color.from_rgb(57, 75, 111))
     embed.add_field(name="Commands used", value=str(stats.get("commands", 0)))
     embed.add_field(name="Searches", value=str(stats.get("searches", 0)))
     embed.add_field(name="Popular searches", value=top_text, inline=False)
+    embed.add_field(name="Popular crafting tables", value=table_text, inline=False)
     embed.set_footer(text="Aggregate totals only; search message content is not retained.")
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -316,6 +326,41 @@ async def admin_stats(interaction: discord.Interaction):
     embed.add_field(name="Recipes", value=str(count))
     embed.add_field(name="Runtime admin data", value="Active" if OVERRIDE_FILE.exists() else "Not created yet")
     await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@admin_group.command(name="reports", description="Review the latest open recipe reports.")
+@app_commands.default_permissions(manage_guild=True)
+async def admin_reports(interaction: discord.Interaction):
+    if not is_guild_admin(interaction):
+        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+        return
+    reports = read_json(REPORTS_FILE, [])
+    open_reports = [report for report in reports if report.get("status") == "open"][-10:]
+    if not open_reports:
+        await interaction.response.send_message("There are no open recipe reports.", ephemeral=True)
+        return
+    embed = discord.Embed(title="Open Crafting Reports", color=discord.Color.from_rgb(57, 75, 111))
+    for report in reversed(open_reports):
+        embed.add_field(name=f"Report #{report['id']}", value=f"{report.get('details', '')[:700]}\\nSubmitted: {report.get('created_at', 'unknown')}", inline=False)
+    embed.set_footer(text="Use /crafting-admin resolve-report with a report ID when addressed.")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@admin_group.command(name="resolve-report", description="Mark a recipe report as resolved.")
+@app_commands.default_permissions(manage_guild=True)
+async def admin_resolve_report(interaction: discord.Interaction, report_id: int):
+    if not is_guild_admin(interaction):
+        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+        return
+    reports = read_json(REPORTS_FILE, [])
+    report = next((item for item in reports if item.get("id") == report_id), None)
+    if report is None:
+        await interaction.response.send_message("Report ID not found.", ephemeral=True)
+        return
+    report["status"] = "resolved"
+    report["resolved_at"] = discord.utils.utcnow().isoformat()
+    write_json(REPORTS_FILE, reports)
+    await interaction.response.send_message(f"Marked report #{report_id} as resolved.", ephemeral=True)
 
 
 bot.tree.add_command(admin_group)
