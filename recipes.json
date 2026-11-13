@@ -1986,6 +1986,1658 @@
           "source": "User supplied text"
         }
       ]
+    },
+    {
+      "name": "Coke Table #1",
+      "recipes": [
+        {
+          "name": "Cocaine paste",
+          "ingredients": [
+            [
+              "Cocaine leaf",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Bath Salts",
+          "ingredients": [
+            [
+              "MDPV Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Flakka",
+          "ingredients": [
+            [
+              "Alpha-PVP Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hashish",
+          "ingredients": [
+            [
+              "Kief",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MDA",
+          "ingredients": [
+            [
+              "MDA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Mephedrone",
+          "ingredients": [
+            [
+              "Mephedrone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methylone",
+          "ingredients": [
+            [
+              "Methylone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methcathinone",
+          "ingredients": [
+            [
+              "Methcathinone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-FA Powder",
+          "ingredients": [
+            [
+              "4-FA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MXE",
+          "ingredients": [
+            [
+              "MXE Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ],
+            [
+              "Oral Film Base",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth",
+          "ingredients": [
+            [
+              "Meth Oil",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Raw Cocaine",
+          "ingredients": [
+            [
+              "Cocaine Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin",
+          "ingredients": [
+            [
+              "Brown Heroin Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Activated Carbon",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy crystals",
+          "ingredients": [
+            [
+              "MDMA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth bag",
+          "ingredients": [
+            [
+              "Meth",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Cocaine bag",
+          "ingredients": [
+            [
+              "Raw Cocaine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Crack bag",
+          "ingredients": [
+            [
+              "Crack",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Weed bag",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin bag",
+          "ingredients": [
+            [
+              "Heroin",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ketamine bag",
+          "ingredients": [
+            [
+              "Ketamine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Paco",
+          "ingredients": [
+            [
+              "Cocaine paste",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Coke Table #2",
+      "recipes": [
+        {
+          "name": "Cocaine paste",
+          "ingredients": [
+            [
+              "Cocaine leaf",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Bath Salts",
+          "ingredients": [
+            [
+              "MDPV Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Flakka",
+          "ingredients": [
+            [
+              "Alpha-PVP Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hashish",
+          "ingredients": [
+            [
+              "Kief",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MDA",
+          "ingredients": [
+            [
+              "MDA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Mephedrone",
+          "ingredients": [
+            [
+              "Mephedrone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methylone",
+          "ingredients": [
+            [
+              "Methylone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methcathinone",
+          "ingredients": [
+            [
+              "Methcathinone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-FA Powder",
+          "ingredients": [
+            [
+              "4-FA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MXE",
+          "ingredients": [
+            [
+              "MXE Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ],
+            [
+              "Oral Film Base",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth",
+          "ingredients": [
+            [
+              "Meth Oil",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Raw Cocaine",
+          "ingredients": [
+            [
+              "Cocaine Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin",
+          "ingredients": [
+            [
+              "Brown Heroin Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Activated Carbon",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy crystals",
+          "ingredients": [
+            [
+              "MDMA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth bag",
+          "ingredients": [
+            [
+              "Meth",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Cocaine bag",
+          "ingredients": [
+            [
+              "Raw Cocaine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Crack bag",
+          "ingredients": [
+            [
+              "Crack",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Weed bag",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin bag",
+          "ingredients": [
+            [
+              "Heroin",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ketamine bag",
+          "ingredients": [
+            [
+              "Ketamine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Paco",
+          "ingredients": [
+            [
+              "Cocaine paste",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Coke Table #3",
+      "recipes": [
+        {
+          "name": "Cocaine paste",
+          "ingredients": [
+            [
+              "Cocaine leaf",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Bath Salts",
+          "ingredients": [
+            [
+              "MDPV Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Flakka",
+          "ingredients": [
+            [
+              "Alpha-PVP Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hashish",
+          "ingredients": [
+            [
+              "Kief",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MDA",
+          "ingredients": [
+            [
+              "MDA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Mephedrone",
+          "ingredients": [
+            [
+              "Mephedrone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methylone",
+          "ingredients": [
+            [
+              "Methylone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methcathinone",
+          "ingredients": [
+            [
+              "Methcathinone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-FA Powder",
+          "ingredients": [
+            [
+              "4-FA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MXE",
+          "ingredients": [
+            [
+              "MXE Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ],
+            [
+              "Oral Film Base",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth",
+          "ingredients": [
+            [
+              "Meth Oil",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Raw Cocaine",
+          "ingredients": [
+            [
+              "Cocaine Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin",
+          "ingredients": [
+            [
+              "Brown Heroin Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Activated Carbon",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy crystals",
+          "ingredients": [
+            [
+              "MDMA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth bag",
+          "ingredients": [
+            [
+              "Meth",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Cocaine bag",
+          "ingredients": [
+            [
+              "Raw Cocaine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Crack bag",
+          "ingredients": [
+            [
+              "Crack",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Weed bag",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin bag",
+          "ingredients": [
+            [
+              "Heroin",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ketamine bag",
+          "ingredients": [
+            [
+              "Ketamine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Paco",
+          "ingredients": [
+            [
+              "Cocaine paste",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Coke Table #4",
+      "recipes": [
+        {
+          "name": "Cocaine paste",
+          "ingredients": [
+            [
+              "Cocaine leaf",
+              10
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Bath Salts",
+          "ingredients": [
+            [
+              "MDPV Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Flakka",
+          "ingredients": [
+            [
+              "Alpha-PVP Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hashish",
+          "ingredients": [
+            [
+              "Kief",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MDA",
+          "ingredients": [
+            [
+              "MDA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Mephedrone",
+          "ingredients": [
+            [
+              "Mephedrone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methylone",
+          "ingredients": [
+            [
+              "Methylone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methcathinone",
+          "ingredients": [
+            [
+              "Methcathinone Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "4-FA Powder",
+          "ingredients": [
+            [
+              "4-FA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MXE",
+          "ingredients": [
+            [
+              "MXE Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ],
+            [
+              "Oral Film Base",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth",
+          "ingredients": [
+            [
+              "Meth Oil",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Raw Cocaine",
+          "ingredients": [
+            [
+              "Cocaine Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin",
+          "ingredients": [
+            [
+              "Brown Heroin Base",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Activated Carbon",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy crystals",
+          "ingredients": [
+            [
+              "MDMA Freebase",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Meth bag",
+          "ingredients": [
+            [
+              "Meth",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Cocaine bag",
+          "ingredients": [
+            [
+              "Raw Cocaine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Crack bag",
+          "ingredients": [
+            [
+              "Crack",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Weed bag",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Heroin bag",
+          "ingredients": [
+            [
+              "Heroin",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ketamine bag",
+          "ingredients": [
+            [
+              "Ketamine",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Paco",
+          "ingredients": [
+            [
+              "Cocaine paste",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
