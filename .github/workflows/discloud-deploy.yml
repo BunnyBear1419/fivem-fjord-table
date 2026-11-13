@@ -1,68 +1,16 @@
-name: 🚀 Discloud Production Auto-Deploy
+name: Discloud Deployment (Paused During Website Migration)
 
 on:
-  workflow_run:
-    workflows: ["🧪 Companion Test Suite"]
-    types: [completed]
-    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
-concurrency:
-  group: discloud-production-deploy
-  cancel-in-progress: false
-
 jobs:
-  deploy:
-    name: 🚀 Deploy to Discloud
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+  paused:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
     steps:
-      - name: 📥 Checkout Repository Source Files
-        uses: actions/checkout@v4.2.2
-        with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
-
-      - name: 📦 Create Discloud Deployment Bundle
+      - name: Explain deployment pause
         run: |
-          zip -r deploy.zip *.py data discloud.config requirements.txt
-
-      - name: 🟢 Setup Node for official Discloud SDK
-        uses: actions/setup-node@v4.4.0
-        with:
-          node-version: "20"
-
-      - name: 📦 Install official Discloud SDK
-        run: npm install --no-save discloud.app
-
-      - name: ⚡ Deploy Bundle to Discloud
-        env:
-          DISCLOUD_TOKEN: ${{ secrets.DISCLOUD_TOKEN }}
-        run: |
-          test -n "$DISCLOUD_TOKEN"
-          node <<'NODE'
-          const { discloud } = require("discloud.app");
-
-          async function main() {
-            await discloud.login(process.env.DISCLOUD_TOKEN);
-            const apps = await discloud.apps.fetch("all");
-            const entries = [...apps.entries()];
-            const target = entries.find(([, app]) => app.name === "AsphaltBot");
-
-            if (target) {
-              await discloud.apps.update(target[0], { file: "./deploy.zip" });
-              console.log(`Discloud app ${target[0]} updated successfully.`);
-            } else {
-              await discloud.apps.create({ file: "./deploy.zip" });
-              console.log("Discloud app created successfully.");
-            }
-          }
-
-          main().catch((error) => {
-            console.error("Discloud deployment failed:", error?.message || error);
-            process.exit(1);
-          });
-          NODE
+          echo "Automatic production deployment is paused while the repository is converted to the FiveM Crafting Directory."
+          echo "Re-enable deployment after the Discloud site ID, plan, and site configuration are confirmed."
