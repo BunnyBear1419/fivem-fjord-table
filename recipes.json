@@ -506,7 +506,1487 @@
           "source": "User supplied text"
         }
       ]
+    },
+    {
+      "name": "Pill Press #1",
+      "recipes": [
+        {
+          "name": "Xanax",
+          "ingredients": [
+            [
+              "Alprazolram Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Valium",
+          "ingredients": [
+            [
+              "Diazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Adderall",
+          "ingredients": [
+            [
+              "Amphetamine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Quaaludes",
+          "ingredients": [
+            [
+              "Methaqualone Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Tramadol",
+          "ingredients": [
+            [
+              "Tramadol HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ritalin",
+          "ingredients": [
+            [
+              "Methylphenidate Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Captagon",
+          "ingredients": [
+            [
+              "Fenethylline Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Modafinil",
+          "ingredients": [
+            [
+              "Modafinil Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "DOM",
+          "ingredients": [
+            [
+              "DOM Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hydrocodone",
+          "ingredients": [
+            [
+              "Hydrocodone Bitartrate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Dilaudid",
+          "ingredients": [
+            [
+              "Hydromorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Opana",
+          "ingredients": [
+            [
+              "Oxymorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Klonopin",
+          "ingredients": [
+            [
+              "Clonazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ambien",
+          "ingredients": [
+            [
+              "Zolpidem Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Soma",
+          "ingredients": [
+            [
+              "Carisoprodol Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "6-APB",
+          "ingredients": [
+            [
+              "6-APB Succinate",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "BZP",
+          "ingredients": [
+            [
+              "BZP HCl",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy pill",
+          "ingredients": [
+            [
+              "Ecstasy crystals",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Yaba",
+          "ingredients": [
+            [
+              "Meth",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Codeine Pills",
+          "ingredients": [
+            [
+              "Codeine Phosphate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Demerol",
+          "ingredients": [
+            [
+              "Pethidine HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Etizolam",
+          "ingredients": [
+            [
+              "Etizolam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Pill Press #2",
+      "recipes": [
+        {
+          "name": "Xanax",
+          "ingredients": [
+            [
+              "Alprazolram Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Valium",
+          "ingredients": [
+            [
+              "Diazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Adderall",
+          "ingredients": [
+            [
+              "Amphetamine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Quaaludes",
+          "ingredients": [
+            [
+              "Methaqualone Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Tramadol",
+          "ingredients": [
+            [
+              "Tramadol HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ritalin",
+          "ingredients": [
+            [
+              "Methylphenidate Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Captagon",
+          "ingredients": [
+            [
+              "Fenethylline Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Modafinil",
+          "ingredients": [
+            [
+              "Modafinil Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "DOM",
+          "ingredients": [
+            [
+              "DOM Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hydrocodone",
+          "ingredients": [
+            [
+              "Hydrocodone Bitartrate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Dilaudid",
+          "ingredients": [
+            [
+              "Hydromorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Opana",
+          "ingredients": [
+            [
+              "Oxymorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Klonopin",
+          "ingredients": [
+            [
+              "Clonazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ambien",
+          "ingredients": [
+            [
+              "Zolpidem Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Soma",
+          "ingredients": [
+            [
+              "Carisoprodol Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "6-APB",
+          "ingredients": [
+            [
+              "6-APB Succinate",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "BZP",
+          "ingredients": [
+            [
+              "BZP HCl",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy pill",
+          "ingredients": [
+            [
+              "Ecstasy crystals",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Yaba",
+          "ingredients": [
+            [
+              "Meth",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Codeine Pills",
+          "ingredients": [
+            [
+              "Codeine Phosphate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Demerol",
+          "ingredients": [
+            [
+              "Pethidine HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Etizolam",
+          "ingredients": [
+            [
+              "Etizolam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Pill Press #3",
+      "recipes": [
+        {
+          "name": "Xanax",
+          "ingredients": [
+            [
+              "Alprazolram Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Valium",
+          "ingredients": [
+            [
+              "Diazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Adderall",
+          "ingredients": [
+            [
+              "Amphetamine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Quaaludes",
+          "ingredients": [
+            [
+              "Methaqualone Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Tramadol",
+          "ingredients": [
+            [
+              "Tramadol HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ritalin",
+          "ingredients": [
+            [
+              "Methylphenidate Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Captagon",
+          "ingredients": [
+            [
+              "Fenethylline Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Modafinil",
+          "ingredients": [
+            [
+              "Modafinil Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "DOM",
+          "ingredients": [
+            [
+              "DOM Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hydrocodone",
+          "ingredients": [
+            [
+              "Hydrocodone Bitartrate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Dilaudid",
+          "ingredients": [
+            [
+              "Hydromorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Opana",
+          "ingredients": [
+            [
+              "Oxymorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Klonopin",
+          "ingredients": [
+            [
+              "Clonazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ambien",
+          "ingredients": [
+            [
+              "Zolpidem Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Soma",
+          "ingredients": [
+            [
+              "Carisoprodol Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "6-APB",
+          "ingredients": [
+            [
+              "6-APB Succinate",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "BZP",
+          "ingredients": [
+            [
+              "BZP HCl",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy pill",
+          "ingredients": [
+            [
+              "Ecstasy crystals",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Yaba",
+          "ingredients": [
+            [
+              "Meth",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Codeine Pills",
+          "ingredients": [
+            [
+              "Codeine Phosphate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Demerol",
+          "ingredients": [
+            [
+              "Pethidine HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Etizolam",
+          "ingredients": [
+            [
+              "Etizolam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Pill Press #4",
+      "recipes": [
+        {
+          "name": "Xanax",
+          "ingredients": [
+            [
+              "Alprazolram Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Valium",
+          "ingredients": [
+            [
+              "Diazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Adderall",
+          "ingredients": [
+            [
+              "Amphetamine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Quaaludes",
+          "ingredients": [
+            [
+              "Methaqualone Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Tramadol",
+          "ingredients": [
+            [
+              "Tramadol HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ritalin",
+          "ingredients": [
+            [
+              "Methylphenidate Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Captagon",
+          "ingredients": [
+            [
+              "Fenethylline Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Modafinil",
+          "ingredients": [
+            [
+              "Modafinil Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "DOM",
+          "ingredients": [
+            [
+              "DOM Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hydrocodone",
+          "ingredients": [
+            [
+              "Hydrocodone Bitartrate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Dilaudid",
+          "ingredients": [
+            [
+              "Hydromorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Opana",
+          "ingredients": [
+            [
+              "Oxymorphone HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Klonopin",
+          "ingredients": [
+            [
+              "Clonazepam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ambien",
+          "ingredients": [
+            [
+              "Zolpidem Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Soma",
+          "ingredients": [
+            [
+              "Carisoprodol Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "6-APB",
+          "ingredients": [
+            [
+              "6-APB Succinate",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "BZP",
+          "ingredients": [
+            [
+              "BZP HCl",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy pill",
+          "ingredients": [
+            [
+              "Ecstasy crystals",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Suboxone",
+          "ingredients": [
+            [
+              "Buprenorphine HCl",
+              1
+            ],
+            [
+              "Naloxone HCl Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Yaba",
+          "ingredients": [
+            [
+              "Meth",
+              1
+            ],
+            [
+              "Caffeine Powder",
+              2
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Codeine Pills",
+          "ingredients": [
+            [
+              "Codeine Phosphate",
+              1
+            ],
+            [
+              "Acetaminophen",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Demerol",
+          "ingredients": [
+            [
+              "Pethidine HCl",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Etizolam",
+          "ingredients": [
+            [
+              "Etizolam Powder",
+              1
+            ]
+          ],
+          "tools": [
+            "Pill Binder",
+            "Tablet Die Set"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
     }
   ],
-  "notes": "FiveM roleplay game reference only. Entries were transcribed from the supplied in-game screenshots; verify against the live server."
+  "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
 }
