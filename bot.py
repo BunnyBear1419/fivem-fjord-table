@@ -26,7 +26,7 @@ from discord.ext import commands
 
 from crafting import (
     OVERRIDE_FILE, CraftingDirectoryView, create_backup, load_recipe_data,
-    parse_ingredients, save_recipe_data, search_embed,
+    parse_ingredients, save_recipe_data, search_embed, ingredient_usage_embed,
 )
 
 PROJECT_NAME = "FiveM Crafting Directory"
@@ -117,6 +117,7 @@ def help_embed():
     )
     embed.add_field(name="Browse recipes", value="Choose a crafting table, then a recipe to view ingredients and tools.", inline=False)
     embed.add_field(name="Search", value="Find recipes by name, ingredient, tool, or table.", inline=False)
+    embed.add_field(name="Find ingredient across tables", value="Enter an exact ingredient name to see every table and recipe that requires it. Similar spellings remain separate.", inline=False)
     embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry.", inline=False)
     embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server permission required.", inline=False)
     embed.set_footer(text="Private menu • Only you can see and use this session")
@@ -162,6 +163,22 @@ class SearchModal(discord.ui.Modal, title="Search crafting recipes"):
         term = self.query.value.strip()
         record_usage("search", term)
         await interaction.response.send_message(embed=search_embed(bot.recipe_data, term, self.table.value.strip() or None), ephemeral=True)
+
+
+class IngredientLookupModal(discord.ui.Modal, title="Find ingredient across tables"):
+    ingredient = discord.ui.TextInput(
+        label="Exact ingredient name",
+        placeholder="Example: Meth or Hydroclone Acid",
+        max_length=100,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        ingredient = self.ingredient.value.strip()
+        record_usage("search", f"ingredient:{ingredient}")
+        await interaction.response.send_message(
+            embed=ingredient_usage_embed(bot.recipe_data, ingredient),
+            ephemeral=True,
+        )
 
 
 class ReportModal(discord.ui.Modal, title="Report a recipe issue"):
@@ -372,6 +389,7 @@ class MainMenuView(discord.ui.View):
         options = [
             discord.SelectOption(label="Browse recipes", value="browse", description="Choose a table and recipe", emoji="📚"),
             discord.SelectOption(label="Search recipes", value="search", description="Search names, ingredients, tools, or tables", emoji="🔎"),
+            discord.SelectOption(label="Find ingredient across tables", value="ingredient_lookup", description="See every table and recipe that uses an exact ingredient", emoji="🧩"),
             discord.SelectOption(label="Help and instructions", value="help", description="How to use the crafting directory", emoji="📘"),
             discord.SelectOption(label="Report a recipe issue", value="report", description="Privately report missing or incorrect data", emoji="📨"),
         ]
@@ -394,6 +412,8 @@ class MainMenuView(discord.ui.View):
             await interaction.response.edit_message(embed=view.current_embed(), view=view)
         elif action == "search":
             await interaction.response.send_modal(SearchModal())
+        elif action == "ingredient_lookup":
+            await interaction.response.send_modal(IngredientLookupModal())
         elif action == "help":
             await interaction.response.edit_message(embed=help_embed(), view=self)
         elif action == "report":
