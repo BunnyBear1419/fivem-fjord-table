@@ -1,8 +1,8 @@
-name: 🚀 Discloud Production Auto-Deploy
+name: FiveM Crafting Bot — Discloud Deploy
 
 on:
   workflow_run:
-    workflows: ["🧪 Companion Test Suite"]
+    workflows: ["FiveM Crafting Bot Tests"]
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -11,34 +11,33 @@ permissions:
   contents: read
 
 concurrency:
-  group: discloud-production-deploy
+  group: fivem-crafting-discloud-deploy
   cancel-in-progress: false
 
 jobs:
   deploy:
-    name: 🚀 Deploy to Discloud
+    name: Deploy FiveM crafting bot to Discloud
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: 📥 Checkout Repository Source Files
+      - name: Checkout repository source
         uses: actions/checkout@v4.2.2
         with:
           ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
 
-      - name: 📦 Create Discloud Deployment Bundle
-        run: |
-          zip -r deploy.zip *.py data recipes.json discloud.config requirements.txt
+      - name: Create Discloud bot bundle
+        run: zip deploy.zip bot.py crafting.py recipes.json discloud.config requirements.txt
 
-      - name: 🟢 Setup Node for official Discloud SDK
+      - name: Setup Node
         uses: actions/setup-node@v4.4.0
         with:
           node-version: "20"
 
-      - name: 📦 Install official Discloud SDK
+      - name: Install official Discloud SDK
         run: npm install --no-save discloud.app
 
-      - name: ⚡ Deploy Bundle to Discloud
+      - name: Deploy bot to existing Discloud app
         env:
           DISCLOUD_TOKEN: ${{ secrets.DISCLOUD_TOKEN }}
         run: |
@@ -52,13 +51,12 @@ jobs:
             const entries = [...apps.entries()];
             const target = entries.find(([, app]) => app.name === "AsphaltBot");
 
-            if (target) {
-              await discloud.apps.update(target[0], { file: "./deploy.zip" });
-              console.log(`Discloud app ${target[0]} updated successfully.`);
-            } else {
-              await discloud.apps.create({ file: "./deploy.zip" });
-              console.log("Discloud app created successfully.");
+            if (!target) {
+              throw new Error("Could not find the existing Discloud app named AsphaltBot; refusing to create a duplicate.");
             }
+
+            await discloud.apps.update(target[0], { file: "./deploy.zip" });
+            console.log(`Discloud app ${target[0]} updated successfully.`);
           }
 
           main().catch((error) => {
