@@ -83,10 +83,11 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
 
 
 class CraftingDirectoryView(discord.ui.View):
-    def __init__(self, owner_id: int, data: dict[str, Any]):
+    def __init__(self, owner_id: int, data: dict[str, Any], on_table_selected=None):
         super().__init__(timeout=300)
         self.owner_id = owner_id
         self.tables = data["tables"]
+        self.on_table_selected = on_table_selected
         self.table_index = 0
         self.recipe_page = 0
         self._refresh_selects()
@@ -131,6 +132,8 @@ class CraftingDirectoryView(discord.ui.View):
     async def _choose_table(self, interaction):
         self.table_index = int(interaction.data["values"][0])
         self.recipe_page = 0
+        if self.on_table_selected and self.tables:
+            self.on_table_selected(self.tables[self.table_index]["name"])
         self._refresh_selects()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
