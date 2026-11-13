@@ -169,6 +169,65 @@ def find_matches(data: dict[str, Any], query: str, table_filter: str | None = No
     return matches
 
 
+
+def find_ingredient_usage(data: dict[str, Any], ingredient_name: str):
+    """Return exact-name ingredient uses, grouped by table and recipe.
+
+    Matching is case-insensitive and ignores surrounding whitespace only.
+    Similar spellings/plurals are deliberately kept separate.
+    """
+    needle = ingredient_name.casefold().strip()
+    matches = []
+    if not needle:
+        return matches
+
+    for table in data.get("tables", []):
+        table_matches = []
+        for recipe in table.get("recipes", []):
+            quantities = [
+                int(quantity)
+                for name, quantity in (recipe.get("ingredients") or [])
+                if str(name).casefold().strip() == needle
+            ]
+            if quantities:
+                table_matches.append({
+                    "recipe": recipe.get("name", "Unnamed recipe"),
+                    "quantity": sum(quantities),
+                    "occurrences": len(quantities),
+                })
+        if table_matches:
+            matches.append({"table": table.get("name", "Unnamed table"), "recipes": table_matches})
+    return matches
+
+
+def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discord.Embed:
+    """Build a cross-table report for one exact ingredient name."""
+    matches = find_ingredient_usage(data, ingredient_name)
+    total_recipes = sum(len(group["recipes"]) for group in matches)
+    total_tables = len(matches)
+    embed = discord.Embed(
+        title=f"🧩 Ingredient lookup: {ingredient_name.strip()[:180]}",
+        description=(
+            f"Found **{total_recipes} recipe(s)** across **{total_tables} table(s)**."
+            if matches else
+            f"No exact ingredient-name matches were found for **{ingredient_name.strip()}**."
+        ),
+        color=discord.Color.from_rgb(57, 75, 111),
+    )
+    for group in matches[:25]:
+        lines = [
+            f"• **{item['recipe']}** — ×{item['quantity']}"
+            + (f" ({item['occurrences']} entries)" if item["occurrences"] > 1 else "")
+            for item in group["recipes"]
+        ]
+        embed.add_field(name=group["table"][:256], value="\n".join(lines)[:1024], inline=False)
+    if len(matches) > 25:
+        embed.set_footer(text=f"Showing 25 of {len(matches)} matching tables.")
+    else:
+        embed.set_footer(text="Exact ingredient match only • Coca Leaf and Coca Leaves are treated separately")
+    return embed
+
+
 def search_embed(data: dict[str, Any], query: str, table_filter: str | None = None) -> discord.Embed:
     matches = find_matches(data, query, table_filter)
     description = f"Found **{len(matches)}** matching recipe(s)."
