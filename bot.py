@@ -25,8 +25,8 @@ from discord import app_commands
 from discord.ext import commands
 
 from crafting import (
-    OVERRIDE_FILE, CraftingDirectoryView, create_backup, find_matches,
-    load_recipe_data, parse_ingredients, save_recipe_data, search_embed,
+    OVERRIDE_FILE, CraftingDirectoryView, create_backup, load_recipe_data,
+    parse_ingredients, save_recipe_data, search_embed,
 )
 
 PROJECT_NAME = "FiveM Crafting Directory"
@@ -34,6 +34,7 @@ BASE_DIR = Path(__file__).resolve().parent
 STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
 LOG_FILE = BASE_DIR / "bot.log"
+COLOR = discord.Color.from_rgb(57, 75, 111)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,7 +42,6 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(), logging.FileHandler(LOG_FILE, encoding="utf-8")],
 )
 logger = logging.getLogger("crafting-bot")
-BOT_INTENTS = discord.Intents.default()
 
 
 def read_json(path: Path, default):
@@ -109,16 +109,42 @@ def run_web_server():
 threading.Thread(target=run_web_server, daemon=True).start()
 
 
+def help_embed():
+    embed = discord.Embed(
+        title="📘 FiveM Crafting Directory",
+        description="Everything is controlled from this private menu. Choose an option below to get started.",
+        color=COLOR,
+    )
+    embed.add_field(name="Browse recipes", value="Choose a crafting table, then a recipe to view ingredients and tools.", inline=False)
+    embed.add_field(name="Search", value="Find recipes by name, ingredient, tool, or table.", inline=False)
+    embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry.", inline=False)
+    embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server permission required.", inline=False)
+    embed.set_footer(text="Private menu • Only you can see and use this session")
+    return embed
+
+
 class CraftingBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix="!", intents=BOT_INTENTS)
+        super().__init__(command_prefix="!", intents=discord.Intents.default())
         self.recipe_data = None
+        self.guild_commands_cleaned = False
 
     async def setup_hook(self):
         self.recipe_data = load_recipe_data()
+        # Syncing the one-command local tree replaces the old global command set.
         synced = await self.tree.sync()
         count = sum(len(table.get("recipes", [])) for table in self.recipe_data["tables"])
-        logger.info("Registered %s slash command(s). Loaded %s table(s) and %s recipe(s).", len(synced), len(self.recipe_data["tables"]), count)
+        logger.info("Synced %s global slash command(s). Loaded %s table(s) and %s recipe(s).", len(synced), len(self.recipe_data["tables"]), count)
+
+    async def on_ready(self):
+        logger.info("%s online as %s | guilds connected: %s", PROJECT_NAME, self.user, len(self.guilds))
+        # Remove any legacy guild-specific copies created by older bot versions.
+        if not self.guild_commands_cleaned:
+            for guild in self.guilds:
+                self.tree.clear_commands(guild=guild)
+                await self.tree.sync(guild=guild)
+            self.guild_commands_cleaned = True
+            logger.info("Cleared legacy guild-specific slash commands.")
 
 
 bot = CraftingBot()
@@ -128,242 +154,269 @@ def refresh_recipe_data():
     bot.recipe_data = load_recipe_data()
 
 
-@bot.event
-async def on_ready():
-    logger.info("%s online as %s | guilds connected: %s", PROJECT_NAME, bot.user, len(bot.guilds))
+class SearchModal(discord.ui.Modal, title="Search crafting recipes"):
+    query = discord.ui.TextInput(label="What are you looking for?", placeholder="Recipe, ingredient, tool, or table", max_length=100)
+    table = discord.ui.TextInput(label="Limit to a table (optional)", placeholder="Example: Glovebox Table", required=False, max_length=100)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        term = self.query.value.strip()
+        record_usage("search", term)
+        await interaction.response.send_message(embed=search_embed(bot.recipe_data, term, self.table.value.strip() or None), ephemeral=True)
 
 
-@bot.tree.command(name="crafting", description="Open your private FiveM crafting directory.")
-@app_commands.describe(search="Optional: search by recipe, ingredient, tool, or table name.")
-async def crafting_command(interaction: discord.Interaction, search: str | None = None):
+class ReportModal(discord.ui.Modal, title="Report a recipe issue"):
+    details = discord.ui.TextInput(label="What needs correcting or adding?", style=discord.TextStyle.paragraph, placeholder="Include the table, recipe name, and what is wrong or missing.", max_length=1500)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        reports = read_json(REPORTS_FILE, [])
+        report_id = max((int(item.get("id", 0)) for item in reports), default=0) + 1
+        reports.append({
+            "id": report_id,
+            "guild_id": interaction.guild_id,
+            "user_id": interaction.user.id,
+            "details": self.details.value.strip(),
+            "created_at": discord.utils.utcnow().isoformat(),
+            "status": "open",
+        })
+        write_json(REPORTS_FILE, reports)
+        logger.info("Recipe report #%s submitted in guild %s", report_id, interaction.guild_id)
+        await interaction.response.send_message(f"Your report **#{report_id}** has been saved for server administrators.", ephemeral=True)
+
+
+class AdminActionModal(discord.ui.Modal):
+    def __init__(self, action: str):
+        self.action = action
+        fields = {
+            "add_table": ("Add crafting table", [("table_name", "New table name", True, 100)]),
+            "add_recipe": ("Add recipe", [
+                ("table_name", "Exact table name", True, 100),
+                ("recipe_name", "Recipe name", True, 100),
+                ("ingredients", "Ingredients: Item x2, Item x1", True, 1500),
+                ("tools", "Tools, separated by commas (optional)", False, 500),
+            ]),
+            "edit_recipe": ("Edit recipe", [
+                ("table_name", "Exact table name", True, 100),
+                ("recipe_name", "Current recipe name", True, 100),
+                ("new_name", "New name (optional)", False, 100),
+                ("ingredients", "Replacement ingredients (optional)", False, 1500),
+                ("tools", "Replacement tools (optional)", False, 500),
+            ]),
+            "remove_recipe": ("Remove recipe", [
+                ("table_name", "Exact table name", True, 100),
+                ("recipe_name", "Exact recipe name", True, 100),
+            ]),
+            "resolve_report": ("Resolve recipe report", [("report_id", "Report number", True, 10)]),
+        }
+        title, inputs = fields[action]
+        super().__init__(title=title)
+        for key, label, required, limit in inputs:
+            field = discord.ui.TextInput(label=label, required=required, max_length=limit, custom_id=key)
+            setattr(self, key, field)
+            self.add_item(field)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        if not is_guild_admin(interaction):
+            await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+            return
+
+        data = load_recipe_data()
+        if self.action == "add_table":
+            name = self.table_name.value.strip()
+            if not name or any(t["name"].casefold() == name.casefold() for t in data["tables"]):
+                await interaction.response.send_message("Enter a unique table name.", ephemeral=True)
+                return
+            data["tables"].append({"name": name, "recipes": []})
+            save_recipe_data(data)
+            refresh_recipe_data()
+            await interaction.response.send_message(f"Added **{name}**. An automatic backup was created.", ephemeral=True)
+            return
+
+        if self.action == "add_recipe":
+            table = next((t for t in data["tables"] if t["name"].casefold() == self.table_name.value.strip().casefold()), None)
+            if table is None:
+                await interaction.response.send_message("Table not found. Check its exact name or add it first.", ephemeral=True)
+                return
+            try:
+                ingredients = parse_ingredients(self.ingredients.value)
+            except ValueError as exc:
+                await interaction.response.send_message(str(exc), ephemeral=True)
+                return
+            name = self.recipe_name.value.strip()
+            table["recipes"].append({
+                "name": name, "ingredients": ingredients,
+                "tools": [x.strip() for x in self.tools.value.split(",") if x.strip()],
+                "review": "Added by server administrator", "source": "CraftingBot admin menu",
+            })
+            save_recipe_data(data)
+            refresh_recipe_data()
+            await interaction.response.send_message(f"Added **{name}** to **{table['name']}**. Duplicate ingredients are retained.", ephemeral=True)
+            return
+
+        if self.action == "edit_recipe":
+            table = next((t for t in data["tables"] if t["name"].casefold() == self.table_name.value.strip().casefold()), None)
+            recipe = next((r for r in table["recipes"] if r["name"].casefold() == self.recipe_name.value.strip().casefold()), None) if table else None
+            if recipe is None:
+                await interaction.response.send_message("Recipe not found in that table.", ephemeral=True)
+                return
+            if self.new_name.value.strip():
+                recipe["name"] = self.new_name.value.strip()
+            if self.ingredients.value.strip():
+                try:
+                    recipe["ingredients"] = parse_ingredients(self.ingredients.value)
+                except ValueError as exc:
+                    await interaction.response.send_message(str(exc), ephemeral=True)
+                    return
+            if self.tools.value.strip():
+                recipe["tools"] = [x.strip() for x in self.tools.value.split(",") if x.strip()]
+            save_recipe_data(data)
+            refresh_recipe_data()
+            await interaction.response.send_message(f"Updated **{recipe['name']}**. An automatic backup was created.", ephemeral=True)
+            return
+
+        if self.action == "remove_recipe":
+            table = next((t for t in data["tables"] if t["name"].casefold() == self.table_name.value.strip().casefold()), None)
+            index = next((i for i, r in enumerate(table["recipes"]) if r["name"].casefold() == self.recipe_name.value.strip().casefold()), None) if table else None
+            if index is None:
+                await interaction.response.send_message("Recipe not found in that table.", ephemeral=True)
+                return
+            removed = table["recipes"].pop(index)
+            save_recipe_data(data)
+            refresh_recipe_data()
+            await interaction.response.send_message(f"Removed **{removed['name']}**. An automatic backup was created.", ephemeral=True)
+            return
+
+        if self.action == "resolve_report":
+            try:
+                report_id = int(self.report_id.value.strip())
+            except ValueError:
+                await interaction.response.send_message("Enter a valid report number.", ephemeral=True)
+                return
+            reports = read_json(REPORTS_FILE, [])
+            report = next((item for item in reports if item.get("id") == report_id), None)
+            if report is None:
+                await interaction.response.send_message("Report number not found.", ephemeral=True)
+                return
+            report["status"] = "resolved"
+            report["resolved_at"] = discord.utils.utcnow().isoformat()
+            write_json(REPORTS_FILE, reports)
+            await interaction.response.send_message(f"Marked report #{report_id} as resolved.", ephemeral=True)
+
+
+class AdminMenuView(discord.ui.View):
+    def __init__(self, owner_id: int):
+        super().__init__(timeout=300)
+        self.owner_id = owner_id
+        options = [
+            discord.SelectOption(label="Add a crafting table", value="add_table", emoji="➕"),
+            discord.SelectOption(label="Add a recipe", value="add_recipe", emoji="🧪"),
+            discord.SelectOption(label="Edit a recipe", value="edit_recipe", emoji="✏️"),
+            discord.SelectOption(label="Remove a recipe", value="remove_recipe", emoji="🗑️"),
+            discord.SelectOption(label="Create a backup", value="backup", emoji="💾"),
+            discord.SelectOption(label="Export recipe data", value="export", emoji="📤"),
+            discord.SelectOption(label="View directory statistics", value="stats", emoji="📊"),
+            discord.SelectOption(label="Review open reports", value="reports", emoji="📨"),
+            discord.SelectOption(label="Resolve a report", value="resolve_report", emoji="✅"),
+            discord.SelectOption(label="Back to main menu", value="back", emoji="↩️"),
+        ]
+        select = discord.ui.Select(placeholder="Choose an admin action", options=options)
+        select.callback = self.choose_action
+        self.add_item(select)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("This private menu belongs to someone else.", ephemeral=True)
+            return False
+        if not is_guild_admin(interaction):
+            await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+            return False
+        return True
+
+    async def choose_action(self, interaction: discord.Interaction):
+        action = interaction.data["values"][0]
+        if action == "back":
+            await interaction.response.edit_message(embed=help_embed(), view=MainMenuView(self.owner_id, is_guild_admin(interaction)))
+        elif action in {"add_table", "add_recipe", "edit_recipe", "remove_recipe", "resolve_report"}:
+            await interaction.response.send_modal(AdminActionModal(action))
+        elif action == "backup":
+            path = create_backup()
+            await interaction.response.send_message(f"Backup created: **{path.name}**", ephemeral=True)
+        elif action == "export":
+            payload = json.dumps(load_recipe_data(), ensure_ascii=False, indent=2).encode("utf-8")
+            await interaction.response.send_message("Current recipe directory export:", file=discord.File(io.BytesIO(payload), filename="crafting-recipes-export.json"), ephemeral=True)
+        elif action == "stats":
+            data = load_recipe_data()
+            total = sum(len(t.get("recipes", [])) for t in data["tables"])
+            lines = "\n".join(f"• {t['name']}: {len(t.get('recipes', []))} recipes" for t in data["tables"])
+            embed = discord.Embed(title="📊 Crafting Directory Admin", description=lines or "No tables configured.", color=COLOR)
+            embed.add_field(name="Tables", value=str(len(data["tables"])))
+            embed.add_field(name="Recipes", value=str(total))
+            embed.add_field(name="Runtime admin data", value="Active" if OVERRIDE_FILE.exists() else "Not created yet")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif action == "reports":
+            reports = read_json(REPORTS_FILE, [])
+            open_reports = [item for item in reports if item.get("status") == "open"][-10:]
+            if not open_reports:
+                await interaction.response.send_message("There are no open recipe reports.", ephemeral=True)
+                return
+            embed = discord.Embed(title="📨 Open Crafting Reports", color=COLOR)
+            for report in reversed(open_reports):
+                embed.add_field(name=f"Report #{report['id']}", value=f"{report.get('details', '')[:700]}\nSubmitted: {report.get('created_at', 'unknown')}", inline=False)
+            embed.set_footer(text="Choose Resolve a report in the admin menu when an issue is addressed.")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class MainMenuView(discord.ui.View):
+    def __init__(self, owner_id: int, admin: bool):
+        super().__init__(timeout=300)
+        self.owner_id = owner_id
+        options = [
+            discord.SelectOption(label="Browse recipes", value="browse", description="Choose a table and recipe", emoji="📚"),
+            discord.SelectOption(label="Search recipes", value="search", description="Search names, ingredients, tools, or tables", emoji="🔎"),
+            discord.SelectOption(label="Help and instructions", value="help", description="How to use the crafting directory", emoji="📘"),
+            discord.SelectOption(label="Report a recipe issue", value="report", description="Privately report missing or incorrect data", emoji="📨"),
+        ]
+        if admin:
+            options.append(discord.SelectOption(label="Admin tools", value="admin", description="Manage recipes, backups, exports, and reports", emoji="⚙️"))
+        select = discord.ui.Select(placeholder="What would you like to do?", options=options)
+        select.callback = self.choose_action
+        self.add_item(select)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("This private menu belongs to someone else. Run /crafting to open your own.", ephemeral=True)
+            return False
+        return True
+
+    async def choose_action(self, interaction: discord.Interaction):
+        action = interaction.data["values"][0]
+        if action == "browse":
+            view = CraftingDirectoryView(self.owner_id, bot.recipe_data, on_table_selected=record_table_usage)
+            await interaction.response.edit_message(embed=view.current_embed(), view=view)
+        elif action == "search":
+            await interaction.response.send_modal(SearchModal())
+        elif action == "help":
+            await interaction.response.edit_message(embed=help_embed(), view=self)
+        elif action == "report":
+            await interaction.response.send_modal(ReportModal())
+        elif action == "admin":
+            if not is_guild_admin(interaction):
+                await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
+                return
+            embed = discord.Embed(title="⚙️ Crafting Admin Tools", description="Choose an action below. Changes automatically create a backup before saving.", color=COLOR)
+            await interaction.response.edit_message(embed=embed, view=AdminMenuView(self.owner_id))
+
+
+@bot.tree.command(name="crafting", description="Open the private FiveM crafting menu.")
+async def crafting_command(interaction: discord.Interaction):
     if bot.recipe_data is None:
         await interaction.response.send_message("The crafting directory is still loading. Try again shortly.", ephemeral=True)
         return
-    record_usage("search" if search else "open", search)
-    if search and search.strip():
-        await interaction.response.send_message(embed=search_embed(bot.recipe_data, search.strip()), ephemeral=True)
-        return
-    view = CraftingDirectoryView(interaction.user.id, bot.recipe_data, on_table_selected=record_table_usage)
-    await interaction.response.send_message(embed=view.current_embed(), view=view, ephemeral=True)
-
-
-@bot.tree.command(name="crafting-search", description="Search recipes, ingredients, or tools; optionally filter by table.")
-@app_commands.describe(query="Recipe, ingredient, tool, or table to search for.", table="Optional crafting table filter.")
-async def crafting_search_command(interaction: discord.Interaction, query: str, table: str | None = None):
-    record_usage("search", query)
-    await interaction.response.send_message(embed=search_embed(bot.recipe_data, query, table), ephemeral=True)
-
-
-@bot.tree.command(name="crafting-help", description="Show CraftingBot commands and tips.")
-async def crafting_help_command(interaction: discord.Interaction):
-    embed = discord.Embed(title="📘 CraftingBot Help", description="A private FiveM roleplay crafting reference.", color=discord.Color.from_rgb(57, 75, 111))
-    embed.add_field(name="/crafting", value="Open the interactive table and recipe directory.", inline=False)
-    embed.add_field(name="/crafting search", value="Search from the main command.", inline=False)
-    embed.add_field(name="/crafting-search", value="Search by recipe, ingredient, or tool, with an optional table filter.", inline=False)
-    embed.add_field(name="/crafting-stats", value="View anonymous usage totals.", inline=False)
-    embed.add_field(name="/crafting-report", value="Privately report missing or incorrect recipe information.", inline=False)
-    embed.add_field(name="/crafting-admin", value="Manage recipes, review reports, and create backups (Manage Server permission required).", inline=False)
-    embed.set_footer(text="Directory and search replies are private to you.")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-@bot.tree.command(name="crafting-stats", description="View CraftingBot usage statistics.")
-async def crafting_stats_command(interaction: discord.Interaction):
-    stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}})
-    top = sorted(stats.get("terms", {}).items(), key=lambda item: item[1], reverse=True)[:5]
-    top_text = "\n".join(f"• {term} — {count}" for term, count in top) or "No searches recorded yet."
-    popular_tables = sorted(stats.get("tables", {}).items(), key=lambda item: item[1], reverse=True)[:5]
-    table_text = "\n".join(f"• {name} — {count}" for name, count in popular_tables) or "No table selections recorded yet."
-    embed = discord.Embed(title="📊 CraftingBot Usage", color=discord.Color.from_rgb(57, 75, 111))
-    embed.add_field(name="Commands used", value=str(stats.get("commands", 0)))
-    embed.add_field(name="Searches", value=str(stats.get("searches", 0)))
-    embed.add_field(name="Popular searches", value=top_text, inline=False)
-    embed.add_field(name="Popular crafting tables", value=table_text, inline=False)
-    embed.set_footer(text="Aggregate totals only; search message content is not retained.")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-@bot.tree.command(name="crafting-report", description="Privately report a missing or incorrect crafting entry.")
-@app_commands.describe(details="Describe the table, recipe, or ingredient that needs attention.")
-async def crafting_report_command(interaction: discord.Interaction, details: str):
-    reports = read_json(REPORTS_FILE, [])
-    report_id = len(reports) + 1
-    reports.append({
-        "id": report_id,
-        "guild_id": interaction.guild_id,
-        "user_id": interaction.user.id,
-        "details": details[:1500],
-        "created_at": discord.utils.utcnow().isoformat(),
-        "status": "open",
-    })
-    write_json(REPORTS_FILE, reports)
-    logger.info("Recipe report #%s submitted in guild %s", report_id, interaction.guild_id)
-    await interaction.response.send_message(f"Your report **#{report_id}** has been saved for server administrators.", ephemeral=True)
-
-
-admin_group = app_commands.Group(name="crafting-admin", description="Manage the FiveM crafting directory.")
-
-
-@admin_group.command(name="add-table", description="Add a crafting table.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_add_table(interaction: discord.Interaction, table_name: str):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    name = table_name.strip()
-    data = load_recipe_data()
-    if not name or any(t["name"].casefold() == name.casefold() for t in data["tables"]):
-        await interaction.response.send_message("Enter a unique table name.", ephemeral=True)
-        return
-    data["tables"].append({"name": name, "recipes": []})
-    save_recipe_data(data)
-    refresh_recipe_data()
-    await interaction.response.send_message(f"Added **{name}**. An automatic backup was created.", ephemeral=True)
-
-
-@admin_group.command(name="add-recipe", description="Add a recipe to an existing table.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_add_recipe(interaction: discord.Interaction, table_name: str, recipe_name: str, ingredients: str, tools: str | None = None):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    try:
-        parsed = parse_ingredients(ingredients)
-    except ValueError as exc:
-        await interaction.response.send_message(str(exc), ephemeral=True)
-        return
-    data = load_recipe_data()
-    table = next((t for t in data["tables"] if t["name"].casefold() == table_name.casefold()), None)
-    if table is None:
-        await interaction.response.send_message("Table not found. Check its exact name or add it first.", ephemeral=True)
-        return
-    name = recipe_name.strip()
-    if not name:
-        await interaction.response.send_message("Recipe name cannot be empty.", ephemeral=True)
-        return
-    table["recipes"].append({"name": name, "ingredients": parsed, "tools": [x.strip() for x in (tools or "").split(",") if x.strip()], "review": "Added by server administrator", "source": "CraftingBot admin command"})
-    save_recipe_data(data)
-    refresh_recipe_data()
-    await interaction.response.send_message(f"Added **{name}** to **{table['name']}**. Duplicate ingredients are retained.", ephemeral=True)
-
-
-@admin_group.command(name="edit-recipe", description="Edit a recipe name, ingredients, or tools.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_edit_recipe(interaction: discord.Interaction, table_name: str, recipe_name: str, new_name: str | None = None, ingredients: str | None = None, tools: str | None = None):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    data = load_recipe_data()
-    table = next((t for t in data["tables"] if t["name"].casefold() == table_name.casefold()), None)
-    recipe = next((r for r in table["recipes"] if r["name"].casefold() == recipe_name.casefold()), None) if table else None
-    if recipe is None:
-        await interaction.response.send_message("Recipe not found in that table.", ephemeral=True)
-        return
-    if new_name is not None and new_name.strip():
-        recipe["name"] = new_name.strip()
-    if ingredients is not None:
-        try:
-            recipe["ingredients"] = parse_ingredients(ingredients)
-        except ValueError as exc:
-            await interaction.response.send_message(str(exc), ephemeral=True)
-            return
-    if tools is not None:
-        recipe["tools"] = [x.strip() for x in tools.split(",") if x.strip()]
-    save_recipe_data(data)
-    refresh_recipe_data()
-    await interaction.response.send_message(f"Updated **{recipe['name']}**. An automatic backup was created.", ephemeral=True)
-
-
-@admin_group.command(name="remove-recipe", description="Remove a recipe from a table.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_remove_recipe(interaction: discord.Interaction, table_name: str, recipe_name: str):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    data = load_recipe_data()
-    table = next((t for t in data["tables"] if t["name"].casefold() == table_name.casefold()), None)
-    index = next((i for i, r in enumerate(table["recipes"]) if r["name"].casefold() == recipe_name.casefold()), None) if table else None
-    if index is None:
-        await interaction.response.send_message("Recipe not found in that table.", ephemeral=True)
-        return
-    removed = table["recipes"].pop(index)
-    save_recipe_data(data)
-    refresh_recipe_data()
-    await interaction.response.send_message(f"Removed **{removed['name']}**. An automatic backup was created.", ephemeral=True)
-
-
-@admin_group.command(name="backup", description="Create a manual backup of the current recipe directory.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_backup(interaction: discord.Interaction):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    path = create_backup()
-    await interaction.response.send_message(f"Backup created: {path.name}", ephemeral=True)
-
-
-@admin_group.command(name="export", description="Download the current recipe directory as JSON.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_export(interaction: discord.Interaction):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    payload = json.dumps(load_recipe_data(), ensure_ascii=False, indent=2).encode("utf-8")
-    await interaction.response.send_message("Current recipe directory export:", file=discord.File(io.BytesIO(payload), filename="crafting-recipes-export.json"), ephemeral=True)
-
-
-@admin_group.command(name="stats", description="View table and recipe totals.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_stats(interaction: discord.Interaction):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    data = load_recipe_data()
-    count = sum(len(t.get("recipes", [])) for t in data["tables"])
-    lines = "\n".join(f"• {t['name']}: {len(t.get('recipes', []))} recipes" for t in data["tables"])
-    embed = discord.Embed(title="Crafting Directory Admin", description=lines, color=discord.Color.from_rgb(57, 75, 111))
-    embed.add_field(name="Tables", value=str(len(data["tables"])))
-    embed.add_field(name="Recipes", value=str(count))
-    embed.add_field(name="Runtime admin data", value="Active" if OVERRIDE_FILE.exists() else "Not created yet")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-@admin_group.command(name="reports", description="Review the latest open recipe reports.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_reports(interaction: discord.Interaction):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    reports = read_json(REPORTS_FILE, [])
-    open_reports = [report for report in reports if report.get("status") == "open"][-10:]
-    if not open_reports:
-        await interaction.response.send_message("There are no open recipe reports.", ephemeral=True)
-        return
-    embed = discord.Embed(title="Open Crafting Reports", color=discord.Color.from_rgb(57, 75, 111))
-    for report in reversed(open_reports):
-        embed.add_field(name=f"Report #{report['id']}", value=f"{report.get('details', '')[:700]}\\nSubmitted: {report.get('created_at', 'unknown')}", inline=False)
-    embed.set_footer(text="Use /crafting-admin resolve-report with a report ID when addressed.")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
-
-
-@admin_group.command(name="resolve-report", description="Mark a recipe report as resolved.")
-@app_commands.default_permissions(manage_guild=True)
-async def admin_resolve_report(interaction: discord.Interaction, report_id: int):
-    if not is_guild_admin(interaction):
-        await interaction.response.send_message("Manage Server permission is required.", ephemeral=True)
-        return
-    reports = read_json(REPORTS_FILE, [])
-    report = next((item for item in reports if item.get("id") == report_id), None)
-    if report is None:
-        await interaction.response.send_message("Report ID not found.", ephemeral=True)
-        return
-    report["status"] = "resolved"
-    report["resolved_at"] = discord.utils.utcnow().isoformat()
-    write_json(REPORTS_FILE, reports)
-    await interaction.response.send_message(f"Marked report #{report_id} as resolved.", ephemeral=True)
-
-
-bot.tree.add_command(admin_group)
+    record_usage("open")
+    await interaction.response.send_message(
+        embed=help_embed(),
+        view=MainMenuView(interaction.user.id, is_guild_admin(interaction)),
+        ephemeral=True,
+    )
 
 
 @bot.tree.error
