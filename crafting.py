@@ -277,6 +277,71 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
     return embed
 
 
+def build_ingredient_directory(data: dict[str, Any]):
+    """Group every ingredient by exact spelling, then table and recipe."""
+    ingredients: dict[str, list[dict[str, Any]]] = {}
+    for table in data.get("tables", []):
+        table_name = table.get("name", "Unnamed table")
+        for recipe in table.get("recipes", []):
+            for name, quantity in recipe.get("ingredients") or []:
+                ingredient_name = str(name).strip()
+                if ingredient_name:
+                    ingredients.setdefault(ingredient_name, []).append({
+                        "table": table_name,
+                        "recipe": recipe.get("name", "Unnamed recipe"),
+                        "quantity": quantity,
+                    })
+    return [
+        {"ingredient": name, "uses": ingredients[name]}
+        for name in sorted(ingredients, key=str.casefold)
+    ]
+
+
+def ingredient_directory_document(data: dict[str, Any]) -> str:
+    """Create a complete plain-text ingredient-to-table directory."""
+    directory = build_ingredient_directory(data)
+    lines = [
+        "FIVEM CRAFTING DIRECTORY — ALL INGREDIENTS",
+        f"Unique ingredient names: {len(directory)}",
+        "Grouped by exact ingredient spelling. Every recipe ingredient entry is listed.",
+        "Similar names and duplicate entries are intentionally kept separate.",
+        "",
+    ]
+    for entry in directory:
+        lines.append(entry["ingredient"])
+        for use in entry["uses"]:
+            lines.append(f"  • {use['table']} | {use['recipe']} | requires ×{use['quantity']}")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def ingredient_directory_embed(data: dict[str, Any], page: int = 0, page_size: int = 8) -> discord.Embed:
+    directory = build_ingredient_directory(data)
+    page_count = max(1, (len(directory) + page_size - 1) // page_size)
+    page = max(0, min(page, page_count - 1))
+    start = page * page_size
+    embed = discord.Embed(
+        title="📋 All Crafting Ingredients",
+        description=(
+            f"**{len(directory)} exact ingredient names** across "
+            f"**{len(data.get('tables', []))} crafting tables.**\n"
+            "Each entry shows the table, recipe, and required quantity."
+        ),
+        color=discord.Color.from_rgb(57, 75, 111),
+    )
+    for entry in directory[start:start + page_size]:
+        lines = [
+            f"• **{use['table']}** — {use['recipe']} ×{use['quantity']}"
+            for use in entry["uses"]
+        ]
+        value = "\n".join(lines)
+        if len(value) > 1024:
+            value = value[:1000] + "\n… (download the full document)"
+        embed.add_field(name=entry["ingredient"][:256], value=value or "No recipe uses recorded.", inline=False)
+    embed.set_footer(text=f"Page {page + 1}/{page_count} • Exact spellings kept separate • Download for the complete list")
+    return embed
+
+
 def search_embed(data: dict[str, Any], query: str, table_filter: str | None = None) -> discord.Embed:
     matches = find_matches(data, query, table_filter)
     description = f"Found **{len(matches)}** matching recipe(s)."
