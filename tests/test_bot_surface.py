@@ -39,5 +39,5 @@ def test_admin_group_is_registered_and_permission_gated():
     assert 'Group(name="crafting-admin"' in source
     assert "default_permissions(manage_guild=True)" in source
     assert "is_guild_admin(interaction)" in source
-    for name in ("add-table", "add-recipe", "edit-recipe", "remove-recipe", "backup", "export", "stats"):
+    for name in ("add-table", "add-recipe", "edit-recipe", "remove-recipe", "backup", "export", "stats", "reports", "resolve-report"):
         assert f'name="{name}"' in source
