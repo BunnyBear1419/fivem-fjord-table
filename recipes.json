@@ -4,17 +4,507 @@
     {
       "name": "Glovebox Table",
       "recipes": [
-        {"name":"Tranq (Xylazine)","ingredients":[["Xylazine HCl",1],["Fentanyl",2],["Mannitol",4]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"NBOMe Solution","ingredients":[["NBOMe Freebase",1],["Isopropyl Alcohol",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"LSD liquid","ingredients":[["Lysergic Acid",1],["Diethylamine",1],["Acetone",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"Fentanyl","ingredients":[["4-ANPP",1],["Propionyl Chloride",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"Fentanyl bag","ingredients":[["Fentanyl",50],["Plastic bag",5]],"tools":["Scale","Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"1P-LSD Solution","ingredients":[["Lysergic Acid",1],["Diethylamine",1],["Propionic Anhydride",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"Carfentanil Base","ingredients":[["Crude Carfentanil",1],["Acetone",1],["Filter Paper",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"Carfentanil","ingredients":[["Carfentanil Base",1],["Mannitol",10],["Plastic bag",2]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"Isotonitazene Powder","ingredients":[["Crude Isotonitazene",1],["Isopropyl Alcohol",1],["Filter Paper",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"Isotonitazene","ingredients":[["Isotonitazene Powder",1],["Mannitol",8],["Plastic bag",2]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"},
-        {"name":"Xylazine HCl","ingredients":[["Crude Xylazine",1],["Acetone",1],["Filter Paper",1]],"tools":["Gas Mask","Nitrile Gloves"],"review":"Transcribed from supplied screenshot","source":"User screenshot"}
+        {
+          "name": "Tranq (Xylazine)",
+          "ingredients": [
+            [
+              "Xylazine HCl",
+              1
+            ],
+            [
+              "Fentanyl",
+              2
+            ],
+            [
+              "Mannitol",
+              4
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "NBOMe Solution",
+          "ingredients": [
+            [
+              "NBOMe Freebase",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "LSD liquid",
+          "ingredients": [
+            [
+              "Lysergic Acid",
+              1
+            ],
+            [
+              "Diethylamine",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "Fentanyl",
+          "ingredients": [
+            [
+              "4-ANPP",
+              1
+            ],
+            [
+              "Propionyl Chloride",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "Fentanyl bag",
+          "ingredients": [
+            [
+              "Fentanyl",
+              50
+            ],
+            [
+              "Plastic bag",
+              5
+            ]
+          ],
+          "tools": [
+            "Scale",
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "1P-LSD Solution",
+          "ingredients": [
+            [
+              "Lysergic Acid",
+              1
+            ],
+            [
+              "Diethylamine",
+              1
+            ],
+            [
+              "Propionic Anhydride",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "Carfentanil Base",
+          "ingredients": [
+            [
+              "Crude Carfentanil",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "Carfentanil",
+          "ingredients": [
+            [
+              "Carfentanil Base",
+              1
+            ],
+            [
+              "Mannitol",
+              10
+            ],
+            [
+              "Plastic bag",
+              2
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "Isotonitazene Powder",
+          "ingredients": [
+            [
+              "Crude Isotonitazene",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "Isotonitazene",
+          "ingredients": [
+            [
+              "Isotonitazene Powder",
+              1
+            ],
+            [
+              "Mannitol",
+              8
+            ],
+            [
+              "Plastic bag",
+              2
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        },
+        {
+          "name": "Xylazine HCl",
+          "ingredients": [
+            [
+              "Crude Xylazine",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask",
+            "Nitrile Gloves"
+          ],
+          "review": "Transcribed from supplied screenshot",
+          "source": "User screenshot"
+        }
+      ]
+    },
+    {
+      "name": "Lab Freezer",
+      "recipes": [
+        {
+          "name": "DMT",
+          "ingredients": [
+            [
+              "DMT Solution",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "5-MeO-DMT",
+          "ingredients": [
+            [
+              "5-MeO-DMT Solution",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Hashish",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              5
+            ],
+            [
+              "Distilled Water",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Meth Table",
+      "recipes": [
+        {
+          "name": "Meth",
+          "ingredients": [
+            [
+              "Meth tray",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Amyl Nitrite",
+          "ingredients": [
+            [
+              "Amyl Alcohol",
+              1
+            ],
+            [
+              "Sodium Nitrite",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "BZP HCl",
+          "ingredients": [
+            [
+              "Crude BZP",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Tianeptine Sodium",
+          "ingredients": [
+            [
+              "Tianeptine Ester",
+              1
+            ],
+            [
+              "Sodium Hydroxide (Lye)",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Weed Table",
+      "recipes": [
+        {
+          "name": "Weed cookie",
+          "ingredients": [
+            [
+              "Cookie dough",
+              1
+            ],
+            [
+              "Chocolate chips",
+              1
+            ],
+            [
+              "Clean weed bud",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Spice (K2)",
+          "ingredients": [
+            [
+              "Spice Spray",
+              1
+            ],
+            [
+              "Damiana Leaves",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Betel Quid",
+          "ingredients": [
+            [
+              "Betel Leaves",
+              2
+            ],
+            [
+              "Cured Areca Nuts",
+              1
+            ],
+            [
+              "Slaked Lime",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Nyaope",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              2
+            ],
+            [
+              "Heroin",
+              1
+            ],
+            [
+              "Weed papers",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Moonrocks",
+          "ingredients": [
+            [
+              "Clean weed bud",
+              3
+            ],
+            [
+              "THC Wax",
+              1
+            ],
+            [
+              "Kief",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Magic Truffles",
+          "ingredients": [
+            [
+              "Truffle Grow Jar",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Changa",
+          "ingredients": [
+            [
+              "DMT",
+              1
+            ],
+            [
+              "Shredded Caapi Vine",
+              2
+            ],
+            [
+              "Damiana Leaves",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
       ]
     }
   ],
