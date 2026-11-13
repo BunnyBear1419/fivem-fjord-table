@@ -24,5 +24,20 @@ def _commands(path):
     return found
 
 
-def test_public_command_surface_is_private_crafting_directory_only():
-    assert _commands("bot.py") == ["crafting"]
+def test_public_command_surface_includes_help_search_stats_and_reports():
+    assert _commands("bot.py") == [
+        "crafting",
+        "crafting-search",
+        "crafting-help",
+        "crafting-stats",
+        "crafting-report",
+    ]
+
+
+def test_admin_group_is_registered_and_permission_gated():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'Group(name="crafting-admin"' in source
+    assert "default_permissions(manage_guild=True)" in source
+    assert "is_guild_admin(interaction)" in source
+    for name in ("add-table", "add-recipe", "edit-recipe", "remove-recipe", "backup", "export", "stats"):
+        assert f'name="{name}"' in source
