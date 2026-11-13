@@ -273,7 +273,7 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
     if len(matches) > 25:
         embed.set_footer(text=f"Showing 25 of {len(matches)} tables that use this ingredient.")
     else:
-        embed.set_footer(text="Exact ingredient match only • duplicate ingredient entries are preserved • Coca Leaf and Coca Leaves are separate")
+        embed.set_footer(text="Exact ingredient match only • duplicate ingredient entries are preserved • Coca Leaf and Coca Leaves are treated separately")
     return embed
 
 
