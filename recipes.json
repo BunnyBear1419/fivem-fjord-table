@@ -3638,6 +3638,389 @@
           "source": "User supplied text"
         }
       ]
+    },
+    {
+      "name": "Chemistry Table #1",
+      "recipes": [
+        {
+          "name": "Crack",
+          "ingredients": [
+            [
+              "Raw Cocaine",
+              2
+            ],
+            [
+              "Baking soda",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Opium",
+          "ingredients": [
+            [
+              "Poppy plant",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ecstasy pill",
+          "ingredients": [
+            [
+              "Ecstasy crystals",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Mushroom powder",
+          "ingredients": [
+            [
+              "Mushrooms",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Mushroom chocolate",
+          "ingredients": [
+            [
+              "Mushroom powder",
+              1
+            ],
+            [
+              "Chocolate chips",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Methadone",
+          "ingredients": [
+            [
+              "Methadone HCl",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ],
+            [
+              "Glass Vial",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "PCP",
+          "ingredients": [
+            [
+              "Liquid PCP",
+              1
+            ],
+            [
+              "Cigarette",
+              4
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Chemistry Table #2",
+      "recipes": [
+        {
+          "name": "2C-B Powder",
+          "ingredients": [
+            [
+              "2C-H Powder",
+              1
+            ],
+            [
+              "Bromine",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "2-Bromo-4'-methylpropiophenone",
+          "ingredients": [
+            [
+              "4'-Methylpropiophenone",
+              1
+            ],
+            [
+              "Bromine",
+              1
+            ]
+          ],
+          "tools": [
+            "Gas Mask"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Crude Fenethylline",
+          "ingredients": [
+            [
+              "Amphetamine Powder",
+              1
+            ],
+            [
+              "Theophylline",
+              1
+            ],
+            [
+              "Isopropyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Benzhydrylthioacetic Acid",
+          "ingredients": [
+            [
+              "Benzhydrol",
+              1
+            ],
+            [
+              "Thioglycolic Acid",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "2C-I Powder",
+          "ingredients": [
+            [
+              "2C-H Powder",
+              1
+            ],
+            [
+              "Iodine Crystals",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "LSA",
+          "ingredients": [
+            [
+              "LSA Solution",
+              1
+            ],
+            [
+              "Glass Vial",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "6-APB Succinate",
+          "ingredients": [
+            [
+              "6-APB Freebase",
+              1
+            ],
+            [
+              "Succinic Acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
+    },
+    {
+      "name": "Chemistry Table #3",
+      "recipes": [
+        {
+          "name": "Benzhydrylthioacetic Acid",
+          "ingredients": [
+            [
+              "Benzhydrol",
+              1
+            ],
+            [
+              "Thioglycolic Acid",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "2C-I Powder",
+          "ingredients": [
+            [
+              "2C-H Powder",
+              1
+            ],
+            [
+              "Iodine Crystals",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "LSA",
+          "ingredients": [
+            [
+              "LSA Solution",
+              1
+            ],
+            [
+              "Glass Vial",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "6-APB Succinate",
+          "ingredients": [
+            [
+              "6-APB Freebase",
+              1
+            ],
+            [
+              "Succinic Acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "MXE Freebase",
+          "ingredients": [
+            [
+              "MXE Imine",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Buprenorphine HCl",
+          "ingredients": [
+            [
+              "Buprenorphine Intermediate",
+              1
+            ],
+            [
+              "Hydrochloric acid",
+              1
+            ],
+            [
+              "Acetone",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Filtered Steroid Oil",
+          "ingredients": [
+            [
+              "Steroid Solution",
+              1
+            ],
+            [
+              "Grapeseed Oil",
+              2
+            ],
+            [
+              "Filter Paper",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        },
+        {
+          "name": "Ketamine",
+          "ingredients": [
+            [
+              "Ketamine Imine",
+              1
+            ],
+            [
+              "Naphtha",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text"
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
