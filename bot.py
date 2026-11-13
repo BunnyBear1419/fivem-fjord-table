@@ -463,6 +463,12 @@ class MainMenuView(discord.ui.View):
             await interaction.response.send_modal(SearchModal())
         elif action == "ingredient_lookup":
             await interaction.response.send_modal(IngredientLookupModal())
+        elif action == "all_ingredients":
+            view = IngredientDirectoryView(self.owner_id, bot.recipe_data)
+            await interaction.response.edit_message(
+                embed=ingredient_directory_embed(bot.recipe_data, 0, view.page_size),
+                view=view,
+            )
         elif action == "help":
             await interaction.response.edit_message(embed=help_embed(), view=self)
         elif action == "report":
