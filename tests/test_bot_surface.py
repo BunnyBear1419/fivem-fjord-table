@@ -24,20 +24,20 @@ def _commands(path):
     return found
 
 
-def test_public_command_surface_includes_help_search_stats_and_reports():
-    assert _commands("bot.py") == [
-        "crafting",
-        "crafting-search",
-        "crafting-help",
-        "crafting-stats",
-        "crafting-report",
-    ]
+def test_only_one_public_slash_command_is_registered():
+    assert _commands("bot.py") == ["crafting"]
 
 
-def test_admin_group_is_registered_and_permission_gated():
+def test_all_features_are_in_private_dropdown_menus():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert 'Group(name="crafting-admin"' in source
-    assert "default_permissions(manage_guild=True)" in source
-    assert "is_guild_admin(interaction)" in source
-    for name in ("add-table", "add-recipe", "edit-recipe", "remove-recipe", "backup", "export", "stats", "reports", "resolve-report"):
-        assert f'name="{name}"' in source
+    for feature in ("Browse recipes", "Search recipes", "Help and instructions", "Report a recipe issue", "Admin tools"):
+        assert feature in source
+    for action in ("add_table", "add_recipe", "edit_recipe", "remove_recipe", "backup", "export", "stats", "reports", "resolve_report"):
+        assert f'"{action}"' in source
+    assert "Manage Server permission is required." in source
+
+
+def test_legacy_guild_commands_are_cleared_on_ready():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "self.tree.clear_commands(guild=guild)" in source
+    assert "await self.tree.sync(guild=guild)" in source
