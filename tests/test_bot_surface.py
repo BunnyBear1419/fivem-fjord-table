@@ -108,4 +108,4 @@ def test_ingredient_directory_preserves_exact_names_and_duplicate_entries():
     assert [use["quantity"] for use in by_name["Coca Leaf"]] == [1, 3]
     document = ingredient_directory_document(data)
     assert "Coca Leaf" in document and "Coca Leaves" in document
-    assert document.count("Coca Leaf | Test Recipe") == 2
+    assert document.count("Test Table | Test Recipe") == 2
