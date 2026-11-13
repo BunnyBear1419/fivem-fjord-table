@@ -75,3 +75,12 @@ def test_duplicate_ingredients_inside_a_recipe_are_not_normalized_away():
     assert "def remove_exact_duplicate_recipes(" in source
     assert "Duplicate ingredients inside a recipe are deliberately preserved." in source
     assert "table[\"recipes\"] = unique_recipes" in source
+
+
+
+def test_ingredient_lookup_shows_where_item_is_made_and_used():
+    source = Path("crafting.py").read_text(encoding="utf-8")
+    assert "def find_exact_recipe_outputs(" in source
+    assert "Where {ingredient_name.strip()[:80]} is made" in source
+    assert "Used at: {group['table']}" in source
+    assert "Requires: {ingredients}" in source
