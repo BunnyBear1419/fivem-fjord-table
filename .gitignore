@@ -1,6 +1,5 @@
-token.txt
-asphalt_bot_database.json
-asphalt_bot_config.json
-asphalt_scraper_cache.json
 __pycache__/
-*.pyc
+*.py[cod]
+.pytest_cache/
+.env
+.env.*
