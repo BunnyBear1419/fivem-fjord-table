@@ -64,39 +64,63 @@ def table_comparison_embed(data: dict[str, Any]) -> discord.Embed:
         description=f"**{len(tables)} tables** · **{len(counts)} distinct ingredient names** · **{len(shared)} shared across multiple tables**\nNames are compared case-insensitively; different words/plurals remain separate.",
         color=discord.Color.from_rgb(57, 75, 111),
     )
-    for table_name, names in tables.items():
+    table_items = list(tables.items())
+    for table_name, names in table_items[:6]:
         exclusive = sorted((display_names[k] for k in names if counts[k] == 1), key=str.casefold)
         shared_here = sorted((display_names[k] for k in names if counts[k] > 1), key=str.casefold)
         lines = [
             f"**Ingredients:** {len(names)} · **Shared:** {len(shared_here)} · **Exclusive:** {len(exclusive)}",
-            "Exclusive: " + (", ".join(exclusive[:18]) if exclusive else "None"),
+            "Exclusive: " + (", ".join(exclusive[:8]) if exclusive else "None"),
         ]
-        if len(exclusive) > 18:
-            lines.append(f"…and {len(exclusive) - 18} more exclusive ingredients")
-        embed.add_field(name=table_name[:256], value="\n".join(lines)[:1024], inline=False)
+        if len(exclusive) > 8:
+            lines.append(f"…and {len(exclusive) - 8} more exclusive ingredients")
+        embed.add_field(name=table_name[:256], value="\n".join(lines)[:500], inline=False)
     if shared:
-        embed.add_field(name="Most shared ingredients", value=", ".join(shared[:40])[:1024], inline=False)
+        embed.add_field(name="Most shared ingredients", value=", ".join(shared[:16])[:600], inline=False)
+    if len(table_items) > 6:
+        embed.set_footer(text=f"Showing 6 of {len(table_items)} tables. Export the directory for complete details.")
     return embed
 
 
 def validate_recipe_data(data: dict[str, Any]):
     """Return cautious findings; never auto-correct or merge user-authored data."""
     findings = []
+    if not isinstance(data, dict) or not isinstance(data.get("tables"), list):
+        return [{"severity": "error", "message": "Recipe data must be an object containing a tables list."}]
     ingredient_locations = defaultdict(list)
-    for table in data.get("tables", []):
-        table_name = str(table.get("name", "")).strip()
+    seen_table_names = set()
+    for table_index, table in enumerate(data["tables"], start=1):
+        if not isinstance(table, dict):
+            findings.append({"severity": "error", "message": f"Table entry {table_index} is not an object."})
+            continue
+        raw_table_name = table.get("name", "")
+        table_name = raw_table_name.strip() if isinstance(raw_table_name, str) else ""
         if not table_name:
-            findings.append({"severity": "error", "message": "A crafting table has a blank name."})
+            findings.append({"severity": "error", "message": f"Table entry {table_index} needs a non-empty string name."})
+        elif table_name.casefold() in seen_table_names:
+            findings.append({"severity": "warning", "message": f"More than one crafting table is named '{table_name}'."})
+        seen_table_names.add(table_name.casefold())
+        recipes = table.get("recipes", [])
+        if not isinstance(recipes, list):
+            findings.append({"severity": "error", "message": f"{table_name or 'Unnamed table'}: recipes must be a list."})
+            continue
         seen_recipe_names = set()
-        for recipe in table.get("recipes", []):
-            recipe_name = str(recipe.get("name", "")).strip()
+        for recipe_index, recipe in enumerate(recipes, start=1):
+            if not isinstance(recipe, dict):
+                findings.append({"severity": "error", "message": f"{table_name}: recipe entry {recipe_index} is not an object."})
+                continue
+            raw_recipe_name = recipe.get("name", "")
+            recipe_name = raw_recipe_name.strip() if isinstance(raw_recipe_name, str) else ""
             if not recipe_name:
-                findings.append({"severity": "error", "message": f"{table_name}: a recipe has a blank name."})
+                findings.append({"severity": "error", "message": f"{table_name}: recipe entry {recipe_index} needs a non-empty string name."})
             folded_recipe = recipe_name.casefold()
             if folded_recipe and folded_recipe in seen_recipe_names:
                 findings.append({"severity": "warning", "message": f"{table_name}: more than one recipe is named '{recipe_name}'."})
             seen_recipe_names.add(folded_recipe)
-            ingredients = recipe.get("ingredients") or []
+            ingredients = recipe.get("ingredients", [])
+            if not isinstance(ingredients, list):
+                findings.append({"severity": "error", "message": f"{table_name} / {recipe_name or 'Unnamed recipe'}: ingredients must be a list."})
+                continue
             if not ingredients:
                 findings.append({"severity": "warning", "message": f"{table_name} / {recipe_name or 'Unnamed recipe'}: no ingredients are recorded."})
             for item in ingredients:
@@ -104,29 +128,36 @@ def validate_recipe_data(data: dict[str, Any]):
                     findings.append({"severity": "error", "message": f"{table_name} / {recipe_name}: malformed ingredient entry {item!r}."})
                     continue
                 name, quantity = item
-                label = str(name).strip()
+                label = name.strip() if isinstance(name, str) else ""
                 if not label:
-                    findings.append({"severity": "error", "message": f"{table_name} / {recipe_name}: blank ingredient name."})
+                    findings.append({"severity": "error", "message": f"{table_name} / {recipe_name}: ingredient name must be a non-empty string."})
                     continue
-                try:
-                    valid_quantity = int(quantity) >= 1
-                except (TypeError, ValueError):
-                    valid_quantity = False
+                valid_quantity = (
+                    isinstance(quantity, int) and not isinstance(quantity, bool) and quantity >= 1
+                ) or (
+                    isinstance(quantity, str) and quantity.isdigit() and int(quantity) >= 1
+                )
                 if not valid_quantity:
                     findings.append({"severity": "error", "message": f"{table_name} / {recipe_name}: '{label}' has an invalid quantity ({quantity!r})."})
                 ingredient_locations[label.casefold()].append((label, table_name, recipe_name))
-    # Similar names are only flagged for human review; the bot never merges them.
     distinct = {}
     for entries in ingredient_locations.values():
         if entries:
             distinct.setdefault(entries[0][0], None)
     names = list(distinct)
+    comparisons = 0
     for index, left in enumerate(names):
         for right in names[index + 1:]:
+            comparisons += 1
+            if comparisons > 50000:
+                findings.append({"severity": "warning", "message": "Spelling-variation scan was capped at 50,000 comparisons for performance; other validation checks completed."})
+                break
             if left.casefold() == right.casefold():
                 continue
             if SequenceMatcher(None, left.casefold(), right.casefold()).ratio() >= 0.75:
                 findings.append({"severity": "warning", "message": f"Possible spelling variation: '{left}' vs '{right}'. Review manually; neither name was changed."})
+        if comparisons > 50000:
+            break
     if not findings:
         findings.append({"severity": "success", "message": "No obvious recipe-data issues found."})
     return findings
@@ -139,11 +170,11 @@ def validation_embed(findings: list[dict[str, str]]) -> discord.Embed:
         description=f"**{counts['error']} error(s)** · **{counts['warning']} warning(s)** · **{counts['success']} clean result(s)**\nThis checker never changes recipe data.",
         color=discord.Color.orange() if counts["error"] or counts["warning"] else discord.Color.green(),
     )
-    for item in findings[:20]:
+    for item in findings[:10]:
         icon = {"error": "🔴", "warning": "🟠", "success": "🟢"}.get(item["severity"], "ℹ️")
-        embed.add_field(name=f"{icon} {item['severity'].title()}", value=item["message"][:1024], inline=False)
-    if len(findings) > 20:
-        embed.set_footer(text=f"Showing 20 of {len(findings)} findings.")
+        embed.add_field(name=f"{icon} {item['severity'].title()}", value=item["message"][:400], inline=False)
+    if len(findings) > 10:
+        embed.set_footer(text=f"Showing 10 of {len(findings)} findings. Review the full export for additional flagged entries.")
     return embed
 
 
@@ -284,6 +315,8 @@ def inventory_plan(data: dict[str, Any], table_name: str, recipe_name: str, targ
 
 
 def multi_recipe_plan(data: dict[str, Any], requests: list[tuple[str, str, int]]):
+    if not requests:
+        raise ValueError("Enter at least one table, recipe, and batch-count line.")
     from collections import defaultdict
     totals = defaultdict(int)
     tools = set()
@@ -330,23 +363,71 @@ def recipe_comparison(data: dict[str, Any], table_a: str, recipe_a: str, table_b
     return {"a": a, "b": b, "shared": common, "only_a": only_a, "only_b": only_b}
 
 
-def merge_recipe_import(current: dict[str, Any], incoming: dict[str, Any], mode: str = "skip"):
-    """Merge imported tables/recipes. Name conflicts are skipped or replaced only by explicit choice."""
+def validate_import_structure(incoming: dict[str, Any]):
+    """Reject malformed JSON structures before merge; preserve all valid ingredient rows."""
     if not isinstance(incoming, dict) or not isinstance(incoming.get("tables"), list):
         raise ValueError("Import must be a JSON object containing a tables list.")
-    ensure_stable_ids(current)
-    ensure_stable_ids(incoming)
-    result = __import__("copy").deepcopy(current)
+    for ti, table in enumerate(incoming["tables"], start=1):
+        if not isinstance(table, dict):
+            raise ValueError(f"Table entry {ti} must be an object.")
+        name = table.get("name")
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError(f"Table entry {ti} needs a non-empty string name.")
+        recipes = table.get("recipes", [])
+        if not isinstance(recipes, list):
+            raise ValueError(f"Table '{name}' recipes must be a list.")
+        for ri, recipe in enumerate(recipes, start=1):
+            if not isinstance(recipe, dict):
+                raise ValueError(f"Recipe {ri} in '{name}' must be an object.")
+            recipe_name = recipe.get("name")
+            if not isinstance(recipe_name, str) or not recipe_name.strip():
+                raise ValueError(f"Recipe {ri} in '{name}' needs a non-empty string name.")
+            ingredients = recipe.get("ingredients", [])
+            if not isinstance(ingredients, list):
+                raise ValueError(f"{name} / {recipe_name}: ingredients must be a list.")
+            for ii, ingredient in enumerate(ingredients, start=1):
+                if not isinstance(ingredient, (list, tuple)) or len(ingredient) != 2:
+                    raise ValueError(f"{name} / {recipe_name}: ingredient row {ii} must be [name, quantity].")
+                item_name, quantity = ingredient
+                if not isinstance(item_name, str) or not item_name.strip():
+                    raise ValueError(f"{name} / {recipe_name}: ingredient row {ii} has a blank name.")
+                if isinstance(quantity, bool):
+                    raise ValueError(f"{name} / {recipe_name}: ingredient row {ii} quantity must be a positive integer.")
+                try:
+                    parsed_quantity = int(quantity)
+                except (TypeError, ValueError, OverflowError) as exc:
+                    raise ValueError(f"{name} / {recipe_name}: ingredient row {ii} quantity must be a positive integer.") from exc
+                if parsed_quantity < 1 or str(parsed_quantity) != str(quantity).strip():
+                    raise ValueError(f"{name} / {recipe_name}: ingredient row {ii} quantity must be a positive integer.")
+            tools = recipe.get("tools", [])
+            if not isinstance(tools, list) or any(not isinstance(tool, str) for tool in tools):
+                raise ValueError(f"{name} / {recipe_name}: tools must be a list of strings.")
+    return True
+
+
+def merge_recipe_import(current: dict[str, Any], incoming: dict[str, Any], mode: str = "skip"):
+    """Merge validated recipe data; name conflicts are skipped or replaced only by explicit choice."""
+    if mode not in {"skip", "replace"}:
+        raise ValueError("Conflict mode must be skip or replace.")
+    validate_import_structure(incoming)
+    validate_import_structure(current)
+    import copy
+    incoming_copy = copy.deepcopy(incoming)
+    result = copy.deepcopy(current)
+    ensure_stable_ids(result)
+    ensure_stable_ids(incoming_copy)
     added_tables = added_recipes = skipped = replaced = 0
-    for new_table in incoming["tables"]:
-        target = next((t for t in result["tables"] if t["name"].casefold().strip() == str(new_table.get("name","")).casefold().strip()), None)
+    for new_table in incoming_copy["tables"]:
+        table_key = new_table["name"].casefold().strip()
+        target = next((t for t in result["tables"] if t["name"].casefold().strip() == table_key), None)
         if target is None:
             result["tables"].append(new_table)
             added_tables += 1
             added_recipes += len(new_table.get("recipes", []))
             continue
         for new_recipe in new_table.get("recipes", []):
-            existing = next((r for r in target.get("recipes", []) if r["name"].casefold().strip() == str(new_recipe.get("name","")).casefold().strip()), None)
+            recipe_key = new_recipe["name"].casefold().strip()
+            existing = next((r for r in target.get("recipes", []) if r["name"].casefold().strip() == recipe_key), None)
             if existing is None:
                 target.setdefault("recipes", []).append(new_recipe)
                 added_recipes += 1
@@ -370,7 +451,7 @@ def analytics_embed(data: dict[str, Any], stats: dict[str, Any]):
     embed.add_field(name="Menu opens", value=str(stats.get("commands", 0)))
     embed.add_field(name="Searches", value=str(stats.get("searches", 0)))
     top_tables = sorted(stats.get("tables", {}).items(), key=lambda x: x[1], reverse=True)[:8]
-    embed.add_field(name="Most browsed tables", value="\\n".join(f"• {name}: {count}" for name, count in top_tables) or "No usage recorded.", inline=False)
+    embed.add_field(name="Most browsed tables", value="\n".join(f"• {name}: {count}" for name, count in top_tables) or "No usage recorded.", inline=False)
     top_terms = sorted(stats.get("terms", {}).items(), key=lambda x: x[1], reverse=True)[:8]
-    embed.add_field(name="Popular searches", value="\\n".join(f"• {name}: {count}" for name, count in top_terms) or "No searches recorded.", inline=False)
+    embed.add_field(name="Popular searches", value="\n".join(f"• {name}: {count}" for name, count in top_terms) or "No searches recorded.", inline=False)
     return embed

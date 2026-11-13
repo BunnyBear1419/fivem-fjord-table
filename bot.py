@@ -1,10 +1,12 @@
+import hashlib
 import io
 import json
 import logging
 import os
 import threading
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 # Load deployment-provided .env values before reading the Discord token.
 env_file = Path(__file__).with_name(".env")
@@ -29,6 +31,7 @@ from crafting import (
     parse_ingredients, save_recipe_data, search_embed, ingredient_usage_embed,
     build_ingredient_directory, ingredient_directory_embed, ingredient_directory_document,
 )
+from storage import atomic_write_json, read_json as storage_read_json, file_lock
 from enhancements import (
     calculate_recipe_ingredients, recipe_shopping_embed, table_comparison_embed,
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
@@ -49,60 +52,63 @@ COLOR = discord.Color.from_rgb(57, 75, 111)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    handlers=[logging.StreamHandler(), logging.FileHandler(LOG_FILE, encoding="utf-8")],
+    handlers=[logging.StreamHandler(), RotatingFileHandler(LOG_FILE, maxBytes=1_000_000, backupCount=3, encoding="utf-8")],
 )
 logger = logging.getLogger("crafting-bot")
 
 
 def read_json(path: Path, default):
-    try:
-        with path.open("r", encoding="utf-8") as handle:
-            return json.load(handle)
-    except FileNotFoundError:
-        return default
-    except (json.JSONDecodeError, OSError):
-        logger.exception("Could not read %s; using defaults", path.name)
-        return default
+    return storage_read_json(path, default)
 
 
 def write_json(path: Path, data):
-    temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    temporary.replace(path)
+    return atomic_write_json(path, data)
+
+
+def recipe_fingerprint(data: dict) -> str:
+    payload = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 def record_usage(kind: str, term: str | None = None):
-    stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}})
-    stats["commands"] = int(stats.get("commands", 0)) + 1
-    if kind == "search":
-        stats["searches"] = int(stats.get("searches", 0)) + 1
-        if term:
-            terms = stats.setdefault("terms", {})
-            terms[term[:60]] = int(terms.get(term[:60], 0)) + 1
-    write_json(STATS_FILE, stats)
+    with file_lock():
+        stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}})
+        stats["commands"] = int(stats.get("commands", 0)) + 1
+        if kind == "search":
+            stats["searches"] = int(stats.get("searches", 0)) + 1
+            if term:
+                terms = stats.setdefault("terms", {})
+                terms[term[:60]] = int(terms.get(term[:60], 0)) + 1
+                if len(terms) > 100:
+                    stats["terms"] = dict(sorted(terms.items(), key=lambda item: item[1], reverse=True)[:100])
+        write_json(STATS_FILE, stats)
 
 
 def record_table_usage(table_name: str):
-    stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}})
-    tables = stats.setdefault("tables", {})
-    tables[table_name] = int(tables.get(table_name, 0)) + 1
-    write_json(STATS_FILE, stats)
+    with file_lock():
+        stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}})
+        tables = stats.setdefault("tables", {})
+        tables[table_name[:100]] = int(tables.get(table_name[:100], 0)) + 1
+        if len(tables) > 50:
+            stats["tables"] = dict(sorted(tables.items(), key=lambda item: item[1], reverse=True)[:50])
+        write_json(STATS_FILE, stats)
 
 
 def record_recipe_change(before_data: dict, action: str, actor_id: int, summary: str):
-    """Keep a reversible snapshot before each administrator data change."""
-    history = read_json(HISTORY_FILE, [])
-    entry_id = max((int(item.get("id", 0)) for item in history), default=0) + 1
-    history.append({
-        "id": entry_id,
-        "action": action,
-        "actor_id": actor_id,
-        "summary": summary[:300],
-        "created_at": discord.utils.utcnow().isoformat(),
-        "snapshot": before_data,
-    })
-    write_json(HISTORY_FILE, history)
-    return entry_id
+    """Keep the latest 30 reversible snapshots to bound runtime storage."""
+    with file_lock():
+        history = read_json(HISTORY_FILE, [])
+        entry_id = max((int(item.get("id", 0)) for item in history), default=0) + 1
+        history.append({
+            "id": entry_id,
+            "action": action,
+            "actor_id": actor_id,
+            "summary": summary[:300],
+            "created_at": discord.utils.utcnow().isoformat(),
+            "snapshot": before_data,
+        })
+        write_json(HISTORY_FILE, history[-30:])
+        return entry_id
 
 
 def is_guild_admin(interaction: discord.Interaction) -> bool:
@@ -121,16 +127,19 @@ def can_manage_crafting(interaction: discord.Interaction) -> bool:
 
 class KeepAliveHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
+        application = globals().get("bot")
+        ready = bool(application and application.is_ready())
+        self.send_response(200 if ready else 503)
         self.send_header("Content-type", "text/plain; charset=utf-8")
         self.end_headers()
-        self.wfile.write(b"FiveM Crafting Directory bot is online.")
+        message = b"FiveM Crafting Directory bot is online." if ready else b"FiveM Crafting Directory bot is starting or unavailable."
+        self.wfile.write(message)
 
     def log_message(self, format, *args):
         return
 
 
-class ResilientHTTPServer(HTTPServer):
+class ResilientHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
 
 
@@ -167,6 +176,32 @@ def help_embed():
     embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server or approved staff role required.", inline=False)
     embed.set_footer(text="Private menu • Only you can see and use this session")
     return embed
+
+
+class SafeView(discord.ui.View):
+    async def on_error(self, interaction, error, item):
+        logger.error("Discord view interaction failed (%s): %s", type(item).__name__, error, exc_info=(type(error), error, error.__traceback__))
+        message = "That action could not be completed. The error was logged for troubleshooting."
+        try:
+            if interaction.response.is_done():
+                await interaction.followup.send(message, ephemeral=True)
+            else:
+                await interaction.response.send_message(message, ephemeral=True)
+        except discord.HTTPException:
+            logger.exception("Could not send view error feedback to Discord.")
+
+
+class SafeModal(discord.ui.Modal):
+    async def on_error(self, interaction, error):
+        logger.error("Discord modal submission failed (%s): %s", type(self).__name__, error, exc_info=(type(error), error, error.__traceback__))
+        message = "That submission could not be completed. The error was logged for troubleshooting."
+        try:
+            if interaction.response.is_done():
+                await interaction.followup.send(message, ephemeral=True)
+            else:
+                await interaction.response.send_message(message, ephemeral=True)
+        except discord.HTTPException:
+            logger.exception("Could not send modal error feedback to Discord.")
 
 
 class CraftingBot(commands.Bot):
@@ -207,7 +242,7 @@ async def automatic_backup():
     try:
         path = create_backup()
         backups = sorted(path.parent.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
-        for old in backups[10:]:
+        for old in backups[25:]:
             old.unlink(missing_ok=True)
         logger.info("Automatic recipe backup created: %s", path.name)
     except Exception:
@@ -219,7 +254,7 @@ async def before_automatic_backup():
     await bot.wait_until_ready()
 
 
-class SearchModal(discord.ui.Modal, title="Search crafting recipes"):
+class SearchModal(SafeModal, title="Search crafting recipes"):
     query = discord.ui.TextInput(label="What are you looking for?", placeholder="Recipe, ingredient, tool, or table", max_length=100)
     table = discord.ui.TextInput(label="Limit to a table (optional)", placeholder="Example: Glovebox Table", required=False, max_length=100)
 
@@ -229,7 +264,7 @@ class SearchModal(discord.ui.Modal, title="Search crafting recipes"):
         await interaction.response.send_message(embed=search_embed(bot.recipe_data, term, self.table.value.strip() or None), ephemeral=True)
 
 
-class IngredientLookupModal(discord.ui.Modal, title="Find ingredient across tables"):
+class IngredientLookupModal(SafeModal, title="Find ingredient across tables"):
     ingredient = discord.ui.TextInput(
         label="Exact ingredient name",
         placeholder="Example: Meth or Hydroclone Acid",
@@ -245,32 +280,33 @@ class IngredientLookupModal(discord.ui.Modal, title="Find ingredient across tabl
         )
 
 
-class ReportModal(discord.ui.Modal, title="Report a recipe issue"):
+class ReportModal(SafeModal, title="Report a recipe issue"):
     issue_type = discord.ui.TextInput(label="Issue type", placeholder="Missing recipe / wrong ingredient / wrong quantity / other", max_length=80)
     table = discord.ui.TextInput(label="Crafting table (optional)", placeholder="Exact table name, if known", required=False, max_length=100)
     recipe = discord.ui.TextInput(label="Recipe name (optional)", placeholder="Exact recipe name, if known", required=False, max_length=100)
     details = discord.ui.TextInput(label="What needs correcting or adding?", style=discord.TextStyle.paragraph, placeholder="Describe what is wrong or missing.", max_length=1200)
 
     async def on_submit(self, interaction: discord.Interaction):
-        reports = read_json(REPORTS_FILE, [])
-        report_id = max((int(item.get("id", 0)) for item in reports), default=0) + 1
-        reports.append({
-            "id": report_id,
-            "guild_id": interaction.guild_id,
-            "user_id": interaction.user.id,
-            "issue_type": self.issue_type.value.strip(),
-            "table": self.table.value.strip(),
-            "recipe": self.recipe.value.strip(),
-            "details": self.details.value.strip(),
-            "created_at": discord.utils.utcnow().isoformat(),
-            "status": "open",
-        })
-        write_json(REPORTS_FILE, reports)
+        with file_lock():
+            reports = read_json(REPORTS_FILE, [])
+            report_id = max((int(item.get("id", 0)) for item in reports), default=0) + 1
+            reports.append({
+                "id": report_id,
+                "guild_id": interaction.guild_id,
+                "user_id": interaction.user.id,
+                "issue_type": self.issue_type.value.strip(),
+                "table": self.table.value.strip(),
+                "recipe": self.recipe.value.strip(),
+                "details": self.details.value.strip(),
+                "created_at": discord.utils.utcnow().isoformat(),
+                "status": "open",
+            })
+            write_json(REPORTS_FILE, reports[-500:])
         logger.info("Recipe report #%s submitted in guild %s", report_id, interaction.guild_id)
         await interaction.response.send_message(f"Your report **#{report_id}** has been saved for server administrators.", ephemeral=True)
 
 
-class AdminActionModal(discord.ui.Modal):
+class AdminActionModal(SafeModal):
     def __init__(self, action: str):
         self.action = action
         fields = {
@@ -413,7 +449,7 @@ class AdminActionModal(discord.ui.Modal):
             await interaction.response.send_message(f"Marked report #{report_id} as resolved.", ephemeral=True)
 
 
-class AdminMenuView(discord.ui.View):
+class AdminMenuView(SafeView):
     def __init__(self, owner_id: int):
         super().__init__(timeout=300)
         self.owner_id = owner_id
@@ -426,6 +462,7 @@ class AdminMenuView(discord.ui.View):
             discord.SelectOption(label="Edit a recipe", value="edit_recipe", emoji="✏️"),
             discord.SelectOption(label="Remove a recipe", value="remove_recipe", emoji="🗑️"),
             discord.SelectOption(label="Create a backup", value="backup", emoji="💾"),
+            discord.SelectOption(label="Download latest backup", value="download_backup", emoji="⬇️"),
             discord.SelectOption(label="Export recipe data (JSON)", value="export", emoji="📤"),
             discord.SelectOption(label="Export ingredients (CSV)", value="export_csv", emoji="📄"),
             discord.SelectOption(label="Export ingredients (Excel)", value="export_xlsx", emoji="📊"),
@@ -471,6 +508,18 @@ class AdminMenuView(discord.ui.View):
         elif action == "backup":
             path = create_backup()
             await interaction.response.send_message(f"Backup created: **{path.name}**", ephemeral=True)
+        elif action == "download_backup":
+            from crafting import BACKUP_DIR
+            backups = sorted(BACKUP_DIR.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
+            if not backups:
+                await interaction.response.send_message("No backup files are available yet. Create a backup first.", ephemeral=True)
+                return
+            latest = backups[0]
+            await interaction.response.send_message(
+                content="Download this backup and keep an external copy outside Discloud.",
+                file=discord.File(latest, filename=latest.name),
+                ephemeral=True,
+            )
         elif action == "export":
             payload = json.dumps(load_recipe_data(), ensure_ascii=False, indent=2).encode("utf-8")
             await interaction.response.send_message("Current recipe directory export:", file=discord.File(io.BytesIO(payload), filename="crafting-recipes-export.json"), ephemeral=True)
@@ -508,14 +557,15 @@ class AdminMenuView(discord.ui.View):
                 await interaction.response.send_message("There are no open recipe reports.", ephemeral=True)
                 return
             embed = discord.Embed(title="📨 Open Crafting Reports", color=COLOR)
-            for report in reversed(open_reports):
+            for report in reversed(open_reports[-5:]):
                 context = " · ".join(x for x in [report.get("issue_type", ""), report.get("table", ""), report.get("recipe", "")] if x)
-                embed.add_field(name=f"Report #{report['id']} · {context[:180]}", value=f"{report.get('details', '')[:600]}\nSubmitted: {report.get('created_at', 'unknown')} · User ID: {report.get('user_id', 'unknown')}", inline=False)
-            embed.set_footer(text="Choose Resolve a report in the admin menu when an issue is addressed.")
+                embed.add_field(name=f"Report #{report['id']} · {context[:140]}", value=f"{report.get('details', '')[:350]}\nSubmitted: {report.get('created_at', 'unknown')}", inline=False)
+            if len(open_reports) > 5:
+                embed.set_footer(text=f"Showing 5 of {len(open_reports)} open reports. Resolve older reports by ID.")
             await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-class RecipeCalculatorModal(discord.ui.Modal, title="Calculate recipe shopping list"):
+class RecipeCalculatorModal(SafeModal, title="Calculate recipe shopping list"):
     table = discord.ui.TextInput(label="Exact crafting table name", placeholder="Example: Glovebox Table", max_length=100)
     recipe = discord.ui.TextInput(label="Exact recipe name", placeholder="Example: Example Recipe", max_length=100)
     batches = discord.ui.TextInput(label="How many batches?", placeholder="1", default="1", max_length=3)
@@ -530,7 +580,7 @@ class RecipeCalculatorModal(discord.ui.Modal, title="Calculate recipe shopping l
         await interaction.response.send_message(embed=recipe_shopping_embed(result), ephemeral=True)
 
 
-class IngredientDirectoryView(discord.ui.View):
+class IngredientDirectoryView(SafeView):
     def __init__(self, owner_id: int, data: dict):
         super().__init__(timeout=300)
         self.owner_id = owner_id
@@ -576,7 +626,7 @@ class IngredientDirectoryView(discord.ui.View):
         )
 
 
-class MainMenuView(discord.ui.View):
+class MainMenuView(SafeView):
     def __init__(self, owner_id: int, admin: bool):
         super().__init__(timeout=300)
         self.owner_id = owner_id
@@ -652,7 +702,7 @@ class MainMenuView(discord.ui.View):
 
 
 
-class DependencyModal(discord.ui.Modal, title="Trace a production chain"):
+class DependencyModal(SafeModal, title="Trace a production chain"):
     item = discord.ui.TextInput(label="Item / recipe output name", max_length=100)
     async def on_submit(self, interaction):
         lines = dependency_lines(dependency_chain(bot.recipe_data, self.item.value.strip()))
@@ -660,7 +710,7 @@ class DependencyModal(discord.ui.Modal, title="Trace a production chain"):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-class InventoryModal(discord.ui.Modal, title="Inventory calculator"):
+class InventoryModal(SafeModal, title="Inventory calculator"):
     table = discord.ui.TextInput(label="Exact crafting table", max_length=100)
     recipe = discord.ui.TextInput(label="Exact recipe name", max_length=100)
     batches = discord.ui.TextInput(label="Target batches", default="1", max_length=3)
@@ -672,12 +722,16 @@ class InventoryModal(discord.ui.Modal, title="Inventory calculator"):
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
         embed = discord.Embed(title="Inventory plan: " + self.recipe.value, description="Craftable batches: " + str(result["available_batches"]) + " / " + str(result["target_batches"]), color=COLOR)
-        embed.add_field(name="Missing for target", value="\n".join(str(n) + " x" + str(q) for n,q in result["missing"].items()) or "Nothing missing.", inline=False)
-        embed.add_field(name="Required total", value="\n".join(str(n) + " x" + str(q) for n,q in result["required"].items())[:1024], inline=False)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        missing_lines = [str(n) + " x" + str(q) for n,q in result["missing"].items()]
+        required_lines = [str(n) + " x" + str(q) for n,q in result["required"].items()]
+        embed.add_field(name="Missing for target", value="\n".join(missing_lines[:12])[:900] or "Nothing missing.", inline=False)
+        embed.add_field(name="Required total", value="\n".join(required_lines[:12])[:900] or "None", inline=False)
+        full_text = "INVENTORY PLAN\nRecipe: " + result["recipe"] + "\nTarget batches: " + str(result["target_batches"]) + "\nCraftable batches from stock: " + str(result["available_batches"]) + "\n\nMissing for target:\n" + ("\n".join(missing_lines) or "Nothing missing.") + "\n\nRequired total:\n" + "\n".join(required_lines)
+        file = discord.File(io.BytesIO(full_text.encode("utf-8")), filename="fivem-inventory-plan.txt")
+        await interaction.response.send_message(content="The complete inventory calculation is attached.", embed=embed, file=file, ephemeral=True)
 
 
-class MultiRecipeModal(discord.ui.Modal, title="Multi-recipe planner"):
+class MultiRecipeModal(SafeModal, title="Multi-recipe planner"):
     requests = discord.ui.TextInput(label="One per line: Table | Recipe | batches", style=discord.TextStyle.paragraph, max_length=1800)
     async def on_submit(self, interaction):
         try:
@@ -693,12 +747,17 @@ class MultiRecipeModal(discord.ui.Modal, title="Multi-recipe planner"):
         except (ValueError, TypeError) as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
-        embed = discord.Embed(title="Combined production plan", description="\n".join(result["selected"])[:1000], color=COLOR)
-        embed.add_field(name="Combined ingredients", value="\n".join(str(n) + " x" + str(q) for n,q in result["ingredients"].items())[:1024], inline=False)
-        await interaction.response.send_message(embed=embed, ephemeral=True)
+        embed = discord.Embed(title="Combined production plan", description="\n".join(result["selected"][:8])[:900], color=COLOR)
+        ingredient_lines = ["- " + str(n) + " x" + str(q) for n,q in result["ingredients"].items()]
+        embed.add_field(name="Combined ingredient totals", value="\n".join(ingredient_lines[:12])[:900] or "None", inline=False)
+        if result["tools"]:
+            embed.add_field(name="Tools (not consumed)", value=", ".join(result["tools"])[:700], inline=False)
+        full_text = "COMBINED PRODUCTION PLAN\n\nRecipes:\n" + "\n".join(result["selected"]) + "\n\nIngredients:\n" + "\n".join(ingredient_lines) + "\n\nTools (not consumed):\n" + ", ".join(result["tools"])
+        file = discord.File(io.BytesIO(full_text.encode("utf-8")), filename="fivem-combined-production-plan.txt")
+        await interaction.response.send_message(content="The full combined plan is attached so no ingredient totals are cut off.", embed=embed, file=file, ephemeral=True)
 
 
-class AdvancedSearchModal(discord.ui.Modal, title="Advanced search"):
+class AdvancedSearchModal(SafeModal, title="Advanced search"):
     keyword = discord.ui.TextInput(label="Keyword (optional)", required=False, max_length=100)
     table = discord.ui.TextInput(label="Table contains (optional)", required=False, max_length=100)
     ingredient = discord.ui.TextInput(label="Ingredient contains (optional)", required=False, max_length=100)
@@ -711,19 +770,21 @@ class AdvancedSearchModal(discord.ui.Modal, title="Advanced search"):
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
         embed = discord.Embed(title="Advanced search results", description="Found " + str(len(results)) + " recipe(s).", color=COLOR)
-        for table, recipe in results[:10]:
-            text = ", ".join(str(n) + " x" + str(q) for n,q in recipe.get("ingredients", []))
-            embed.add_field(name=(recipe.get("name", "Unnamed") + " - " + table)[:256], value=text[:1024] or "No ingredients", inline=False)
+        for table, recipe in results[:5]:
+            summary = ", ".join(str(n) + " x" + str(q) for n,q in recipe.get("ingredients", []))
+            embed.add_field(name=(recipe.get("name", "Unnamed") + " - " + table)[:256], value=summary[:650] or "No ingredients", inline=False)
+        if len(results) > 5:
+            embed.set_footer(text=f"Showing 5 of {len(results)} results. Narrow the filters to see fewer matches.")
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-class ItemPageModal(discord.ui.Modal, title="Item database page"):
+class ItemPageModal(SafeModal, title="Item database page"):
     item = discord.ui.TextInput(label="Exact item / ingredient name", max_length=100)
     async def on_submit(self, interaction):
         await interaction.response.send_message(embed=ingredient_usage_embed(bot.recipe_data, self.item.value.strip()), ephemeral=True)
 
 
-class RecipeCompareModal(discord.ui.Modal, title="Compare two recipes"):
+class RecipeCompareModal(SafeModal, title="Compare two recipes"):
     table_a = discord.ui.TextInput(label="First crafting table", max_length=100)
     recipe_a = discord.ui.TextInput(label="First recipe", max_length=100)
     table_b = discord.ui.TextInput(label="Second crafting table", max_length=100)
@@ -742,7 +803,7 @@ class RecipeCompareModal(discord.ui.Modal, title="Compare two recipes"):
 
 
 
-class StaffRolesModal(discord.ui.Modal, title="Configure crafting staff roles"):
+class StaffRolesModal(SafeModal, title="Configure crafting staff roles"):
     role_ids = discord.ui.TextInput(label="Allowed role IDs (comma-separated)", required=False, max_length=1000)
     async def on_submit(self, interaction):
         if not is_guild_admin(interaction):
@@ -760,7 +821,7 @@ class StaffRolesModal(discord.ui.Modal, title="Configure crafting staff roles"):
         await interaction.response.send_message("Saved " + str(len(set(values))) + " approved crafting staff role(s).", ephemeral=True)
 
 
-class ImportRecipeModal(discord.ui.Modal, title="Import / merge recipe JSON"):
+class ImportRecipeModal(SafeModal, title="Import / merge recipe JSON"):
     json_text = discord.ui.TextInput(label="Paste JSON with a top-level tables list", style=discord.TextStyle.paragraph, max_length=4000)
     mode = discord.ui.TextInput(label="Name conflicts: skip or replace", default="skip", max_length=10)
     async def on_submit(self, interaction):
@@ -772,19 +833,22 @@ class ImportRecipeModal(discord.ui.Modal, title="Import / merge recipe JSON"):
             mode = self.mode.value.strip().casefold()
             if mode not in {"skip", "replace"}:
                 raise ValueError("Conflict mode must be skip or replace.")
-            merged, summary = merge_recipe_import(ensure_stable_ids(load_recipe_data()), incoming, mode)
+            current = ensure_stable_ids(load_recipe_data())
+            base_fingerprint = recipe_fingerprint(current)
+            merged, summary = merge_recipe_import(current, incoming, mode)
         except (json.JSONDecodeError, ValueError, TypeError) as exc:
             await interaction.response.send_message("Import rejected: " + str(exc), ephemeral=True)
             return
         description = "Tables added: " + str(summary["tables_added"]) + "\nRecipes added: " + str(summary["recipes_added"]) + "\nConflicts skipped: " + str(summary["skipped"]) + "\nReplaced: " + str(summary["replaced"]) + "\nValidation warnings: " + str(summary["warnings"]) + "\n\nNothing changed yet. Confirm to apply."
         embed = discord.Embed(title="Import preview", description=description, color=COLOR)
-        await interaction.response.send_message(embed=embed, view=ImportConfirmView(interaction.user.id, merged, summary), ephemeral=True)
+        await interaction.response.send_message(embed=embed, view=ImportConfirmView(interaction.user.id, merged, summary, base_fingerprint), ephemeral=True)
 
 
-class ImportConfirmView(discord.ui.View):
-    def __init__(self, owner_id, merged, summary):
+class ImportConfirmView(SafeView):
+    def __init__(self, owner_id, merged, summary, base_fingerprint):
         super().__init__(timeout=120)
         self.owner_id, self.merged, self.summary = owner_id, merged, summary
+        self.base_fingerprint = base_fingerprint
     async def interaction_check(self, interaction):
         if interaction.user.id != self.owner_id or not is_guild_admin(interaction):
             await interaction.response.send_message("Only the importing Manage Server member can confirm.", ephemeral=True)
@@ -793,6 +857,11 @@ class ImportConfirmView(discord.ui.View):
     @discord.ui.button(label="Confirm import", style=discord.ButtonStyle.success)
     async def confirm(self, interaction, button):
         current = ensure_stable_ids(load_recipe_data())
+        if recipe_fingerprint(current) != self.base_fingerprint:
+            for child in self.children:
+                child.disabled = True
+            await interaction.response.edit_message(content="The recipe data changed after this preview was created. Nothing was imported. Reopen the import tool and create a fresh preview.", embed=None, view=self)
+            return
         record_recipe_change(current, "import_merge", interaction.user.id, "Imported " + str(self.summary["recipes_added"]) + " recipes")
         save_recipe_data(ensure_stable_ids(self.merged))
         refresh_recipe_data()
@@ -822,7 +891,9 @@ async def crafting_command(interaction: discord.Interaction):
 @bot.tree.error
 async def on_app_command_error(interaction: discord.Interaction, error: app_commands.AppCommandError):
     logger.error("Slash command failed: %s", error, exc_info=(type(error), error, error.__traceback__))
-    if not interaction.response.is_done():
+    if interaction.response.is_done():
+        await interaction.followup.send("The command could not complete. The error has been logged for troubleshooting.", ephemeral=True)
+    else:
         await interaction.response.send_message("The command could not complete. The error has been logged for troubleshooting.", ephemeral=True)
 
 

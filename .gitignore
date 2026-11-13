@@ -3,3 +3,13 @@ __pycache__/
 .pytest_cache/
 .env
 .env.*
+
+# Runtime data and local logs
+crafting-data.json
+stats.json
+reports.json
+history.json
+permissions.json
+backups/
+bot.log*
+*.tmp

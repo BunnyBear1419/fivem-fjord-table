@@ -1,15 +1,32 @@
 """Private FiveM crafting directory views and duplicate-safe recipe storage."""
 import json
+import logging
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 import discord
+from storage import atomic_write_json, file_lock
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_FILE = BASE_DIR / "recipes.json"
 OVERRIDE_FILE = BASE_DIR / "crafting-data.json"  # Runtime admin edits; excluded from deploy bundles.
 BACKUP_DIR = BASE_DIR / "backups"
+
+logger = logging.getLogger("crafting-storage")
+
+
+class SafeView(discord.ui.View):
+    async def on_error(self, interaction, error, item):
+        logger.error("Crafting directory view action failed: %s", error, exc_info=(type(error), error, error.__traceback__))
+        try:
+            if interaction.response.is_done():
+                await interaction.followup.send("That action could not be completed. The error was logged.", ephemeral=True)
+            else:
+                await interaction.response.send_message("That action could not be completed. The error was logged.", ephemeral=True)
+        except discord.HTTPException:
+            logger.exception("Could not send view error feedback.")
+
 
 
 def remove_exact_duplicate_recipes(data: dict[str, Any]) -> int:
@@ -37,8 +54,11 @@ def load_recipe_data() -> dict[str, Any]:
     source = OVERRIDE_FILE if OVERRIDE_FILE.is_file() else DATA_FILE
     with source.open("r", encoding="utf-8") as handle:
         data = json.load(handle)
-    if not isinstance(data.get("tables"), list):
-        raise ValueError("Recipe data must contain a tables list")
+    from enhancements import validate_recipe_data
+    findings = validate_recipe_data(data)
+    errors = [item["message"] for item in findings if item["severity"] == "error"]
+    if errors:
+        raise ValueError(f"{source.name} failed recipe-data validation: " + "; ".join(errors[:5]))
     remove_exact_duplicate_recipes(data)
     return data
 
@@ -48,21 +68,30 @@ def all_recipes(data: dict[str, Any]):
 
 
 def create_backup() -> Path:
-    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
-    source = OVERRIDE_FILE if OVERRIDE_FILE.is_file() else DATA_FILE
-    stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
-    destination = BACKUP_DIR / f"crafting-backup-{stamp}.json"
-    shutil.copy2(source, destination)
-    return destination
+    with file_lock():
+        BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+        source = OVERRIDE_FILE if OVERRIDE_FILE.is_file() else DATA_FILE
+        if not source.is_file():
+            raise FileNotFoundError(f"Recipe source file is missing: {source.name}")
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S-%f")
+        destination = BACKUP_DIR / f"crafting-backup-{stamp}.json"
+        shutil.copy2(source, destination)
+        backups = sorted(BACKUP_DIR.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
+        for old_backup in backups[25:]:
+            old_backup.unlink(missing_ok=True)
+        return destination
 
 
 def save_recipe_data(data: dict[str, Any]) -> Path:
-    if not isinstance(data.get("tables"), list):
+    if not isinstance(data, dict) or not isinstance(data.get("tables"), list):
         raise ValueError("Recipe data must contain a tables list")
-    create_backup()
-    temporary = OVERRIDE_FILE.with_suffix(".json.tmp")
-    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    temporary.replace(OVERRIDE_FILE)
+    from enhancements import validate_recipe_data
+    errors = [item["message"] for item in validate_recipe_data(data) if item["severity"] == "error"]
+    if errors:
+        raise ValueError("Recipe data was not saved because validation found errors: " + "; ".join(errors[:5]))
+    with file_lock():
+        create_backup()
+        atomic_write_json(OVERRIDE_FILE, data)
     return OVERRIDE_FILE
 
 
@@ -104,13 +133,14 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
     return embed
 
 
-class CraftingDirectoryView(discord.ui.View):
+class CraftingDirectoryView(SafeView):
     def __init__(self, owner_id: int, data: dict[str, Any], on_table_selected=None):
         super().__init__(timeout=300)
         self.owner_id = owner_id
         self.tables = data["tables"]
         self.on_table_selected = on_table_selected
         self.table_index = 0
+        self.table_page = 0
         self.recipe_page = 0
         self._refresh_selects()
 
@@ -122,7 +152,8 @@ class CraftingDirectoryView(discord.ui.View):
 
     def _refresh_selects(self):
         self.clear_items()
-        table_options = [discord.SelectOption(label=t["name"][:100], value=str(i), default=i == self.table_index) for i, t in enumerate(self.tables[:25])]
+        table_start = self.table_page * 25
+        table_options = [discord.SelectOption(label=t["name"][:100], value=str(table_start + i), default=(table_start + i) == self.table_index) for i, t in enumerate(self.tables[table_start:table_start + 25])]
         table_select = discord.ui.Select(placeholder="Choose a crafting table", options=table_options or [discord.SelectOption(label="No tables available", value="none")], row=0)
         table_select.callback = self._choose_table
         self.add_item(table_select)
@@ -141,6 +172,13 @@ class CraftingDirectoryView(discord.ui.View):
         nxt = discord.ui.Button(label="Next ▶", style=discord.ButtonStyle.secondary, disabled=self.recipe_page + 1 >= pages, row=2)
         nxt.callback = self._next_page
         self.add_item(nxt)
+        table_pages = max(1, (len(self.tables) + 24) // 25)
+        table_prev = discord.ui.Button(label="◀ Tables", style=discord.ButtonStyle.secondary, disabled=self.table_page == 0, row=3)
+        table_prev.callback = self._previous_table_page
+        self.add_item(table_prev)
+        table_next = discord.ui.Button(label="More tables ▶", style=discord.ButtonStyle.secondary, disabled=self.table_page + 1 >= table_pages, row=3)
+        table_next.callback = self._next_table_page
+        self.add_item(table_next)
 
     def current_embed(self):
         if not self.tables:
@@ -148,11 +186,13 @@ class CraftingDirectoryView(discord.ui.View):
         table = self.tables[self.table_index]
         pages = max(1, (len(table.get("recipes", [])) + 24) // 25)
         embed = discord.Embed(title="🛠️ FiveM Crafting Directory", description=f"**Table:** {table['name']}\n**Recipes:** {len(table.get('recipes', []))}\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(57, 75, 111))
-        embed.set_footer(text=f"Recipe page {self.recipe_page + 1}/{pages} • Private menu")
+        table_pages = max(1, (len(self.tables) + 24) // 25)
+        embed.set_footer(text=f"Table page {self.table_page + 1}/{table_pages} • Recipe page {self.recipe_page + 1}/{pages} • Private menu")
         return embed
 
     async def _choose_table(self, interaction):
         self.table_index = int(interaction.data["values"][0])
+        self.table_page = self.table_index // 25
         self.recipe_page = 0
         if self.on_table_selected and self.tables:
             self.on_table_selected(self.tables[self.table_index]["name"])
@@ -163,6 +203,22 @@ class CraftingDirectoryView(discord.ui.View):
         table = self.tables[self.table_index]
         recipe = table["recipes"][int(interaction.data["values"][0])]
         await interaction.response.edit_message(embed=recipe_embed(table["name"], recipe), view=self)
+
+    async def _previous_table_page(self, interaction):
+        self.table_page = max(0, self.table_page - 1)
+        self.table_index = min(self.table_page * 25, max(0, len(self.tables) - 1))
+        self.recipe_page = 0
+        self._refresh_selects()
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    async def _next_table_page(self, interaction):
+        last = max(0, (len(self.tables) - 1) // 25)
+        self.table_page = min(last, self.table_page + 1)
+        self.table_index = min(self.table_page * 25, max(0, len(self.tables) - 1))
+        self.recipe_page = 0
+        self._refresh_selects()
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
 
     async def _previous_page(self, interaction):
         self.recipe_page = max(0, self.recipe_page - 1)
@@ -256,22 +312,22 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
     outputs = find_exact_recipe_outputs(data, ingredient_name)
     if outputs:
         made_lines = []
-        for output in outputs[:10]:
+        for output in outputs[:3]:
             ingredients = ", ".join(
                 f"{name} ×{quantity}" for name, quantity in output["ingredients"]
             ) or "Ingredients need review"
-            made_lines.append(f"• **{output['recipe'].get('name', 'Unnamed recipe')}** at **{output['table']}**\n  Requires: {ingredients}")
-        embed.add_field(name=f"Where {ingredient_name.strip()[:80]} is made", value="\n".join(made_lines)[:1024], inline=False)
+            made_lines.append(f"• **{output['recipe'].get('name', 'Unnamed recipe')}** at **{output['table']}**\n  Requires: {ingredients[:350]}")
+        embed.add_field(name=f"Where {ingredient_name.strip()[:80]} is made", value="\n".join(made_lines)[:850], inline=False)
 
-    for group in matches[:25]:
+    for group in matches[:5]:
         lines = [
             f"• **{item['recipe']}** requires **{ingredient_name.strip()} ×{item['quantity']}**"
             + (f" ({item['occurrences']} ingredient entries)" if item["occurrences"] > 1 else "")
-            for item in group["recipes"]
+            for item in group["recipes"][:8]
         ]
-        embed.add_field(name=f"Used at: {group['table']}"[:256], value="\n".join(lines)[:1024], inline=False)
-    if len(matches) > 25:
-        embed.set_footer(text=f"Showing 25 of {len(matches)} tables that use this ingredient.")
+        embed.add_field(name=f"Used at: {group['table']}"[:256], value="\n".join(lines)[:700] or "No uses recorded.", inline=False)
+    if len(matches) > 5:
+        embed.set_footer(text=f"Showing 5 of {len(matches)} tables. Download the ingredient directory for the complete listing.")
     else:
         embed.set_footer(text="Exact ingredient match only • duplicate ingredient entries are preserved • Coca Leaf and Coca Leaves are treated separately")
     return embed
@@ -348,13 +404,13 @@ def search_embed(data: dict[str, Any], query: str, table_filter: str | None = No
     if table_filter:
         description += f"\n**Table filter:** {table_filter}"
     embed = discord.Embed(title=f"🔎 Crafting search: {query[:180]}", description=description, color=discord.Color.from_rgb(57, 75, 111))
-    for table_name, recipe in matches[:10]:
+    for table_name, recipe in matches[:5]:
         items = recipe.get("ingredients") or []
         summary = ", ".join(f"{name} ×{qty}" for name, qty in items) or "Ingredients need review"
         tools = recipe.get("tools") or []
         if tools:
             summary += "\nTools: " + ", ".join(tools)
-        embed.add_field(name=f"{recipe['name']} · {table_name}"[:256], value=summary[:1024], inline=False)
-    if len(matches) > 10:
-        embed.set_footer(text=f"Showing first 10 of {len(matches)} results. Narrow your search or filter by table.")
+        embed.add_field(name=f"{recipe['name']} · {table_name}"[:256], value=summary[:700], inline=False)
+    if len(matches) > 5:
+        embed.set_footer(text=f"Showing first 5 of {len(matches)} results. Narrow your search or filter by table.")
     return embed

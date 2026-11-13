@@ -109,3 +109,38 @@ def test_ingredient_directory_preserves_exact_names_and_duplicate_entries():
     document = ingredient_directory_document(data)
     assert "Coca Leaf" in document and "Coca Leaves" in document
     assert document.count("requires ×") == 3
+
+
+def test_production_hardening_uses_atomic_storage_and_bounded_logs():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    storage = Path("storage.py").read_text(encoding="utf-8")
+    crafting = Path("crafting.py").read_text(encoding="utf-8")
+    assert "RotatingFileHandler" in source
+    assert "class SafeView" in source and "class SafeModal" in source
+    assert "recipe_fingerprint" in source and "base_fingerprint" in source
+    assert "atomic_write_json" in storage
+    assert "os.replace(temp_name, path)" in storage
+    assert "original file was preserved" in storage
+    assert "atomic_write_json(OVERRIDE_FILE, data)" in crafting
+
+
+def test_discloud_bundle_and_ci_compile_include_storage_module():
+    deploy = Path(".github/workflows/discloud-deploy.yml").read_text(encoding="utf-8")
+    tests = Path(".github/workflows/tests.yml").read_text(encoding="utf-8")
+    assert "enhancements.py storage.py recipes.json" in deploy
+    assert "enhancements.py storage.py" in tests
+
+
+def test_admin_menu_has_a_backup_download_path():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'value="download_backup"' in source
+    assert "crafting-backup-*.json" in source
+    assert "keep an external copy outside Discloud" in source
+
+
+def test_browse_view_paginates_tables_and_recipes_within_discord_select_limits():
+    source = Path("crafting.py").read_text(encoding="utf-8")
+    assert "table_start = self.table_page * 25" in source
+    assert "self.tables[table_start:table_start + 25]" in source
+    assert "self._previous_table_page" in source
+    assert "self._next_table_page" in source

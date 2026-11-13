@@ -143,3 +143,55 @@ def test_new_features_are_exposed_in_private_menu_and_admin_tools():
         assert feature in source
     for feature in ("Import / merge recipe JSON", "Configure staff roles", "View crafting analytics"):
         assert feature in source
+
+
+def test_import_rejects_malformed_rows_and_keeps_valid_duplicate_occurrences():
+    import pytest
+    from enhancements import merge_recipe_import
+    current = {"tables": [{"name": "Bench", "recipes": []}]}
+    incoming = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Valid", "ingredients": [["Wire", 1], ["Wire", 1]]}
+    ]}]}
+    merged, summary = merge_recipe_import(current, incoming, "skip")
+    assert summary["recipes_added"] == 1
+    assert merged["tables"][0]["recipes"][0]["ingredients"] == [["Wire", 1], ["Wire", 1]]
+    bad = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Broken", "ingredients": [["Wire", True]]}
+    ]}]}
+    with pytest.raises(ValueError):
+        merge_recipe_import(current, bad, "skip")
+
+
+def test_import_rejects_unknown_conflict_modes():
+    import pytest
+    from enhancements import merge_recipe_import
+    data = {"tables": [{"name": "Bench", "recipes": []}]}
+    with pytest.raises(ValueError):
+        merge_recipe_import(data, data, "merge-everything")
+
+
+def test_recipe_validator_handles_malformed_table_and_recipe_shapes():
+    from enhancements import validate_recipe_data
+    findings = validate_recipe_data({"tables": [None, {"name": "Bench", "recipes": [None]}]})
+    assert any("not an object" in item["message"] for item in findings)
+
+
+def test_actual_repository_recipe_data_has_no_structural_errors():
+    import json
+    from pathlib import Path
+    from enhancements import validate_recipe_data
+    data = json.loads(Path("recipes.json").read_text(encoding="utf-8"))
+    findings = validate_recipe_data(data)
+    assert not [item for item in findings if item["severity"] == "error"]
+
+
+def test_storage_writes_atomically_and_preserves_corrupt_files_for_recovery(tmp_path):
+    import pytest
+    from storage import atomic_write_json, read_json
+    path = tmp_path / "sample.json"
+    atomic_write_json(path, {"tables": [{"name": "Bench"}]})
+    assert read_json(path, {}) == {"tables": [{"name": "Bench"}]}
+    path.write_text("{broken json", encoding="utf-8")
+    with pytest.raises(ValueError, match="original file was preserved"):
+        read_json(path, {})
+    assert path.read_text(encoding="utf-8") == "{broken json"

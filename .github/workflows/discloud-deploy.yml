@@ -35,7 +35,7 @@ jobs:
             exit 1
           }
           printf 'DISCORD_BOT_TOKEN=%s\n' "$DISCORD_BOT_TOKEN" > .env
-          zip deploy.zip bot.py crafting.py enhancements.py recipes.json discloud.config requirements.txt .env
+          zip deploy.zip bot.py crafting.py enhancements.py storage.py recipes.json discloud.config requirements.txt .env
           rm -f .env
 
       - name: Setup Node
