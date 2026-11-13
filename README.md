@@ -2,37 +2,59 @@
 
 A Discord bot that provides a private, interactive reference for crafting tables and recipes used in FiveM roleplay servers.
 
-## Discord command
+## Member commands
 
-- `/crafting` — opens a private menu visible only to the person who ran the command.
-- `/crafting search:<term>` — privately searches recipe names, table names, ingredients, and reusable tools.
+- `/crafting` — opens a private interactive crafting directory.
+- `/crafting search:<term>` — searches recipe names, table names, ingredients, and tools from the main command.
+- `/crafting-search query:<term> table:<optional>` — advanced search with an optional crafting-table filter.
+- `/crafting-help` — displays the command guide.
+- `/crafting-stats` — displays aggregate command/search totals and the most-used search terms and tables.
+- `/crafting-report details:<text>` — privately submits a missing or incorrect recipe report.
 
-The private menu uses Discord dropdowns:
-1. Choose a crafting table.
-2. Choose a recipe.
-3. View required ingredients and quantities.
-4. View tools separately; tools are marked as not consumed.
+The private directory uses dropdowns to choose a crafting table and recipe. It displays ingredients and quantities separately from reusable tools. Menus are locked to the person who opened them.
 
-The menu is locked to the user who opened it. Other members cannot operate that user's private menu. Each person can run `/crafting` to open their own.
+## Administrator commands
+
+The `/crafting-admin` command group is restricted to members with the Discord **Manage Server** permission.
+
+- `/crafting-admin add-table` — create a crafting table.
+- `/crafting-admin add-recipe` — add a recipe to a table.
+- `/crafting-admin edit-recipe` — change a recipe name, ingredients, or tools.
+- `/crafting-admin remove-recipe` — remove a recipe.
+- `/crafting-admin backup` — create a manual JSON backup.
+- `/crafting-admin export` — download the current recipe directory as JSON.
+- `/crafting-admin stats` — view table and recipe totals.
+- `/crafting-admin reports` — review the latest open recipe reports.
+- `/crafting-admin resolve-report` — mark a report as resolved.
+
+For ingredient input, use comma-separated entries such as `Plastic bag x2, Powder x1`. Repeated ingredient entries are intentionally preserved and never deduplicated.
+
+Every administrator recipe edit creates a timestamped backup before saving. Admin edits are written to `crafting-data.json`, a runtime override separate from the source `recipes.json`. Use `/crafting-admin export` after making changes and keep the exported file somewhere safe; runtime files and backups are stored on the Discloud app filesystem and should not be treated as your only copy.
+
+## Logging and privacy
+
+- Errors are written to the Discloud console and `bot.log`.
+- Usage statistics store aggregate counts and popular search terms/table selections, not full message histories.
+- Recipe reports are private to the submitter and can be reviewed by server administrators.
+- Search, help, stats, and report replies are ephemeral (visible only to the person who invoked them).
 
 ## Recipe data
 
-- `recipes.json` — crafting table and recipe data.
-- `crafting.py` — private Discord menu, recipe embeds, and search.
-- `bot.py` — Discord bot entry point.
+- `recipes.json` — original bundled crafting table and recipe data.
+- `crafting-data.json` — runtime admin-edited override, created after the first admin change.
+- `crafting.py` — directory UI, search, ingredient parsing, and backup/storage helpers.
+- `bot.py` — Discord commands, admin controls, usage tracking, reports, and logging.
 
-The initial Glovebox Table data was transcribed from the in-game screenshots supplied for this project. OCR-derived entries from older workbooks will be added only after checking the source screenshots. Always verify recipes against the current server because resource configurations can change.
+The initial Glovebox Table data was transcribed from the in-game screenshots supplied for this project. OCR-derived entries from older workbooks should be added only after checking the source screenshots. Always verify recipes against the current server because resource configurations can change.
 
 ## Hosting
 
-This repository is configured as a **Discloud Discord bot**:
+This repository is configured as a Discloud Discord bot:
 
 - `TYPE=bot`
 - `MAIN=bot.py`
-- `DISCORD_BOT_TOKEN` must be set in the app's environment/secrets.
-- The existing Discloud app name is retained so the deployment workflow can update that bot rather than create a website.
-
-The GitHub Actions deployment workflow runs after the test suite succeeds and packages the Python bot, recipe data, and Discloud configuration.
+- GitHub repository secrets `DISCORD_BOT_TOKEN` and `DISCLOUD_TOKEN` are required by the deployment workflow.
+- GitHub Actions deploys only after the test workflow succeeds, or when manually triggered.
 
 ## Local run
 
@@ -44,6 +66,4 @@ python bot.py
 
 ## Scope
 
-This project is now focused on the FiveM crafting directory. Only the FiveM crafting bot, recipe data, deployment files, and relevant tests are maintained in the current project.
-
-This is a FiveM roleplay game reference only, not real-world instructions.
+This project is a FiveM roleplay game reference only, not real-world instructions.
