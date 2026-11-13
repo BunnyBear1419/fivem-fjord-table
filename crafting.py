@@ -39,7 +39,7 @@ def save_recipe_data(data: dict[str, Any]) -> Path:
         raise ValueError("Recipe data must contain a tables list")
     create_backup()
     temporary = OVERRIDE_FILE.with_suffix(".json.tmp")
-    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
+    temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     temporary.replace(OVERRIDE_FILE)
     return OVERRIDE_FILE
 
@@ -72,7 +72,7 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
     embed = discord.Embed(title=f"🧪 {recipe['name']}", description=f"**Crafting table:** {table_name}", color=discord.Color.from_rgb(91, 119, 190))
     ingredients = recipe.get("ingredients") or []
     if ingredients:
-        embed.add_field(name="Required ingredients", value="\\n".join(f"• **{name}** × {quantity}" for name, quantity in ingredients)[:1024], inline=False)
+        embed.add_field(name="Required ingredients", value="\n".join(f"• **{name}** × {quantity}" for name, quantity in ingredients)[:1024], inline=False)
     tools = recipe.get("tools") or []
     if tools:
         embed.add_field(name="Tools (not consumed)", value=", ".join(tools)[:1024], inline=False)
@@ -124,7 +124,7 @@ class CraftingDirectoryView(discord.ui.View):
             return discord.Embed(title="FiveM Crafting Directory", description="No crafting tables have been added yet.", color=discord.Color.orange())
         table = self.tables[self.table_index]
         pages = max(1, (len(table.get("recipes", [])) + 24) // 25)
-        embed = discord.Embed(title="🛠️ FiveM Crafting Directory", description=f"**Table:** {table['name']}\\n**Recipes:** {len(table.get('recipes', []))}\\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(57, 75, 111))
+        embed = discord.Embed(title="🛠️ FiveM Crafting Directory", description=f"**Table:** {table['name']}\n**Recipes:** {len(table.get('recipes', []))}\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(57, 75, 111))
         embed.set_footer(text=f"Recipe page {self.recipe_page + 1}/{pages} • Private menu")
         return embed
 
@@ -170,14 +170,14 @@ def search_embed(data: dict[str, Any], query: str, table_filter: str | None = No
     matches = find_matches(data, query, table_filter)
     description = f"Found **{len(matches)}** matching recipe(s)."
     if table_filter:
-        description += f"\\n**Table filter:** {table_filter}"
+        description += f"\n**Table filter:** {table_filter}"
     embed = discord.Embed(title=f"🔎 Crafting search: {query[:180]}", description=description, color=discord.Color.from_rgb(57, 75, 111))
     for table_name, recipe in matches[:10]:
         items = recipe.get("ingredients") or []
         summary = ", ".join(f"{name} ×{qty}" for name, qty in items) or "Ingredients need review"
         tools = recipe.get("tools") or []
         if tools:
-            summary += "\\nTools: " + ", ".join(tools)
+            summary += "\nTools: " + ", ".join(tools)
         embed.add_field(name=f"{recipe['name']} · {table_name}"[:256], value=summary[:1024], inline=False)
     if len(matches) > 10:
         embed.set_footer(text=f"Showing first 10 of {len(matches)} results. Narrow your search or filter by table.")
