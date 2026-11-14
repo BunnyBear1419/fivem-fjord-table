@@ -117,7 +117,7 @@ def _profile_path(guild_id: int, profile: str) -> Path:
     return PROFILES_DIR / str(guild_id) / f"{safe}.json"
 
 
-def record_recipe_change(before_data: dict, action: str, actor_id: int, summary: str):
+def record_recipe_change(before_data: dict, action: str, actor_id: int, summary: str, guild_id=None):
     """Keep the latest 30 reversible snapshots to bound runtime storage."""
     with file_lock():
         history = read_json(HISTORY_FILE, [])
@@ -131,7 +131,7 @@ def record_recipe_change(before_data: dict, action: str, actor_id: int, summary:
             "snapshot": before_data,
         })
         write_json(HISTORY_FILE, history[-30:])
-        record_audit_event(None, actor_id, action, summary)
+        record_audit_event(guild_id, actor_id, action, summary)
         return entry_id
 
 
@@ -410,7 +410,7 @@ class AdminActionModal(SafeModal):
                 await interaction.response.send_message("Enter a unique table name.", ephemeral=True)
                 return
             data["tables"].append({"id": __import__("uuid").uuid4().hex, "name": name, "recipes": []})
-            record_recipe_change(before_data, "add_table", interaction.user.id, f"Added table: {name}")
+            record_recipe_change(before_data, "add_table", interaction.user.id, f"Added table: {name}", interaction.guild_id)
             save_guild_recipe_data(interaction.guild_id, data)
             await interaction.response.send_message(f"Added **{name}**. An automatic backup and change-history entry were created.", ephemeral=True)
             return
@@ -432,7 +432,7 @@ class AdminActionModal(SafeModal):
                 "tools": [x.strip() for x in self.tools.value.split(",") if x.strip()],
                 "review": "Added by server administrator", "source": "CraftingBot admin menu",
             })
-            record_recipe_change(before_data, "add_recipe", interaction.user.id, f"Added {name} to {table['name']}")
+            record_recipe_change(before_data, "add_recipe", interaction.user.id, f"Added {name} to {table['name']}", interaction.guild_id)
             record_audit_event(interaction.guild_id, interaction.user.id, "recipe_add", f"{name} in {table['name']}")
             save_guild_recipe_data(interaction.guild_id, data)
             await interaction.response.send_message(f"Added **{name}** to **{table['name']}**. Duplicate ingredients are retained.", ephemeral=True)
@@ -454,9 +454,8 @@ class AdminActionModal(SafeModal):
                     return
             if self.tools.value.strip():
                 recipe["tools"] = [x.strip() for x in self.tools.value.split(",") if x.strip()]
-            record_recipe_change(before_data, "edit_recipe", interaction.user.id, f"Edited {recipe['name']} in {table['name']}")
-            save_recipe_data(data)
-            refresh_recipe_data()
+            record_recipe_change(before_data, "edit_recipe", interaction.user.id, f"Edited {recipe['name']} in {table['name']}", interaction.guild_id)
+            save_guild_recipe_data(interaction.guild_id, data)
             await interaction.response.send_message(f"Updated **{recipe['name']}**. An automatic backup and change-history entry were created.", ephemeral=True)
             return
 
@@ -467,7 +466,7 @@ class AdminActionModal(SafeModal):
                 await interaction.response.send_message("Recipe not found in that table.", ephemeral=True)
                 return
             removed = table["recipes"].pop(index)
-            record_recipe_change(before_data, "remove_recipe", interaction.user.id, f"Removed {removed['name']} from {table['name']}")
+            record_recipe_change(before_data, "remove_recipe", interaction.user.id, f"Removed {removed['name']} from {table['name']}", interaction.guild_id)
             save_recipe_data(data)
             refresh_recipe_data()
             await interaction.response.send_message(f"Removed **{removed['name']}**. An automatic backup and change-history entry were created.", ephemeral=True)
@@ -484,7 +483,7 @@ class AdminActionModal(SafeModal):
             if not entry or not isinstance(entry.get("snapshot"), dict):
                 await interaction.response.send_message("That history entry has no restorable snapshot.", ephemeral=True)
                 return
-            record_recipe_change(data, "restore", interaction.user.id, f"Restored before history entry #{history_id}")
+            record_recipe_change(data, "restore", interaction.user.id, f"Restored before history entry #{history_id}", interaction.guild_id)
             save_guild_recipe_data(interaction.guild_id, entry["snapshot"])
             await interaction.response.send_message(f"Restored the snapshot from history entry **#{history_id}**. The state being replaced was also saved to history.", ephemeral=True)
             return
@@ -615,7 +614,7 @@ class AdminMenuView(SafeView):
                 return
             await interaction.response.send_modal(StaffRolesModal())
         elif action == "analytics":
-            await interaction.response.send_message(embed=analytics_embed(load_recipe_data(), read_json(STATS_FILE, {})), ephemeral=True)
+            await interaction.response.send_message(embed=analytics_embed(get_guild_recipe_data(interaction.guild_id), read_json(STATS_FILE, {})), ephemeral=True)
         elif action == "backup":
             path = create_backup()
             await interaction.response.send_message(f"Backup created: **{path.name}**", ephemeral=True)
@@ -632,16 +631,16 @@ class AdminMenuView(SafeView):
                 ephemeral=True,
             )
         elif action == "export":
-            payload = json.dumps(load_recipe_data(), ensure_ascii=False, indent=2).encode("utf-8")
+            payload = json.dumps(get_guild_recipe_data(interaction.guild_id), ensure_ascii=False, indent=2).encode("utf-8")
             await interaction.response.send_message("Current recipe directory export:", file=discord.File(io.BytesIO(payload), filename="crafting-recipes-export.json"), ephemeral=True)
         elif action == "export_csv":
-            payload = recipes_csv_bytes(load_recipe_data())
+            payload = recipes_csv_bytes(get_guild_recipe_data(interaction.guild_id))
             await interaction.response.send_message("Complete ingredient occurrence export (duplicate entries are preserved):", file=discord.File(io.BytesIO(payload), filename="fivem-crafting-ingredients.csv"), ephemeral=True)
         elif action == "export_xlsx":
-            payload = recipes_xlsx_bytes(load_recipe_data())
+            payload = recipes_xlsx_bytes(get_guild_recipe_data(interaction.guild_id))
             await interaction.response.send_message("Excel workbook with all ingredient occurrences:", file=discord.File(io.BytesIO(payload), filename="fivem-crafting-directory.xlsx"), ephemeral=True)
         elif action == "validate":
-            findings = validate_recipe_data(load_recipe_data())
+            findings = validate_recipe_data(get_guild_recipe_data(interaction.guild_id))
             await interaction.response.send_message(embed=validation_embed(findings), ephemeral=True)
         elif action == "history":
             history = read_json(HISTORY_FILE, [])
@@ -653,7 +652,7 @@ class AdminMenuView(SafeView):
                 embed.add_field(name=f"#{item['id']} · {item.get('action', 'change')}", value=f"{item.get('summary', '')}\nBy user ID: {item.get('actor_id', 'unknown')}\n{item.get('created_at', 'unknown')}", inline=False)
             await interaction.response.send_message(embed=embed, ephemeral=True)
         elif action == "health":
-            data = load_recipe_data()
+            data = get_guild_recipe_data(interaction.guild_id)
             total = sum(len(t.get("recipes", [])) for t in data.get("tables", []))
             backups = list(BACKUP_DIR.glob("crafting-backup-*.json"))
             status = "Healthy" if bot.is_ready() and data.get("tables") else "Needs attention"
@@ -1130,7 +1129,7 @@ class InventoryModal(SafeModal, title="Inventory calculator"):
     inventory = discord.ui.TextInput(label="Current stock: Item x5, Item x10", style=discord.TextStyle.paragraph, max_length=1500)
     async def on_submit(self, interaction):
         try:
-            result = inventory_plan(bot.recipe_data, self.table.value, self.recipe.value, int(self.batches.value.strip()), self.inventory.value)
+            result = inventory_plan(get_guild_recipe_data(interaction.guild_id), self.table.value, self.recipe.value, int(self.batches.value.strip()), self.inventory.value)
         except (ValueError, TypeError) as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
@@ -1194,7 +1193,7 @@ class AdvancedSearchModal(SafeModal, title="Advanced search"):
 class ItemPageModal(SafeModal, title="Item database page"):
     item = discord.ui.TextInput(label="Exact item / ingredient name", max_length=100)
     async def on_submit(self, interaction):
-        await interaction.response.send_message(embed=ingredient_usage_embed(bot.recipe_data, self.item.value.strip()), ephemeral=True)
+        await interaction.response.send_message(embed=ingredient_usage_embed(get_guild_recipe_data(interaction.guild_id), self.item.value.strip()), ephemeral=True)
 
 
 class RecipeCompareModal(SafeModal, title="Compare two recipes"):
@@ -1269,15 +1268,14 @@ class ImportConfirmView(SafeView):
         return True
     @discord.ui.button(label="Confirm import", style=discord.ButtonStyle.success)
     async def confirm(self, interaction, button):
-        current = ensure_stable_ids(load_recipe_data())
+        current = ensure_stable_ids(get_guild_recipe_data(interaction.guild_id))
         if recipe_fingerprint(current) != self.base_fingerprint:
             for child in self.children:
                 child.disabled = True
             await interaction.response.edit_message(content="The recipe data changed after this preview was created. Nothing was imported. Reopen the import tool and create a fresh preview.", embed=None, view=self)
             return
         record_recipe_change(current, "import_merge", interaction.user.id, "Imported " + str(self.summary["recipes_added"]) + " recipes")
-        save_recipe_data(ensure_stable_ids(self.merged))
-        refresh_recipe_data()
+        save_guild_recipe_data(interaction.guild_id, ensure_stable_ids(self.merged))
         for child in self.children:
             child.disabled = True
         await interaction.response.edit_message(content="Import applied. A backup and reversible history snapshot were created.", embed=None, view=self)
