@@ -87,7 +87,7 @@ def test_ingredient_lookup_is_available_from_main_menu():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert 'value="ingredient_lookup"' in source
     assert "IngredientLookupModal" in source
-    assert "ingredient_usage_embed(bot.recipe_data, ingredient)" in source
+    assert "ingredient_usage_embed(get_guild_recipe_data(interaction.guild_id), ingredient)" in source
 
 
 
