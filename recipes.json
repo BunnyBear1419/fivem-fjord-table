@@ -2807,6 +2807,187 @@
           "id": "recipe_011_0011"
         }
       ]
+    },
+    {
+      "name": "Grinding Station",
+      "id": "table_012",
+      "recipes": [
+        {
+          "name": "Kief",
+          "ingredients": [
+            [
+              "Clean Weed Bud",
+              4
+            ]
+          ],
+          "tools": [
+            "Sifting Screen"
+          ],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0001"
+        },
+        {
+          "name": "Shredded Caapi Vine",
+          "ingredients": [
+            [
+              "Banisteriopsis Caapi Vine",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0002"
+        },
+        {
+          "name": "Morning Glory Seeds (Shelled)",
+          "ingredients": [
+            [
+              "Morning Glory Seed Pods",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0003"
+        },
+        {
+          "name": "Fresh Peyote Buttons",
+          "ingredients": [
+            [
+              "Peyote Cactus",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0004"
+        },
+        {
+          "name": "Roasted Yopo Beans",
+          "ingredients": [
+            [
+              "Yopo Pods",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0005"
+        },
+        {
+          "name": "Yopo",
+          "ingredients": [
+            [
+              "Roasted Yopo Beans",
+              2
+            ],
+            [
+              "Slaked Lime",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0006"
+        },
+        {
+          "name": "Kanna",
+          "ingredients": [
+            [
+              "Dried Kanna",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0007"
+        },
+        {
+          "name": "Ground Nutmeg",
+          "ingredients": [
+            [
+              "Whole Nutmeg",
+              4
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0008"
+        },
+        {
+          "name": "Kava Powder",
+          "ingredients": [
+            [
+              "Dried Kava Root",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0009"
+        },
+        {
+          "name": "Fermented Kanna",
+          "ingredients": [
+            [
+              "Kanna Leaves",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0010"
+        },
+        {
+          "name": "Hashish",
+          "ingredients": [
+            [
+              "Kief",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0011"
+        },
+        {
+          "name": "Mushroom Powder (option 1)",
+          "ingredients": [
+            [
+              "Mushrooms",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0012"
+        },
+        {
+          "name": "Mushroom Powder (option 2)",
+          "ingredients": [
+            [
+              "Dried Golden Teacher Shrooms",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_012_0013"
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."

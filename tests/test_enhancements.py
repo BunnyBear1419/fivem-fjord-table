@@ -233,3 +233,19 @@ def test_herb_drying_rack_table_contains_all_user_supplied_recipes():
     assert table["recipes"][-1]["name"] == "Dried San Pedro"
     assert table["recipes"][-1]["ingredients"] == [["San Pedro Cactus", 2]]
     assert all(recipe["id"].startswith("recipe_011_") for recipe in table["recipes"])
+
+
+def test_grinding_station_table_contains_all_user_supplied_recipes_and_tool():
+    import json
+    from pathlib import Path
+    data = json.loads(Path("recipes.json").read_text(encoding="utf-8"))
+    table = next(item for item in data["tables"] if item["name"] == "Grinding Station")
+    assert table["id"] == "table_012"
+    assert len(table["recipes"]) == 13
+    assert table["recipes"][0]["name"] == "Kief"
+    assert table["recipes"][0]["ingredients"] == [["Clean Weed Bud", 4]]
+    assert table["recipes"][0]["tools"] == ["Sifting Screen"]
+    assert table["recipes"][5]["ingredients"] == [["Roasted Yopo Beans", 2], ["Slaked Lime", 1]]
+    assert table["recipes"][11]["ingredients"] == [["Mushrooms", 5]]
+    assert table["recipes"][12]["ingredients"] == [["Dried Golden Teacher Shrooms", 3]]
+    assert all(recipe["id"].startswith("recipe_012_") for recipe in table["recipes"])
