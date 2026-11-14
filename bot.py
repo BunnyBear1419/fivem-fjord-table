@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, parse_inventory,
+    analytics_embed, chat_recipe_search, parse_inventory, expanded_production_requirements,
 )
 
 PROJECT_NAME = "FiveM Crafting Directory"
@@ -842,6 +842,7 @@ class MainMenuView(SafeView):
             discord.SelectOption(label="Recipe shopping list", value="shopping_list", description="Calculate ingredients for a chosen batch count", emoji="🧮"),
             discord.SelectOption(label="Crafting table comparison", value="compare_tables", description="See shared and table-exclusive ingredients", emoji="⚖️"),
             discord.SelectOption(label="Production chains", value="dependency", description="Trace outputs to base ingredients", emoji="🔗"),
+            discord.SelectOption(label="Full production cost planner", value="production_cost", description="Multiply nested crafting steps into total base ingredients", emoji="🧮"),
             discord.SelectOption(label="Inventory calculator", value="inventory", description="Calculate batches from stock entered once", emoji="🎒"),
             discord.SelectOption(label="My saved inventory", value="inventory_tracker", description="Save your personal stock and reuse it for recipe plans", emoji="🧺"),
             discord.SelectOption(label="Multi-recipe planner", value="multi_plan", description="Combine several recipes into one list", emoji="🧾"),
@@ -884,6 +885,8 @@ class MainMenuView(SafeView):
             await interaction.response.edit_message(embed=table_comparison_embed(bot.recipe_data), view=self)
         elif action == "dependency":
             await interaction.response.send_modal(DependencyModal())
+        elif action == "production_cost":
+            await interaction.response.send_modal(ProductionCostModal())
         elif action == "inventory":
             await interaction.response.send_modal(InventoryModal())
         elif action == "inventory_tracker":
@@ -915,6 +918,35 @@ class DependencyModal(SafeModal, title="Trace a production chain"):
     async def on_submit(self, interaction):
         lines = dependency_lines(dependency_chain(bot.recipe_data, self.item.value.strip()))
         embed = discord.Embed(title="Production chain: " + self.item.value.strip()[:180], description="\n".join(lines)[:3900], color=COLOR)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class ProductionCostModal(SafeModal, title="Full production requirements"):
+    table = discord.ui.TextInput(label="Exact crafting table", max_length=100)
+    recipe = discord.ui.TextInput(label="Exact recipe name", max_length=100)
+    batches = discord.ui.TextInput(label="Final batches to produce", default="1", max_length=3)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            result = expanded_production_requirements(
+                bot.recipe_data, self.table.value, self.recipe.value, int(self.batches.value.strip())
+            )
+        except (ValueError, TypeError) as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        embed = discord.Embed(
+            title=f"🧮 Full production requirements: {result['recipe'][:170]}",
+            description=f"**Starting table:** {result['table']}\n**Final batches:** {result['batches']}\nNested recipes are multiplied automatically when an item has exactly one recorded producer.",
+            color=COLOR,
+        )
+        ingredients = [f"• **{name}** ×{quantity}" for name, quantity in result["base_ingredients"].items()]
+        embed.add_field(name="Total base ingredients to gather", value="\n".join(ingredients)[:1000] or "No base ingredients recorded.", inline=False)
+        steps = [f"• {item['recipe']} — {item['table']} ×{item['batches']} batch(es)" for item in result["expanded_recipes"]]
+        embed.add_field(name="Production steps", value="\n".join(steps[:12])[:1000] or "No production steps.", inline=False)
+        if result["tools"]:
+            embed.add_field(name="Tools (not consumed)", value=", ".join(result["tools"])[:1000], inline=False)
+        if result["notes"]:
+            embed.add_field(name="Needs a manual choice / cycle notes", value="\n".join(result["notes"][:4])[:1000], inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 

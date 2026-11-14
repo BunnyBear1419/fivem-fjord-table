@@ -404,6 +404,74 @@ def inventory_plan(data: dict[str, Any], table_name: str, recipe_name: str, targ
     return {"available_batches": min(available_batches, 999), "target_batches": target_batches, "required": required, "stock": stock, "missing": missing}
 
 
+def expanded_production_requirements(
+    data: dict[str, Any],
+    table_name: str,
+    recipe_name: str,
+    batches: int = 1,
+    max_depth: int = 8,
+):
+    """Expand a recipe into base ingredients, multiplying every nested batch.
+
+    Only a uniquely named producer is expanded automatically. Ambiguous outputs
+    remain listed as ingredients with an explanation instead of guessing a table.
+    """
+    if not isinstance(batches, int) or not 1 <= batches <= 999:
+        raise ValueError("Batch count must be between 1 and 999.")
+    if not isinstance(max_depth, int) or not 1 <= max_depth <= 12:
+        raise ValueError("Production depth must be between 1 and 12.")
+    target = calculate_recipe_ingredients(data, table_name, recipe_name, 1)
+    target_table = next(t for t in data.get("tables", []) if t.get("name", "").casefold().strip() == table_name.casefold().strip())
+    target_recipe = next(r for r in target_table.get("recipes", []) if r.get("name", "").casefold().strip() == recipe_name.casefold().strip())
+
+    producers = defaultdict(list)
+    for table in data.get("tables", []):
+        for recipe in table.get("recipes", []):
+            key = str(recipe.get("name", "")).casefold().strip()
+            if key:
+                producers[key].append((table, recipe))
+
+    base_totals = defaultdict(int)
+    expanded = []
+    tools = set()
+    notes = []
+
+    def expand(table, recipe, multiplier, depth, stack):
+        label = f"{table.get('name', 'Unknown table')} — {recipe.get('name', 'Unknown recipe')}"
+        expanded.append({"table": table.get("name", "Unknown table"), "recipe": recipe.get("name", "Unknown recipe"), "batches": multiplier})
+        tools.update(str(tool) for tool in (recipe.get("tools") or []) if str(tool).strip())
+        for ingredient_name, quantity in recipe.get("ingredients") or []:
+            amount = int(quantity) * multiplier
+            key = str(ingredient_name).casefold().strip()
+            options = producers.get(key, [])
+            if key in stack:
+                base_totals[str(ingredient_name)] += amount
+                notes.append(f"Cycle stopped at {ingredient_name} while expanding {label}; kept it as a base requirement.")
+            elif depth >= max_depth:
+                base_totals[str(ingredient_name)] += amount
+                notes.append(f"Depth limit reached at {ingredient_name}; kept it as a base requirement.")
+            elif len(options) == 1:
+                next_table, next_recipe = options[0]
+                expand(next_table, next_recipe, amount, depth + 1, stack | {key})
+            elif len(options) > 1:
+                base_totals[str(ingredient_name)] += amount
+                choices = ", ".join(f"{t.get('name', 'Unknown table')} / {r.get('name', 'Unknown recipe')}" for t, r in options[:4])
+                notes.append(f"{ingredient_name} has multiple possible producers ({choices}); left unexpanded.")
+            else:
+                base_totals[str(ingredient_name)] += amount
+
+    expand(target_table, target_recipe, batches, 0, {str(target_recipe.get("name", "")).casefold().strip()})
+    return {
+        "table": target["table"],
+        "recipe": target["recipe"],
+        "batches": batches,
+        "base_ingredients": dict(base_totals),
+        "expanded_recipes": expanded,
+        "tools": sorted(tools, key=str.casefold),
+        "notes": list(dict.fromkeys(notes)),
+    }
+
+
 def multi_recipe_plan(data: dict[str, Any], requests: list[tuple[str, str, int]]):
     if not requests:
         raise ValueError("Enter at least one table, recipe, and batch-count line.")

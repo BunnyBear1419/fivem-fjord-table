@@ -60,6 +60,33 @@ def test_analytics_reports_unmatched_search_terms():
     assert "widgit: 2" in fields["Searches needing better matches"].lower()
 
 
+def test_expanded_production_requirements_multiplies_nested_batches():
+    from enhancements import expanded_production_requirements
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Final Widget", "ingredients": [["Intermediate", 2]], "tools": ["Press"]},
+        {"name": "Intermediate", "ingredients": [["Wire", 3], ["Bolt", 1]], "tools": ["Cutter"]},
+    ]}]}
+    result = expanded_production_requirements(data, "Bench", "Final Widget", 2)
+    assert result["base_ingredients"] == {"Wire": 12, "Bolt": 4}
+    assert result["expanded_recipes"] == [
+        {"table": "Bench", "recipe": "Final Widget", "batches": 2},
+        {"table": "Bench", "recipe": "Intermediate", "batches": 4},
+    ]
+    assert set(result["tools"]) == {"Press", "Cutter"}
+
+
+def test_expanded_production_requirements_does_not_guess_ambiguous_producers():
+    from enhancements import expanded_production_requirements
+    data = {"tables": [
+        {"name": "Final", "recipes": [{"name": "Widget", "ingredients": [["Part", 2]]}]},
+        {"name": "Bench A", "recipes": [{"name": "Part", "ingredients": [["Wire", 1]]}]},
+        {"name": "Bench B", "recipes": [{"name": "Part", "ingredients": [["Bolt", 1]]}]},
+    ]}
+    result = expanded_production_requirements(data, "Final", "Widget", 3)
+    assert result["base_ingredients"] == {"Part": 6}
+    assert any("multiple possible producers" in note for note in result["notes"])
+
+
 def test_shopping_list_multiplies_batches_and_sums_duplicate_rows():
     data = {"tables": [{"name": "Bench", "recipes": [
         {"name": "Widget", "ingredients": [["Wire", 2], ["Wire", 3], ["Bolt", 1]], "tools": ["Wrench"]}
