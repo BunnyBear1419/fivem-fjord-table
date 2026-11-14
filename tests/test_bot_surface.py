@@ -53,6 +53,12 @@ def test_saved_inventory_and_selectable_spelling_matches_are_wired_into_private_
     assert "Searches needing better matches" in Path("enhancements.py").read_text(encoding="utf-8")
 
 
+
+def test_runtime_player_inventory_data_is_ignored_by_git():
+    ignore = Path(".gitignore").read_text(encoding="utf-8")
+    assert "inventories.json" in ignore
+
+
 def test_legacy_guild_commands_are_cleared_on_ready():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert "self.tree.clear_commands(guild=guild)" in source

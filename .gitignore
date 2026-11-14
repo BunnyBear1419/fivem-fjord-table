@@ -10,6 +10,7 @@ stats.json
 reports.json
 history.json
 permissions.json
+inventories.json
 backups/
 bot.log*
 *.tmp

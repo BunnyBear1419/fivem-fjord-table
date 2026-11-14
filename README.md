@@ -19,7 +19,8 @@ Members use only **`/crafting`**. It opens a private dropdown menu with:
 - **Recipe shopping list** — calculate required ingredients for 1–999 batches; repeated ingredient rows are summed for the requested total.
 - **Crafting table comparison** — compare shared and table-exclusive ingredients.
 - **Production chains** — trace recipe outputs through nested ingredient recipes to base items (cycle/depth limited).
-- **Inventory calculator** — enter current stock and calculate craftable batches plus missing quantities.
+- **Inventory calculator** — enter current stock once to calculate craftable batches plus missing quantities.
+- **My saved inventory** — save your personal ingredient stock privately per Discord server, update or clear it, and reuse it when planning recipes.
 - **Multi-recipe planner** — combine several table/recipe/batch requests into one shopping list.
 - **Advanced search** — filter by keyword, table, ingredient, tool, and minimum ingredient-row count.
 - **Item database** — open an exact-name item page showing where it is produced and consumed.
@@ -64,7 +65,7 @@ Do not delete and reinvite the bot just to refresh commands.
 - Usage statistics store aggregate counts, popular search terms/table selections, and bounded no-result search terms, not full message histories.
 - Saved player inventories are separated by server and Discord user ID; they are not shared with other players. They are stored on the Discloud app filesystem, so a host-side rebuild or app replacement may reset runtime data.
 - Recipe reports are stored for administrators to review.
-- The directory and all menus are ephemeral (visible only to the person who invoked them). Large inventory and multi-recipe plans include complete text attachments so Discord embed limits do not cut off the full totals.
+- The slash-command directory and saved-inventory menus are ephemeral (visible only to the person who invoked them). Chat lookup replies are posted in the channel where the player asks, and only the original requester can use the match dropdown. Saved player inventories are separated by server and Discord user ID; they are not shared with other players. Inventory data is stored on the Discloud app filesystem and may be lost during a host-side rebuild or app replacement. Large inventory and multi-recipe plans include complete text attachments so Discord embed limits do not cut off the full totals.
 
 ## Recipe data
 
