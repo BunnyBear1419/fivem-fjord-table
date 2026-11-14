@@ -47,6 +47,10 @@ REPORTS_FILE = BASE_DIR / "reports.json"
 HISTORY_FILE = BASE_DIR / "history.json"
 PERMISSIONS_FILE = BASE_DIR / "permissions.json"
 INVENTORIES_FILE = BASE_DIR / "inventories.json"
+ALIASES_FILE = BASE_DIR / "aliases.json"
+AUDIT_FILE = BASE_DIR / "audit-log.json"
+GUILD_PROFILES_FILE = BASE_DIR / "guild-profiles.json"
+PROFILES_DIR = BASE_DIR / "profiles"
 LOG_FILE = BASE_DIR / "bot.log"
 COLOR = discord.Color.from_rgb(57, 75, 111)
 
