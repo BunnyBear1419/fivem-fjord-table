@@ -117,6 +117,7 @@ def record_recipe_change(before_data: dict, action: str, actor_id: int, summary:
             "snapshot": before_data,
         })
         write_json(HISTORY_FILE, history[-30:])
+        record_audit_event(None, actor_id, action, summary)
         return entry_id
 
 
@@ -1292,6 +1293,34 @@ async def on_message(message: discord.Message):
         return
     if bot.recipe_data is None:
         await message.reply("The crafting directory is still loading. Try again shortly.", mention_author=False)
+        return
+
+    if query.casefold().startswith(("what can i craft", "what can i make", "what can i produce")):
+        raw_stock = query.split(":", 1)[1] if ":" in query else ""
+        if not raw_stock:
+            await message.reply("Use !what can I craft: Item x10, Item x5", mention_author=False)
+            return
+        try:
+            stock = parse_inventory(raw_stock)
+        except ValueError as exc:
+            await message.reply(f"Inventory format error: {exc}", mention_author=False)
+            return
+        data = get_guild_recipe_data(message.guild.id if message.guild else None)
+        craftable = []
+        for table in data.get("tables", []):
+            for recipe in table.get("recipes", []):
+                needed = {}
+                for name, qty in recipe.get("ingredients", []):
+                    needed[name] = needed.get(name, 0) + int(qty)
+                batches = min((stock.get(name, 0) // qty for name, qty in needed.items()), default=0)
+                if batches > 0:
+                    craftable.append((batches, table.get("name", "Unknown"), recipe.get("name", "Unknown")))
+        craftable.sort(key=lambda row: (-row[0], row[2].casefold()))
+        if not craftable:
+            await message.reply("Your stock does not cover a complete recipe yet. Try /crafting to browse the directory.", mention_author=False)
+        else:
+            lines = [f"• **{name}** — {batches} batch(es) · {table}" for batches, table, name in craftable[:20]]
+            await message.reply("**Recipes you can make from that stock:**\n" + "\n".join(lines), mention_author=False)
         return
 
     record_usage("search", query)
