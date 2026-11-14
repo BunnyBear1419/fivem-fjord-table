@@ -23,6 +23,32 @@ def test_chat_recipe_search_understands_natural_language_and_finds_table():
     assert ingredient_result[0]["recipe"] == "Kief"
 
 
+def test_chat_recipe_search_handles_common_spelling_mistakes():
+    from enhancements import chat_recipe_search
+    data = {"tables": [
+        {"name": "Coke Table", "recipes": [
+            {"name": "Heroin", "ingredients": [["Brown Heroin Base", 1]], "tools": []}
+        ]},
+        {"name": "Grinding Station", "recipes": [
+            {"name": "Kief", "ingredients": [["Clean Weed Bud", 4]], "tools": ["Sifting Screen"]}
+        ]},
+    ]}
+    recipe_result = chat_recipe_search(data, "!!how to make herion")
+    assert recipe_result[0]["recipe"] == "Heroin"
+    assert recipe_result[0]["table"] == "Coke Table"
+    ingredient_result = chat_recipe_search(data, "!where do i get cleen weed bud")
+    assert ingredient_result[0]["ingredients"][0][0] == "Clean Weed Bud"
+    assert ingredient_result[0]["table"] == "Grinding Station"
+
+
+def test_chat_recipe_search_does_not_return_unrelated_weak_matches():
+    from enhancements import chat_recipe_search
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Advanced Radio", "ingredients": [["Copper Wire", 2]], "tools": []}
+    ]}]}
+    assert chat_recipe_search(data, "how to make completely unrelated item") == []
+
+
 def test_shopping_list_multiplies_batches_and_sums_duplicate_rows():
     data = {"tables": [{"name": "Bench", "recipes": [
         {"name": "Widget", "ingredients": [["Wire", 2], ["Wire", 3], ["Bolt", 1]], "tools": ["Wrench"]}

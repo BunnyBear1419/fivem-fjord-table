@@ -1,6 +1,7 @@
 """Low-memory reporting, export, validation and comparison helpers for the crafting bot."""
 import csv
 import io
+import re
 from collections import Counter, defaultdict
 from difflib import SequenceMatcher
 from typing import Any
@@ -8,19 +9,51 @@ from typing import Any
 import discord
 
 
+def _normalize_chat_search(value: str) -> str:
+    """Normalize user input for matching without modifying saved recipe names."""
+    return re.sub(r"[^a-z0-9]+", " ", str(value or "").casefold()).strip()
+
+
+def _fuzzy_name_score(query: str, candidate: str) -> float:
+    """Score exact, partial and misspelled names conservatively."""
+    query_norm = _normalize_chat_search(query)
+    candidate_norm = _normalize_chat_search(candidate)
+    if not query_norm or not candidate_norm:
+        return 0.0
+    if query_norm == candidate_norm:
+        return 1.0
+    full_score = SequenceMatcher(None, query_norm, candidate_norm).ratio()
+    if query_norm in candidate_norm or candidate_norm in query_norm:
+        full_score = max(full_score, 0.94)
+
+    query_words = query_norm.split()
+    candidate_words = candidate_norm.split()
+    if query_words and candidate_words:
+        word_scores = []
+        for word in query_words:
+            best = max(SequenceMatcher(None, word, other).ratio() for other in candidate_words)
+            word_scores.append(best)
+        token_score = sum(word_scores) / len(word_scores)
+        full_score = max(full_score, (full_score * 0.55) + (token_score * 0.45))
+    return full_score
+
+
 def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
-    """Find close recipe or ingredient matches for short natural-language chat queries."""
-    cleaned = str(query or "").casefold().strip()
+    """Find close recipe or ingredient matches, including common spelling mistakes."""
+    cleaned = _normalize_chat_search(query)
     prefixes = (
         "how do i make ", "how do you make ", "how to make ", "how can i make ",
         "make ", "recipe for ", "how do i craft ", "how to craft ",
-        "where do i find ", "where do i get ", "where can i find ", "where can i get ", "where is ", "find ",
+        "where do i find ", "where do i get ", "where can i find ", "where can i get ",
+        "where is ", "find ", "what is the recipe for ",
     )
     for prefix in prefixes:
         if cleaned.startswith(prefix):
             cleaned = cleaned[len(prefix):].strip()
             break
-    cleaned = cleaned.strip(" ?!.,'\\"")
+    for suffix in (" please", " pls", " for me"):
+        if cleaned.endswith(suffix):
+            cleaned = cleaned[:-len(suffix)].strip()
     if not cleaned or not isinstance(limit, int) or limit < 1:
         return []
 
@@ -30,18 +63,16 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
             name = str(recipe.get("name", "")).strip()
             if not name:
                 continue
-            candidate = name.casefold()
-            score = 1.0 if candidate == cleaned else SequenceMatcher(None, cleaned, candidate).ratio()
-            if cleaned in candidate or candidate in cleaned:
-                score = max(score, 0.9)
-            if score >= 0.48:
+            score = _fuzzy_name_score(cleaned, name)
+            threshold = 0.68 if len(cleaned.replace(" ", "")) <= 5 else 0.58
+            if score >= threshold:
                 recipe_matches.append({
                     "table": table.get("name", "Unknown table"),
                     "recipe": name,
                     "ingredients": list(recipe.get("ingredients") or []),
                     "tools": list(recipe.get("tools") or []),
                     "score": score,
-                    "match_label": "Recipe match" if score >= 0.9 else "Closest recipe match",
+                    "match_label": "Recipe match" if score >= 0.94 else "Closest spelling match",
                 })
     if recipe_matches:
         recipe_matches.sort(key=lambda item: (-item["score"], item["recipe"].casefold(), item["table"].casefold()))
@@ -52,18 +83,16 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
         for recipe in table.get("recipes", []):
             for ingredient, quantity in recipe.get("ingredients") or []:
                 ingredient_name = str(ingredient).strip()
-                candidate = ingredient_name.casefold()
-                score = 1.0 if candidate == cleaned else SequenceMatcher(None, cleaned, candidate).ratio()
-                if cleaned in candidate or candidate in cleaned:
-                    score = max(score, 0.9)
-                if score >= 0.62:
+                score = _fuzzy_name_score(cleaned, ingredient_name)
+                threshold = 0.72 if len(cleaned.replace(" ", "")) <= 5 else 0.62
+                if score >= threshold:
                     ingredient_matches.append({
                         "table": table.get("name", "Unknown table"),
                         "recipe": recipe.get("name", "Unknown recipe"),
                         "ingredients": [[ingredient_name, quantity]],
                         "tools": [],
                         "score": score,
-                        "match_label": f"Ingredient match: {ingredient_name}",
+                        "match_label": f"Closest ingredient spelling: {ingredient_name}",
                     })
     ingredient_matches.sort(key=lambda item: (-item["score"], item["recipe"].casefold(), item["table"].casefold()))
     return ingredient_matches[:limit]
