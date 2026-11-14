@@ -217,3 +217,19 @@ def test_brewing_kettle_table_is_bundled_with_all_user_supplied_recipes():
         ["Distilled Water", 1],
     ]
     assert all(recipe["id"].startswith("recipe_010_") for recipe in table["recipes"])
+
+
+def test_herb_drying_rack_table_contains_all_user_supplied_recipes():
+    import json
+    from pathlib import Path
+    data = json.loads(Path("recipes.json").read_text(encoding="utf-8"))
+    table = next(item for item in data["tables"] if item["name"] == "Herb Drying Rack")
+    assert table["id"] == "table_011"
+    assert len(table["recipes"]) == 11
+    assert table["recipes"][0]["name"] == "Peyote"
+    assert table["recipes"][0]["ingredients"] == [["Fresh Peyote Buttons", 3]]
+    assert table["recipes"][9]["name"] == "Spice (K2)"
+    assert table["recipes"][9]["ingredients"] == [["Spice Spray", 1], ["Damiana Leaves", 2]]
+    assert table["recipes"][-1]["name"] == "Dried San Pedro"
+    assert table["recipes"][-1]["ingredients"] == [["San Pedro Cactus", 2]]
+    assert all(recipe["id"].startswith("recipe_011_") for recipe in table["recipes"])

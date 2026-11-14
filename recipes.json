@@ -2654,6 +2654,159 @@
         }
       ],
       "id": "table_010"
+    },
+    {
+      "name": "Herb Drying Rack",
+      "id": "table_011",
+      "recipes": [
+        {
+          "name": "Peyote",
+          "ingredients": [
+            [
+              "Fresh Peyote Buttons",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0001"
+        },
+        {
+          "name": "Dried Salvia",
+          "ingredients": [
+            [
+              "Salvia Leaves",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0002"
+        },
+        {
+          "name": "Dried Kratom",
+          "ingredients": [
+            [
+              "Kratom Leaves",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0003"
+        },
+        {
+          "name": "Dried Iboga Root Bark",
+          "ingredients": [
+            [
+              "Iboga Root",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0004"
+        },
+        {
+          "name": "Dried Amanita Caps",
+          "ingredients": [
+            [
+              "Amanita Muscaria Caps",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0005"
+        },
+        {
+          "name": "Dried Datura",
+          "ingredients": [
+            [
+              "Datura Flowers",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0006"
+        },
+        {
+          "name": "Dried Kava Root",
+          "ingredients": [
+            [
+              "Kava Root",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0007"
+        },
+        {
+          "name": "Dried Blue Lotus",
+          "ingredients": [
+            [
+              "Blue Lotus Flowers",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0008"
+        },
+        {
+          "name": "Dried Kanna",
+          "ingredients": [
+            [
+              "Fermented Kanna",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0009"
+        },
+        {
+          "name": "Spice (K2)",
+          "ingredients": [
+            [
+              "Spice Spray",
+              1
+            ],
+            [
+              "Damiana Leaves",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0010"
+        },
+        {
+          "name": "Dried San Pedro",
+          "ingredients": [
+            [
+              "San Pedro Cactus",
+              2
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_011_0011"
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
