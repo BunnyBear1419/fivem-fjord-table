@@ -40,7 +40,7 @@ from enhancements import (
     analytics_embed, chat_recipe_search, parse_inventory, expanded_production_requirements,
 )
 
-PROJECT_NAME = "FiveM Crafting Directory"
+PROJECT_NAME = "Fjord Cartel Information"
 BASE_DIR = Path(__file__).resolve().parent
 STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
@@ -52,7 +52,7 @@ AUDIT_FILE = BASE_DIR / "audit-log.json"
 GUILD_PROFILES_FILE = BASE_DIR / "guild-profiles.json"
 PROFILES_DIR = BASE_DIR / "profiles"
 LOG_FILE = BASE_DIR / "bot.log"
-COLOR = discord.Color.from_rgb(57, 75, 111)
+COLOR = discord.Color.from_rgb(24, 112, 66)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -217,8 +217,8 @@ threading.Thread(target=run_web_server, daemon=True).start()
 
 def help_embed():
     embed = discord.Embed(
-        title="📘 FiveM Crafting Directory",
-        description="Everything is controlled from this private menu. Choose an option below to get started.",
+        title="⚔️ Fjord Cartel Information",
+        description="**FJORD CARTEL • MEMBER INFORMATION SYSTEM**\n\nWelcome to the private cartel directory. Choose a section below to browse recipes, match ingredients, and plan what the crew needs.",
         color=COLOR,
     )
     embed.add_field(name="Browse recipes", value="Choose a crafting table, then a recipe to view ingredients and tools.", inline=False)
@@ -236,7 +236,7 @@ def help_embed():
     embed.add_field(name="Recipe comparison", value="Compare two recipes and their shared/exclusive ingredients.", inline=False)
     embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry with table and recipe details.", inline=False)
     embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server or approved staff role required.", inline=False)
-    embed.set_footer(text="Private menu • Only you can see and use this session")
+    embed.set_footer(text="FJORD CARTEL • PRIVATE MEMBER MENU")
     return embed
 
 
@@ -1112,7 +1112,7 @@ class MainMenuView(SafeView):
             if not can_manage_crafting(interaction):
                 await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
                 return
-            embed = discord.Embed(title="⚙️ Crafting Admin Tools", description="Choose an action below. Changes automatically create a backup before saving.", color=COLOR)
+            embed = discord.Embed(title="⚙️ Fjord Cartel • Staff Tools", description="Choose an action below. Changes automatically create a backup before saving.", color=COLOR)
             await interaction.response.edit_message(embed=embed, view=AdminMenuView(self.owner_id))
 
 
