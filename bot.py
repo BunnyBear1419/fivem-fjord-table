@@ -130,6 +130,7 @@ def record_recipe_change(before_data: dict, action: str, actor_id: int, summary:
             "id": entry_id,
             "action": action,
             "actor_id": actor_id,
+            "guild_id": guild_id,
             "summary": summary[:300],
             "created_at": discord.utils.utcnow().isoformat(),
             "snapshot": before_data,
@@ -146,7 +147,7 @@ def get_guild_recipe_data(guild_id):
     profiles = read_json(GUILD_PROFILES_FILE, {})
     selected = profiles.get(str(guild_id))
     if selected:
-        path = PROFILES_DIR / str(guild_id) / (str(selected) + ".json")
+        path = _profile_path(guild_id, selected)
         if path.is_file():
             return ensure_stable_ids(json.loads(path.read_text(encoding="utf-8")))
     return bot.recipe_data or load_recipe_data()
@@ -482,7 +483,7 @@ class AdminActionModal(SafeModal):
                 await interaction.response.send_message("Enter a valid history entry number.", ephemeral=True)
                 return
             history = read_json(HISTORY_FILE, [])
-            entry = next((item for item in history if int(item.get("id", 0)) == history_id), None)
+            entry = next((item for item in history if int(item.get("id", 0)) == history_id and item.get("guild_id") == interaction.guild_id), None)
             if not entry or not isinstance(entry.get("snapshot"), dict):
                 await interaction.response.send_message("That history entry has no restorable snapshot.", ephemeral=True)
                 return
@@ -671,7 +672,7 @@ class AdminMenuView(SafeView):
             findings = validate_recipe_data(get_guild_recipe_data(interaction.guild_id))
             await interaction.response.send_message(embed=validation_embed(findings), ephemeral=True)
         elif action == "history":
-            history = read_json(HISTORY_FILE, [])
+            history = [item for item in read_json(HISTORY_FILE, []) if item.get("guild_id") == interaction.guild_id]
             if not history:
                 await interaction.response.send_message("No recipe changes have been recorded yet. Future admin edits will appear here.", ephemeral=True)
                 return
