@@ -248,6 +248,46 @@ def validate_recipe_data(data: dict[str, Any]):
                 findings.append({"severity": "warning", "message": f"Possible spelling variation: '{left}' vs '{right}'. Review manually; neither name was changed."})
         if comparisons > 50000:
             break
+    # Cross-reference ingredient names against recipe outputs. Unmatched names are
+    # informational only: many are intentionally gathered or purchased raw materials.
+    recipe_outputs = defaultdict(list)
+    for table in data["tables"]:
+        if not isinstance(table, dict) or not isinstance(table.get("recipes", []), list):
+            continue
+        for recipe in table.get("recipes", []):
+            if not isinstance(recipe, dict):
+                continue
+            output_name = recipe.get("name", "")
+            if isinstance(output_name, str) and output_name.strip():
+                recipe_outputs[output_name.strip().casefold()].append((table.get("name", "Unknown table"), output_name.strip()))
+
+    unmatched = []
+    for folded_name, entries in ingredient_locations.items():
+        if folded_name not in recipe_outputs and entries:
+            display_name = entries[0][0]
+            locations = sorted({f"{table} / {recipe}" for _, table, recipe in entries})
+            unmatched.append((display_name, len(locations), locations[:2]))
+    if unmatched:
+        findings.append({
+            "severity": "info",
+            "message": f"{len(unmatched)} ingredient name(s) are not exact recipe outputs. This is normal for raw materials; examples: "
+                + "; ".join(f"{name} ({count} recipe location(s))" for name, count, _ in unmatched[:6])
+                + ". Check only if you expected one of these items to be made at another table.",
+        })
+
+    duplicate_outputs = [(name, places) for name, places in recipe_outputs.items() if len(places) > 1]
+    if duplicate_outputs:
+        examples = []
+        for folded_name, places in duplicate_outputs[:6]:
+            display_name = places[0][1]
+            tables = sorted({table for table, _ in places})
+            examples.append(f"{display_name} ({', '.join(tables)})")
+        findings.append({
+            "severity": "info",
+            "message": f"{len(duplicate_outputs)} recipe output name(s) are produced by multiple recipes/tables. These may be intentional alternatives; examples: "
+                + "; ".join(examples) + ".",
+        })
+
     if not findings:
         findings.append({"severity": "success", "message": "No obvious recipe-data issues found."})
     return findings
@@ -261,7 +301,7 @@ def validation_embed(findings: list[dict[str, str]]) -> discord.Embed:
         color=discord.Color.orange() if counts["error"] or counts["warning"] else discord.Color.green(),
     )
     for item in findings[:10]:
-        icon = {"error": "🔴", "warning": "🟠", "success": "🟢"}.get(item["severity"], "ℹ️")
+        icon = {"error": "🔴", "warning": "🟠", "info": "🔵", "success": "🟢"}.get(item["severity"], "ℹ️")
         embed.add_field(name=f"{icon} {item['severity'].title()}", value=item["message"][:400], inline=False)
     if len(findings) > 10:
         embed.set_footer(text=f"Showing 10 of {len(findings)} findings. Review the full export for additional flagged entries.")
