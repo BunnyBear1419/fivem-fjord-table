@@ -467,8 +467,7 @@ class AdminActionModal(SafeModal):
                 return
             removed = table["recipes"].pop(index)
             record_recipe_change(before_data, "remove_recipe", interaction.user.id, f"Removed {removed['name']} from {table['name']}", interaction.guild_id)
-            save_recipe_data(data)
-            refresh_recipe_data()
+            save_guild_recipe_data(interaction.guild_id, data)
             await interaction.response.send_message(f"Removed **{removed['name']}**. An automatic backup and change-history entry were created.", ephemeral=True)
             return
 
@@ -699,7 +698,7 @@ class AdminMenuView(SafeView):
         elif action == "profile_switch":
             await interaction.response.send_modal(ProfileSelectModal())
         elif action == "stats":
-            data = load_recipe_data()
+            data = get_guild_recipe_data(interaction.guild_id)
             total = sum(len(t.get("recipes", [])) for t in data["tables"])
             lines = "\n".join(f"• {t['name']}: {len(t.get('recipes', []))} recipes" for t in data["tables"])
             embed = discord.Embed(title="📊 Crafting Directory Admin", description=lines or "No tables configured.", color=COLOR)
@@ -1303,7 +1302,7 @@ class ImportConfirmView(SafeView):
                 child.disabled = True
             await interaction.response.edit_message(content="The recipe data changed after this preview was created. Nothing was imported. Reopen the import tool and create a fresh preview.", embed=None, view=self)
             return
-        record_recipe_change(current, "import_merge", interaction.user.id, "Imported " + str(self.summary["recipes_added"]) + " recipes")
+        record_recipe_change(current, "import_merge", interaction.user.id, "Imported " + str(self.summary["recipes_added"]) + " recipes", interaction.guild_id)
         save_guild_recipe_data(interaction.guild_id, ensure_stable_ids(self.merged))
         for child in self.children:
             child.disabled = True
