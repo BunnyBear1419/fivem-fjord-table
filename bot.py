@@ -120,6 +120,38 @@ def record_recipe_change(before_data: dict, action: str, actor_id: int, summary:
         return entry_id
 
 
+
+def get_guild_recipe_data(guild_id):
+    if guild_id is None:
+        return bot.recipe_data or load_recipe_data()
+    profiles = read_json(GUILD_PROFILES_FILE, {})
+    selected = profiles.get(str(guild_id))
+    if selected:
+        path = PROFILES_DIR / str(guild_id) / (str(selected) + ".json")
+        if path.is_file():
+            return ensure_stable_ids(json.loads(path.read_text(encoding="utf-8")))
+    return bot.recipe_data or load_recipe_data()
+
+
+def save_guild_recipe_data(guild_id, data):
+    if guild_id is None:
+        save_recipe_data(data)
+        refresh_recipe_data()
+        return
+    profiles = read_json(GUILD_PROFILES_FILE, {})
+    selected = profiles.get(str(guild_id))
+    if selected:
+        path = PROFILES_DIR / str(guild_id) / (str(selected) + ".json")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write_json(path, ensure_stable_ids(data))
+    else:
+        save_recipe_data(data)
+        refresh_recipe_data()
+
+
+def guild_aliases(guild_id):
+    return read_json(ALIASES_FILE, {}).get(str(guild_id or "dm"), {})
+
 def is_guild_admin(interaction: discord.Interaction) -> bool:
     return bool(interaction.guild and interaction.user.guild_permissions.manage_guild)
 
@@ -273,7 +305,7 @@ class SearchModal(SafeModal, title="Search crafting recipes"):
     async def on_submit(self, interaction: discord.Interaction):
         term = self.query.value.strip()
         record_usage("search", term)
-        await interaction.response.send_message(embed=search_embed(bot.recipe_data, term, self.table.value.strip() or None), ephemeral=True)
+        await interaction.response.send_message(embed=search_embed(get_guild_recipe_data(interaction.guild_id), term, self.table.value.strip() or None), ephemeral=True)
 
 
 class IngredientLookupModal(SafeModal, title="Find ingredient across tables"):
@@ -287,7 +319,7 @@ class IngredientLookupModal(SafeModal, title="Find ingredient across tables"):
         ingredient = self.ingredient.value.strip()
         record_usage("search", f"ingredient:{ingredient}")
         await interaction.response.send_message(
-            embed=ingredient_usage_embed(bot.recipe_data, ingredient),
+            embed=ingredient_usage_embed(get_guild_recipe_data(interaction.guild_id), ingredient),
             ephemeral=True,
         )
 
@@ -355,7 +387,7 @@ class AdminActionModal(SafeModal):
             await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
             return
 
-        data = ensure_stable_ids(load_recipe_data())
+        data = ensure_stable_ids(get_guild_recipe_data(interaction.guild_id))
         before_data = json.loads(json.dumps(data, ensure_ascii=False))
         if self.action == "add_table":
             name = self.table_name.value.strip()
@@ -364,8 +396,7 @@ class AdminActionModal(SafeModal):
                 return
             data["tables"].append({"id": __import__("uuid").uuid4().hex, "name": name, "recipes": []})
             record_recipe_change(before_data, "add_table", interaction.user.id, f"Added table: {name}")
-            save_recipe_data(data)
-            refresh_recipe_data()
+            save_guild_recipe_data(interaction.guild_id, data)
             await interaction.response.send_message(f"Added **{name}**. An automatic backup and change-history entry were created.", ephemeral=True)
             return
 
@@ -440,8 +471,7 @@ class AdminActionModal(SafeModal):
                 await interaction.response.send_message("That history entry has no restorable snapshot.", ephemeral=True)
                 return
             record_recipe_change(data, "restore", interaction.user.id, f"Restored before history entry #{history_id}")
-            save_recipe_data(entry["snapshot"])
-            refresh_recipe_data()
+            save_guild_recipe_data(interaction.guild_id, entry["snapshot"])
             await interaction.response.send_message(f"Restored the snapshot from history entry **#{history_id}**. The state being replaced was also saved to history.", ephemeral=True)
             return
 
@@ -660,7 +690,7 @@ class RecipeCalculatorModal(SafeModal, title="Calculate recipe shopping list"):
     async def on_submit(self, interaction: discord.Interaction):
         try:
             batch_count = int(self.batches.value.strip())
-            result = calculate_recipe_ingredients(bot.recipe_data, self.table.value, self.recipe.value, batch_count)
+            result = calculate_recipe_ingredients(get_guild_recipe_data(interaction.guild_id), self.table.value, self.recipe.value, batch_count)
         except (ValueError, TypeError) as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
@@ -790,7 +820,7 @@ class CheckSavedInventoryModal(SafeModal, title="Plan using my saved inventory")
             return
         inventory_text = ", ".join(f"{name} x{quantity}" for name, quantity in items.items())
         try:
-            result = inventory_plan(bot.recipe_data, self.table.value, self.recipe.value, int(self.batches.value.strip()), inventory_text)
+            result = inventory_plan(get_guild_recipe_data(interaction.guild_id), self.table.value, self.recipe.value, int(self.batches.value.strip()), inventory_text)
         except (ValueError, TypeError) as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
@@ -996,22 +1026,22 @@ class MainMenuView(SafeView):
     async def choose_action(self, interaction: discord.Interaction):
         action = interaction.data["values"][0]
         if action == "browse":
-            view = CraftingDirectoryView(self.owner_id, bot.recipe_data, on_table_selected=record_table_usage)
+            view = CraftingDirectoryView(self.owner_id, get_guild_recipe_data(interaction.guild_id), on_table_selected=record_table_usage)
             await interaction.response.edit_message(embed=view.current_embed(), view=view)
         elif action == "search":
             await interaction.response.send_modal(SearchModal())
         elif action == "ingredient_lookup":
             await interaction.response.send_modal(IngredientLookupModal())
         elif action == "all_ingredients":
-            view = IngredientDirectoryView(self.owner_id, bot.recipe_data)
+            view = IngredientDirectoryView(self.owner_id, get_guild_recipe_data(interaction.guild_id))
             await interaction.response.edit_message(
-                embed=ingredient_directory_embed(bot.recipe_data, 0, view.page_size),
+                embed=ingredient_directory_embed(get_guild_recipe_data(interaction.guild_id), 0, view.page_size),
                 view=view,
             )
         elif action == "shopping_list":
             await interaction.response.send_modal(RecipeCalculatorModal())
         elif action == "compare_tables":
-            await interaction.response.edit_message(embed=table_comparison_embed(bot.recipe_data), view=self)
+            await interaction.response.edit_message(embed=table_comparison_embed(get_guild_recipe_data(interaction.guild_id)), view=self)
         elif action == "dependency":
             await interaction.response.send_modal(DependencyModal())
         elif action == "production_cost":
@@ -1045,7 +1075,7 @@ class MainMenuView(SafeView):
 class DependencyModal(SafeModal, title="Trace a production chain"):
     item = discord.ui.TextInput(label="Item / recipe output name", max_length=100)
     async def on_submit(self, interaction):
-        lines = dependency_lines(dependency_chain(bot.recipe_data, self.item.value.strip()))
+        lines = dependency_lines(dependency_chain(get_guild_recipe_data(interaction.guild_id), self.item.value.strip()))
         embed = discord.Embed(title="Production chain: " + self.item.value.strip()[:180], description="\n".join(lines)[:3900], color=COLOR)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -1058,7 +1088,7 @@ class ProductionCostModal(SafeModal, title="Full production requirements"):
     async def on_submit(self, interaction: discord.Interaction):
         try:
             result = expanded_production_requirements(
-                bot.recipe_data, self.table.value, self.recipe.value, int(self.batches.value.strip())
+                get_guild_recipe_data(interaction.guild_id), self.table.value, self.recipe.value, int(self.batches.value.strip())
             )
         except (ValueError, TypeError) as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
@@ -1112,7 +1142,7 @@ class MultiRecipeModal(SafeModal, title="Multi-recipe planner"):
                 if len(parts) != 3:
                     raise ValueError("Use: Table | Recipe | batches")
                 parsed.append((parts[0], parts[1], int(parts[2])))
-            result = multi_recipe_plan(bot.recipe_data, parsed)
+            result = multi_recipe_plan(get_guild_recipe_data(interaction.guild_id), parsed)
         except (ValueError, TypeError) as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
@@ -1134,7 +1164,7 @@ class AdvancedSearchModal(SafeModal, title="Advanced search"):
     minimum = discord.ui.TextInput(label="Minimum ingredient rows", default="0", max_length=3)
     async def on_submit(self, interaction):
         try:
-            results = advanced_search(bot.recipe_data, self.keyword.value.strip(), self.table.value.strip(), self.ingredient.value.strip(), self.tool.value.strip(), int(self.minimum.value.strip()))
+            results = advanced_search(get_guild_recipe_data(interaction.guild_id), self.keyword.value.strip(), self.table.value.strip(), self.ingredient.value.strip(), self.tool.value.strip(), int(self.minimum.value.strip()))
         except ValueError as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
@@ -1160,7 +1190,7 @@ class RecipeCompareModal(SafeModal, title="Compare two recipes"):
     recipe_b = discord.ui.TextInput(label="Second recipe", max_length=100)
     async def on_submit(self, interaction):
         try:
-            result = recipe_comparison(bot.recipe_data, self.table_a.value, self.recipe_a.value, self.table_b.value, self.recipe_b.value)
+            result = recipe_comparison(get_guild_recipe_data(interaction.guild_id), self.table_a.value, self.recipe_a.value, self.table_b.value, self.recipe_b.value)
         except ValueError as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
@@ -1265,7 +1295,9 @@ async def on_message(message: discord.Message):
         return
 
     record_usage("search", query)
-    matches = chat_recipe_search(bot.recipe_data, query, limit=3)
+    aliases = guild_aliases(message.guild.id if message.guild else None)
+    alias_target = next((target for alias, target in aliases.items() if alias.casefold() == query.casefold()), None)
+    matches = chat_recipe_search(get_guild_recipe_data(message.guild.id if message.guild else None), alias_target or query, limit=3)
     if not matches:
         record_usage("no_result", query)
         await message.reply(
