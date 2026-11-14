@@ -387,6 +387,7 @@ class AdminActionModal(SafeModal):
                 "review": "Added by server administrator", "source": "CraftingBot admin menu",
             })
             record_recipe_change(before_data, "add_recipe", interaction.user.id, f"Added {name} to {table['name']}")
+            record_audit_event(interaction.guild_id, interaction.user.id, "recipe_add", f"{name} in {table['name']}")
             save_recipe_data(data)
             refresh_recipe_data()
             await interaction.response.send_message(f"Added **{name}** to **{table['name']}**. Duplicate ingredients are retained.", ephemeral=True)
@@ -461,6 +462,56 @@ class AdminActionModal(SafeModal):
             await interaction.response.send_message(f"Marked report #{report_id} as resolved.", ephemeral=True)
 
 
+class AliasManagerModal(SafeModal, title="Manage ingredient search aliases"):
+    aliases = discord.ui.TextInput(label="One alias => exact ingredient name per line", style=discord.TextStyle.paragraph, placeholder="weed => Clean Weed Bud\ncloth => Cheesecloth", max_length=1800)
+
+    async def on_submit(self, interaction):
+        parsed = {}
+        for line in self.aliases.value.splitlines():
+            if not line.strip():
+                continue
+            if "=>" not in line:
+                await interaction.response.send_message(f"Invalid line: {line[:100]}. Use alias => exact ingredient name.", ephemeral=True)
+                return
+            alias, target = [part.strip() for part in line.split("=>", 1)]
+            if not alias or not target or len(alias) > 80 or len(target) > 100:
+                await interaction.response.send_message("Aliases and target names must be non-empty and within the length limits.", ephemeral=True)
+                return
+            parsed[alias] = target
+        if len(parsed) > 50:
+            await interaction.response.send_message("A server can have at most 50 aliases.", ephemeral=True)
+            return
+        all_aliases = read_json(ALIASES_FILE, {})
+        all_aliases[str(interaction.guild_id or "dm")] = parsed
+        write_json(ALIASES_FILE, all_aliases)
+        record_audit_event(interaction.guild_id, interaction.user.id, "aliases_update", f"Saved {len(parsed)} ingredient alias(es)")
+        await interaction.response.send_message(f"Saved {len(parsed)} alias(es). Original recipe and ingredient names were not changed.", ephemeral=True)
+
+
+class ProfileCreateModal(SafeModal, title="Create a server recipe profile"):
+    profile = discord.ui.TextInput(label="Profile name", placeholder="main, test, seasonal", max_length=40)
+
+    async def on_submit(self, interaction):
+        if not interaction.guild_id:
+            await interaction.response.send_message("Server profiles can only be created inside a Discord server.", ephemeral=True)
+            return
+        try:
+            path = _profile_path(interaction.guild_id, self.profile.value.strip())
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        if path.exists():
+            await interaction.response.send_message("That profile already exists. Choose a different name.", ephemeral=True)
+            return
+        path.parent.mkdir(parents=True, exist_ok=True)
+        atomic_write_json(path, get_guild_recipe_data(interaction.guild_id))
+        profiles = read_json(GUILD_PROFILES_FILE, {})
+        profiles[str(interaction.guild_id)] = self.profile.value.strip()
+        write_json(GUILD_PROFILES_FILE, profiles)
+        record_audit_event(interaction.guild_id, interaction.user.id, "profile_create", f"Created and activated profile {self.profile.value.strip()}")
+        await interaction.response.send_message(f"Created and activated profile **{self.profile.value.strip()}** with a copy of the current recipe directory. This profile is now separate for this server.", ephemeral=True)
+
+
 class AdminMenuView(SafeView):
     def __init__(self, owner_id: int):
         super().__init__(timeout=300)
@@ -482,6 +533,10 @@ class AdminMenuView(SafeView):
             discord.SelectOption(label="View change history", value="history", emoji="🕘"),
             discord.SelectOption(label="Restore a previous version", value="restore_history", emoji="↩️"),
             discord.SelectOption(label="View directory statistics", value="stats", emoji="📊"),
+            discord.SelectOption(label="System health check", value="health", emoji="🩺"),
+            discord.SelectOption(label="Staff activity audit log", value="audit", emoji="🧾"),
+            discord.SelectOption(label="Manage ingredient aliases", value="aliases", emoji="🏷️"),
+            discord.SelectOption(label="Create server recipe profile", value="profile", emoji="🗂️"),
             discord.SelectOption(label="Review open reports", value="reports", emoji="📨"),
             discord.SelectOption(label="Resolve a report", value="resolve_report", emoji="✅"),
             discord.SelectOption(label="Back to main menu", value="back", emoji="↩️"),
@@ -553,6 +608,26 @@ class AdminMenuView(SafeView):
             for item in reversed(history[-10:]):
                 embed.add_field(name=f"#{item['id']} · {item.get('action', 'change')}", value=f"{item.get('summary', '')}\nBy user ID: {item.get('actor_id', 'unknown')}\n{item.get('created_at', 'unknown')}", inline=False)
             await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif action == "health":
+            data = load_recipe_data()
+            total = sum(len(t.get("recipes", [])) for t in data.get("tables", []))
+            backups = list(BACKUP_DIR.glob("crafting-backup-*.json"))
+            status = "Healthy" if bot.is_ready() and data.get("tables") else "Needs attention"
+            embed = discord.Embed(title="🩺 Crafting Bot Health", description=f"**Status:** {status}\n**Bot connected:** {bot.is_ready()}\n**Tables:** {len(data.get('tables', []))}\n**Recipes:** {total}\n**Backups available:** {len(backups)}\n**Inventory file:** {'Present' if INVENTORIES_FILE.exists() else 'Not created'}\n**Reports file:** {'Present' if REPORTS_FILE.exists() else 'Not created'}", color=COLOR)
+            embed.add_field(name="Storage note", value="Runtime files on Discloud may not survive host-side rebuilds. Download backups externally.", inline=False)
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif action == "audit":
+            entries = [item for item in read_json(AUDIT_FILE, []) if item.get("guild_id") == interaction.guild_id][-10:]
+            embed = discord.Embed(title="🧾 Staff Activity Audit Log", color=COLOR)
+            for item in reversed(entries):
+                embed.add_field(name=f"{item.get('action')} · {item.get('created_at', '')[:19]}", value=f"By user ID: {item.get('actor_id')}\n{item.get('details', '')}", inline=False)
+            if not entries:
+                embed.description = "No tracked staff actions yet. Recipe changes and inventory restores will appear here."
+            await interaction.response.send_message(embed=embed, ephemeral=True)
+        elif action == "aliases":
+            await interaction.response.send_modal(AliasManagerModal())
+        elif action == "profile":
+            await interaction.response.send_modal(ProfileCreateModal())
         elif action == "stats":
             data = load_recipe_data()
             total = sum(len(t.get("recipes", [])) for t in data["tables"])
@@ -756,6 +831,50 @@ class ClearInventoryConfirmView(SafeView):
         await interaction.response.edit_message(content="Nothing was changed.", embed=None, view=self)
 
 
+class ShareShoppingListView(SafeView):
+    def __init__(self, owner_id, embed):
+        super().__init__(timeout=120)
+        self.owner_id, self.embed = owner_id, embed
+
+    async def interaction_check(self, interaction):
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the person who created this list can share it.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Share this list in the channel", style=discord.ButtonStyle.primary, emoji="📨")
+    async def share(self, interaction, button):
+        await interaction.response.send_message(embed=self.embed)
+        button.disabled = True
+        await interaction.edit_original_response(view=self)
+
+
+class RestoreInventoryModal(SafeModal, title="Restore saved inventory"):
+    backup_json = discord.ui.TextInput(label="Paste your exported inventory JSON", style=discord.TextStyle.paragraph, max_length=1800)
+
+    async def on_submit(self, interaction):
+        try:
+            payload = json.loads(self.backup_json.value)
+            if payload.get("version") != 1 or not isinstance(payload.get("items"), dict):
+                raise ValueError("Unsupported inventory backup format.")
+            items = {}
+            for name, quantity in payload["items"].items():
+                name = str(name).strip()
+                quantity = int(quantity)
+                if not name or quantity < 0 or quantity > 1000000:
+                    raise ValueError("Inventory items need names and quantities from 0 to 1,000,000.")
+                if quantity:
+                    items[name] = quantity
+            if len(items) > 100:
+                raise ValueError("A saved inventory can contain at most 100 item names.")
+        except (ValueError, TypeError, json.JSONDecodeError) as exc:
+            await interaction.response.send_message(f"Could not restore that backup: {exc}", ephemeral=True)
+            return
+        _save_inventory_items(interaction.guild_id, interaction.user.id, items)
+        record_audit_event(interaction.guild_id, interaction.user.id, "inventory_restore", f"Restored {len(items)} inventory item(s)")
+        await interaction.response.send_message(embed=_saved_inventory_embed(items, discord.utils.utcnow().isoformat()), ephemeral=True)
+
+
 class InventoryTrackerView(SafeView):
     def __init__(self, owner_id: int, guild_id: int | None):
         super().__init__(timeout=300)
@@ -790,6 +909,16 @@ class InventoryTrackerView(SafeView):
             view=ClearInventoryConfirmView(self.owner_id, self.guild_id),
             ephemeral=True,
         )
+
+    @discord.ui.button(label="Export backup", style=discord.ButtonStyle.secondary, emoji="📤", row=2)
+    async def export_inventory(self, interaction, button):
+        saved = _load_saved_inventory(self.guild_id, self.owner_id)
+        payload = json.dumps({"version": 1, "items": saved.get("items") or {}, "updated_at": saved.get("updated_at")}, ensure_ascii=False, indent=2).encode("utf-8")
+        await interaction.response.send_message("Keep this file somewhere safe. Use Restore backup to import it later.", file=discord.File(io.BytesIO(payload), filename="my-fivem-inventory.json"), ephemeral=True)
+
+    @discord.ui.button(label="Restore backup", style=discord.ButtonStyle.secondary, emoji="📥", row=2)
+    async def restore_inventory(self, interaction, button):
+        await interaction.response.send_modal(RestoreInventoryModal())
 
 
 class ChatRecipeMatchView(SafeView):
