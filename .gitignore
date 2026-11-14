@@ -14,3 +14,9 @@ inventories.json
 backups/
 bot.log*
 *.tmp
+
+# Runtime feature data (private per-server / per-player)
+aliases.json
+audit-log.json
+guild-profiles.json
+profiles/
