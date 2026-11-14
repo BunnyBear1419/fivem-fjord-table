@@ -19,6 +19,7 @@ Members use only **`/crafting`**. It opens a private dropdown menu with:
 - **Recipe shopping list** — calculate required ingredients for 1–999 batches; repeated ingredient rows are summed for the requested total.
 - **Crafting table comparison** — compare shared and table-exclusive ingredients.
 - **Production chains** — trace recipe outputs through nested ingredient recipes to base items (cycle/depth limited).
+- **Full production cost planner** — calculate total base ingredients for a target number of finished batches, multiplying quantities through uniquely matched intermediate recipes. If an item has multiple possible producer recipes, it flags the choice instead of guessing. This calculates material requirements, not in-game cash prices.
 - **Inventory calculator** — enter current stock once to calculate craftable batches plus missing quantities.
 - **My saved inventory** — save your personal ingredient stock privately per Discord server, update or clear it, and reuse it when planning recipes.
 - **Multi-recipe planner** — combine several table/recipe/batch requests into one shopping list.

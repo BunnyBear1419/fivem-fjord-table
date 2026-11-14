@@ -59,6 +59,16 @@ def test_runtime_player_inventory_data_is_ignored_by_git():
     assert "inventories.json" in ignore
 
 
+
+def test_saved_inventory_and_production_cost_planner_are_exposed_in_menu():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'value="inventory_tracker"' in source
+    assert 'value="production_cost"' in source
+    assert "class ProductionCostModal" in source
+    assert "class InventoryTrackerView" in source
+    assert "class ChatRecipeMatchView" in source
+
+
 def test_legacy_guild_commands_are_cleared_on_ready():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert "self.tree.clear_commands(guild=guild)" in source
