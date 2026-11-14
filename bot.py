@@ -27,7 +27,7 @@ from discord import app_commands
 from discord.ext import commands, tasks
 
 from crafting import (
-    OVERRIDE_FILE, CraftingDirectoryView, create_backup, load_recipe_data,
+    OVERRIDE_FILE, BACKUP_DIR, CraftingDirectoryView, create_backup, load_recipe_data,
     parse_ingredients, save_recipe_data, search_embed, ingredient_usage_embed,
     build_ingredient_directory, ingredient_directory_embed, ingredient_directory_document,
 )
