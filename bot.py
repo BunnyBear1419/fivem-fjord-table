@@ -915,11 +915,11 @@ async def on_message(message: discord.Message):
             f"• **{name}** ×{quantity}"
             for name, quantity in match.get("ingredients", [])
         ]
-        value = "**Table:** " + match["table"] + "\\n"
-        value += "**Recipe:** " + match["recipe"] + "\\n"
-        value += "**Ingredients:**\\n" + ("\\n".join(ingredient_lines) if ingredient_lines else "None recorded")
+        value = "**Table:** " + match["table"] + "\n"
+        value += "**Recipe:** " + match["recipe"] + "\n"
+        value += "**Ingredients:**\n" + ("\n".join(ingredient_lines) if ingredient_lines else "None recorded")
         if match.get("tools"):
-            value += "\\n**Tools (not consumed):** " + ", ".join(match["tools"])
+            value += "\n**Tools (not consumed):** " + ", ".join(match["tools"])
         embed.add_field(name=match.get("match_label", "Closest match")[:256], value=value[:1024], inline=False)
     embed.set_footer(text="Game reference only • Use /crafting for the full directory")
     await message.reply(embed=embed, mention_author=False)
