@@ -175,3 +175,38 @@ def test_browse_view_paginates_tables_and_recipes_within_discord_select_limits()
     assert "self.tables[table_start:table_start + 25]" in source
     assert "self._previous_table_page" in source
     assert "self._next_table_page" in source
+
+
+
+def test_extended_player_and_server_tools_are_wired():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    for feature in (
+        "class RestoreInventoryModal",
+        "class ShareShoppingListView",
+        "class AliasManagerModal",
+        "class ProfileCreateModal",
+        "class ProfileSelectModal",
+        "System health check",
+        "Staff activity audit log",
+        "Manage ingredient aliases",
+        "Create server recipe profile",
+        "Switch server recipe profile",
+        "what can i craft",
+        "Export backup",
+        "Restore backup",
+    ):
+        assert feature in source
+
+
+def test_runtime_files_for_new_features_are_ignored():
+    ignore = Path(".gitignore").read_text(encoding="utf-8")
+    for filename in ("aliases.json", "audit-log.json", "guild-profiles.json", "profiles/"):
+        assert filename in ignore
+
+
+def test_server_profile_and_audit_data_are_guild_scoped():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "def get_guild_recipe_data(guild_id)" in source
+    assert "def save_guild_recipe_data(guild_id, data)" in source
+    assert '"guild_id": guild_id' in source
+    assert 'item.get("guild_id") == interaction.guild_id' in source
