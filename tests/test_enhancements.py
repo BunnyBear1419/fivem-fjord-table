@@ -195,3 +195,25 @@ def test_storage_writes_atomically_and_preserves_corrupt_files_for_recovery(tmp_
     with pytest.raises(ValueError, match="original file was preserved"):
         read_json(path, {})
     assert path.read_text(encoding="utf-8") == "{broken json"
+
+
+def test_brewing_kettle_table_is_bundled_with_all_user_supplied_recipes():
+    import json
+    from pathlib import Path
+    data = json.loads(Path("recipes.json").read_text(encoding="utf-8"))
+    table = next(item for item in data["tables"] if item["name"] == "Brewing Kettle")
+    assert table["id"] == "table_010"
+    assert len(table["recipes"]) == 15
+    assert table["recipes"][0]["name"] == "Ayahuasca Brew"
+    assert table["recipes"][0]["ingredients"] == [
+        ["Shredded Caapi Vine", 2],
+        ["Chacruna Leaves", 2],
+        ["Distilled Water", 2],
+        ["Cheesecloth", 1],
+    ]
+    assert table["recipes"][-1]["name"] == "San Pedro Brew"
+    assert table["recipes"][-1]["ingredients"] == [
+        ["Dried San Pedro", 2],
+        ["Distilled Water", 1],
+    ]
+    assert all(recipe["id"].startswith("recipe_010_") for recipe in table["recipes"])

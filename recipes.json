@@ -2341,6 +2341,319 @@
         }
       ],
       "id": "table_009"
+    },
+    {
+      "name": "Brewing Kettle",
+      "recipes": [
+        {
+          "name": "Ayahuasca Brew",
+          "ingredients": [
+            [
+              "Shredded Caapi Vine",
+              2
+            ],
+            [
+              "Chacruna Leaves",
+              2
+            ],
+            [
+              "Distilled Water",
+              2
+            ],
+            [
+              "Cheesecloth",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0001"
+        },
+        {
+          "name": "Ayahuasca",
+          "ingredients": [
+            [
+              "Ayahuasca Brew",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0002"
+        },
+        {
+          "name": "Amanita Muscaria",
+          "ingredients": [
+            [
+              "Dried Amanita Caps",
+              3
+            ],
+            [
+              "Citric Acid",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ],
+            [
+              "Cheesecloth",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0003"
+        },
+        {
+          "name": "Datura",
+          "ingredients": [
+            [
+              "Dried Datura",
+              3
+            ],
+            [
+              "Distilled Water",
+              1
+            ],
+            [
+              "Cheesecloth",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0004"
+        },
+        {
+          "name": "Kava",
+          "ingredients": [
+            [
+              "Kava Powder",
+              2
+            ],
+            [
+              "Distilled Water",
+              1
+            ],
+            [
+              "Cheesecloth",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0005"
+        },
+        {
+          "name": "Blue Lotus",
+          "ingredients": [
+            [
+              "Dried Blue Lotus",
+              3
+            ],
+            [
+              "Grain Alcohol",
+              1
+            ],
+            [
+              "Cheesecloth",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0006"
+        },
+        {
+          "name": "Promethazine-Codeine Syrup",
+          "ingredients": [
+            [
+              "Opium",
+              1
+            ],
+            [
+              "Promethazine Tablets",
+              1
+            ],
+            [
+              "Bag of Sugar",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0007"
+        },
+        {
+          "name": "GHB Solution",
+          "ingredients": [
+            [
+              "Gamma-Butyrolactone (GBL)",
+              1
+            ],
+            [
+              "Sodium Hydroxide (Lye)",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0008"
+        },
+        {
+          "name": "Steroid Solution",
+          "ingredients": [
+            [
+              "Raw Testosterone Enanthate",
+              1
+            ],
+            [
+              "Benzyl Benzoate",
+              1
+            ],
+            [
+              "Benzyl Alcohol",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0009"
+        },
+        {
+          "name": "Cured Areca Nuts",
+          "ingredients": [
+            [
+              "Areca Nuts",
+              3
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0010"
+        },
+        {
+          "name": "Methadone",
+          "ingredients": [
+            [
+              "Methadone HCl",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ],
+            [
+              "Bag of Sugar",
+              1
+            ],
+            [
+              "Glass Vial",
+              5
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0011"
+        },
+        {
+          "name": "Crack",
+          "ingredients": [
+            [
+              "Raw Cocaine",
+              2
+            ],
+            [
+              "Baking Soda",
+              1
+            ],
+            [
+              "Distilled Water",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0012"
+        },
+        {
+          "name": "Weed Cookie",
+          "ingredients": [
+            [
+              "Cookie Dough",
+              1
+            ],
+            [
+              "Chocolate Chips",
+              1
+            ],
+            [
+              "Clean Weed Bud",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0013"
+        },
+        {
+          "name": "Mushroom Chocolate",
+          "ingredients": [
+            [
+              "Mushroom Powder",
+              1
+            ],
+            [
+              "Chocolate Chips",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0014"
+        },
+        {
+          "name": "San Pedro Brew",
+          "ingredients": [
+            [
+              "Dried San Pedro",
+              2
+            ],
+            [
+              "Distilled Water",
+              1
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "recipe_010_0015"
+        }
+      ],
+      "id": "table_010"
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
