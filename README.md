@@ -101,3 +101,19 @@ python bot.py
 ## Scope
 
 This is a FiveM roleplay game reference only, not real-world instructions.
+
+
+## Additional player and server tools
+
+- **Saved inventory backup:** In `/crafting` → My saved inventory, use Export backup to download a JSON file. Restore backup accepts the JSON contents pasted into the restore modal. Keep exports outside Discloud.
+- **Inventory-aware crafting assistant:** In a server channel, use `!what can I craft: Item x10, Other Item x5`. It reports recipes that the supplied stock can craft, based only on the active server recipe directory.
+- **Shareable shopping lists:** The recipe shopping list result includes a button to post the calculated list into the current channel.
+- **Ingredient aliases:** Manage Server / approved crafting staff → Admin tools → Manage ingredient aliases. Enter one mapping per line, such as `weed => Clean Weed Bud`. Aliases only affect search; saved ingredient and recipe names are not renamed.
+- **Staff audit log:** Admin tools → Staff activity audit log shows recent tracked recipe, alias, inventory and profile actions. The log is bounded to the latest 1,000 entries.
+- **Health check:** Admin tools → System health check shows bot readiness, directory counts, backup count and runtime file presence.
+- **Server recipe profiles:** Admin tools → Create server recipe profile copies the current directory into a profile for that Discord server and activates it. Switch server recipe profile activates another existing profile. Recipe edits and imports are saved to the active profile. Profiles are runtime data and are excluded from Git.
+- **Separate server data:** A server without an active profile continues using the shared base recipe directory. Create a profile before making server-specific recipe changes.
+
+### Runtime persistence warning
+
+Discloud runtime JSON files (saved inventories, aliases, audit logs, profile mappings and profile snapshots) are not committed to Git. Download recipe and inventory backups regularly and store them outside the hosting application. A host-side rebuild or app replacement may remove runtime files.
