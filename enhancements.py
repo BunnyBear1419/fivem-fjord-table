@@ -14,7 +14,7 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
     prefixes = (
         "how do i make ", "how do you make ", "how to make ", "how can i make ",
         "make ", "recipe for ", "how do i craft ", "how to craft ",
-        "where do i find ", "where can i get ", "where is ", "find ",
+        "where do i find ", "where do i get ", "where can i find ", "where can i get ", "where is ", "find ",
     )
     for prefix in prefixes:
         if cleaned.startswith(prefix):
