@@ -103,6 +103,20 @@ def record_table_usage(table_name: str):
         write_json(STATS_FILE, stats)
 
 
+def record_audit_event(guild_id, actor_id: int, action: str, details: str):
+    with file_lock():
+        entries = read_json(AUDIT_FILE, [])
+        entries.append({"guild_id": guild_id, "actor_id": actor_id, "action": action[:80], "details": details[:300], "created_at": discord.utils.utcnow().isoformat()})
+        write_json(AUDIT_FILE, entries[-1000:])
+
+
+def _profile_path(guild_id: int, profile: str) -> Path:
+    safe = "".join(ch for ch in str(profile) if ch.isalnum() or ch in "-_")[:40]
+    if not safe:
+        raise ValueError("Profile names may contain letters, numbers, hyphens and underscores.")
+    return PROFILES_DIR / str(guild_id) / f"{safe}.json"
+
+
 def record_recipe_change(before_data: dict, action: str, actor_id: int, summary: str):
     """Keep the latest 30 reversible snapshots to bound runtime storage."""
     with file_lock():
@@ -420,8 +434,7 @@ class AdminActionModal(SafeModal):
             })
             record_recipe_change(before_data, "add_recipe", interaction.user.id, f"Added {name} to {table['name']}")
             record_audit_event(interaction.guild_id, interaction.user.id, "recipe_add", f"{name} in {table['name']}")
-            save_recipe_data(data)
-            refresh_recipe_data()
+            save_guild_recipe_data(interaction.guild_id, data)
             await interaction.response.send_message(f"Added **{name}** to **{table['name']}**. Duplicate ingredients are retained.", ephemeral=True)
             return
 
@@ -1233,7 +1246,7 @@ class ImportRecipeModal(SafeModal, title="Import / merge recipe JSON"):
             mode = self.mode.value.strip().casefold()
             if mode not in {"skip", "replace"}:
                 raise ValueError("Conflict mode must be skip or replace.")
-            current = ensure_stable_ids(load_recipe_data())
+            current = ensure_stable_ids(get_guild_recipe_data(interaction.guild_id))
             base_fingerprint = recipe_fingerprint(current)
             merged, summary = merge_recipe_import(current, incoming, mode)
         except (json.JSONDecodeError, ValueError, TypeError) as exc:
