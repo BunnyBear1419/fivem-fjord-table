@@ -320,7 +320,7 @@ class SearchModal(SafeModal, title="Search crafting recipes"):
     async def on_submit(self, interaction: discord.Interaction):
         term = self.query.value.strip()
         record_usage("search", term)
-        await interaction.response.send_message(embed=search_embed(get_guild_recipe_data(interaction.guild_id), term, self.table.value.strip() or None), ephemeral=True)
+        await interaction.response.send_message(embed=search_embed(get_guild_recipe_data(interaction.guild_id), next((target for alias, target in guild_aliases(interaction.guild_id).items() if alias.casefold() == term.casefold()), term), self.table.value.strip() or None), ephemeral=True)
 
 
 class IngredientLookupModal(SafeModal, title="Find ingredient across tables"):
@@ -531,6 +531,30 @@ class AliasManagerModal(SafeModal, title="Manage ingredient search aliases"):
         await interaction.response.send_message(f"Saved {len(parsed)} alias(es). Original recipe and ingredient names were not changed.", ephemeral=True)
 
 
+
+class ProfileSelectModal(SafeModal, title="Switch server recipe profile"):
+    profile = discord.ui.TextInput(label="Existing profile name", max_length=40)
+
+    async def on_submit(self, interaction):
+        if not interaction.guild_id:
+            await interaction.response.send_message("Server profiles can only be selected inside a Discord server.", ephemeral=True)
+            return
+        try:
+            path = _profile_path(interaction.guild_id, self.profile.value.strip())
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        if not path.is_file():
+            available = sorted(item.stem for item in path.parent.glob("*.json")) if path.parent.exists() else []
+            await interaction.response.send_message("Profile not found. Available: " + (", ".join(available) or "none"), ephemeral=True)
+            return
+        profiles = read_json(GUILD_PROFILES_FILE, {})
+        profiles[str(interaction.guild_id)] = self.profile.value.strip()
+        write_json(GUILD_PROFILES_FILE, profiles)
+        record_audit_event(interaction.guild_id, interaction.user.id, "profile_switch", f"Activated profile {self.profile.value.strip()}")
+        await interaction.response.send_message(f"Activated server recipe profile **{self.profile.value.strip()}**. New /crafting sessions will use it.", ephemeral=True)
+
+
 class ProfileCreateModal(SafeModal, title="Create a server recipe profile"):
     profile = discord.ui.TextInput(label="Profile name", placeholder="main, test, seasonal", max_length=40)
 
@@ -580,6 +604,7 @@ class AdminMenuView(SafeView):
             discord.SelectOption(label="Staff activity audit log", value="audit", emoji="🧾"),
             discord.SelectOption(label="Manage ingredient aliases", value="aliases", emoji="🏷️"),
             discord.SelectOption(label="Create server recipe profile", value="profile", emoji="🗂️"),
+            discord.SelectOption(label="Switch server recipe profile", value="profile_switch", emoji="🔀"),
             discord.SelectOption(label="Review open reports", value="reports", emoji="📨"),
             discord.SelectOption(label="Resolve a report", value="resolve_report", emoji="✅"),
             discord.SelectOption(label="Back to main menu", value="back", emoji="↩️"),
@@ -671,6 +696,8 @@ class AdminMenuView(SafeView):
             await interaction.response.send_modal(AliasManagerModal())
         elif action == "profile":
             await interaction.response.send_modal(ProfileCreateModal())
+        elif action == "profile_switch":
+            await interaction.response.send_modal(ProfileSelectModal())
         elif action == "stats":
             data = load_recipe_data()
             total = sum(len(t.get("recipes", [])) for t in data["tables"])
@@ -814,6 +841,7 @@ class SaveInventoryModal(SafeModal, title="Update my saved inventory"):
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
         _save_inventory_items(interaction.guild_id, interaction.user.id, items)
+        record_audit_event(interaction.guild_id, interaction.user.id, "inventory_update", f"Saved {len(items)} inventory item(s)")
         await interaction.response.send_message(
             embed=_saved_inventory_embed(items, discord.utils.utcnow().isoformat()),
             ephemeral=True,
@@ -1230,6 +1258,7 @@ class StaffRolesModal(SafeModal, title="Configure crafting staff roles"):
             if raw:
                 values.append(int(raw))
         write_json(PERMISSIONS_FILE, {"role_ids": sorted(set(values))})
+        record_audit_event(interaction.guild_id, interaction.user.id, "staff_roles_update", f"Configured {len(set(values))} staff role(s)")
         await interaction.response.send_message("Saved " + str(len(set(values))) + " approved crafting staff role(s).", ephemeral=True)
 
 
