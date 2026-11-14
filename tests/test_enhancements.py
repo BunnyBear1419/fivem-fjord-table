@@ -126,6 +126,36 @@ def test_validation_reports_bad_quantities_and_does_not_merge_spelling():
     assert any("Possible spelling variation" in item["message"] for item in findings)
 
 
+
+def test_recipe_match_checker_flags_unmatched_ingredients_and_duplicate_outputs_as_info():
+    from enhancements import validate_recipe_data
+    data = {"tables": [
+        {"name": "Table A", "recipes": [
+            {"name": "Widget", "ingredients": [["Raw Wire", 2]]},
+            {"name": "Shared Output", "ingredients": [["Bolt", 1]]},
+        ]},
+        {"name": "Table B", "recipes": [
+            {"name": "Shared Output", "ingredients": [["Raw Wire", 1]]},
+        ]},
+    ]}
+    findings = validate_recipe_data(data)
+    informational = [item["message"] for item in findings if item["severity"] == "info"]
+    assert any("not exact recipe outputs" in message for message in informational)
+    assert any("produced by multiple recipes/tables" in message for message in informational)
+    assert any("Raw Wire" in message for message in informational)
+
+
+def test_recipe_match_checker_does_not_flag_case_only_output_differences():
+    from enhancements import validate_recipe_data
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Widget", "ingredients": [["wire", 1]]},
+        {"name": "Wire", "ingredients": []},
+    ]}]}
+    findings = validate_recipe_data(data)
+    informational = [item["message"] for item in findings if item["severity"] == "info"]
+    assert not any("wire" in message and "not exact recipe outputs" in message for message in informational)
+
+
 def test_csv_and_excel_exports_keep_duplicate_ingredient_occurrences():
     data = {"tables": [{"name": "Bench", "recipes": [
         {"name": "Widget", "ingredients": [["Wire", 2], ["Wire", 3]]}
