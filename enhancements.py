@@ -8,6 +8,67 @@ from typing import Any
 import discord
 
 
+def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
+    """Find close recipe or ingredient matches for short natural-language chat queries."""
+    cleaned = str(query or "").casefold().strip()
+    prefixes = (
+        "how do i make ", "how do you make ", "how to make ", "how can i make ",
+        "make ", "recipe for ", "how do i craft ", "how to craft ",
+        "where do i find ", "where can i get ", "where is ", "find ",
+    )
+    for prefix in prefixes:
+        if cleaned.startswith(prefix):
+            cleaned = cleaned[len(prefix):].strip()
+            break
+    cleaned = cleaned.strip(" ?!.,'\\"")
+    if not cleaned or not isinstance(limit, int) or limit < 1:
+        return []
+
+    recipe_matches = []
+    for table in data.get("tables", []):
+        for recipe in table.get("recipes", []):
+            name = str(recipe.get("name", "")).strip()
+            if not name:
+                continue
+            candidate = name.casefold()
+            score = 1.0 if candidate == cleaned else SequenceMatcher(None, cleaned, candidate).ratio()
+            if cleaned in candidate or candidate in cleaned:
+                score = max(score, 0.9)
+            if score >= 0.48:
+                recipe_matches.append({
+                    "table": table.get("name", "Unknown table"),
+                    "recipe": name,
+                    "ingredients": list(recipe.get("ingredients") or []),
+                    "tools": list(recipe.get("tools") or []),
+                    "score": score,
+                    "match_label": "Recipe match" if score >= 0.9 else "Closest recipe match",
+                })
+    if recipe_matches:
+        recipe_matches.sort(key=lambda item: (-item["score"], item["recipe"].casefold(), item["table"].casefold()))
+        return recipe_matches[:limit]
+
+    ingredient_matches = []
+    for table in data.get("tables", []):
+        for recipe in table.get("recipes", []):
+            for ingredient, quantity in recipe.get("ingredients") or []:
+                ingredient_name = str(ingredient).strip()
+                candidate = ingredient_name.casefold()
+                score = 1.0 if candidate == cleaned else SequenceMatcher(None, cleaned, candidate).ratio()
+                if cleaned in candidate or candidate in cleaned:
+                    score = max(score, 0.9)
+                if score >= 0.62:
+                    ingredient_matches.append({
+                        "table": table.get("name", "Unknown table"),
+                        "recipe": recipe.get("name", "Unknown recipe"),
+                        "ingredients": [[ingredient_name, quantity]],
+                        "tools": [],
+                        "score": score,
+                        "match_label": f"Ingredient match: {ingredient_name}",
+                    })
+    ingredient_matches.sort(key=lambda item: (-item["score"], item["recipe"].casefold(), item["table"].casefold()))
+    return ingredient_matches[:limit]
+
+
 def calculate_recipe_ingredients(data: dict[str, Any], table_name: str, recipe_name: str, batches: int = 1):
     """Calculate a shopping list, summing repeated ingredient rows without altering source data."""
     if not isinstance(batches, int) or batches < 1 or batches > 999:

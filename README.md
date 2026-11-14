@@ -2,6 +2,12 @@
 
 A Discord bot that provides a private, interactive reference for crafting tables and recipes used in FiveM roleplay servers.
 
+## Chat lookup shortcut
+
+Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The bot searches the existing recipe data and replies with up to three close matches, including the crafting table, recipe, ingredients, and any non-consumed tools. This is a local directory lookup, not an external AI service; it does not invent recipes or change ingredient names.
+
+**Discord setup required:** In the Discord Developer Portal, open the bot application, go to **Bot → Privileged Gateway Intents**, enable **Message Content Intent**, and save. The bot requests this intent in code. Without the portal toggle, Discord will not provide ordinary message text to the shortcut.
+
 ## One slash command
 
 Members use only **`/crafting`**. It opens a private dropdown menu with:

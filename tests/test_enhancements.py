@@ -4,6 +4,25 @@ from enhancements import (
 )
 
 
+def test_chat_recipe_search_understands_natural_language_and_finds_table():
+    from enhancements import chat_recipe_search
+    data = {"tables": [
+        {"name": "Coke Table", "recipes": [
+            {"name": "Heroin", "ingredients": [["Brown Heroin Base", 1], ["Hydrochloric acid", 1], ["Activated Carbon", 1]], "tools": []}
+        ]},
+        {"name": "Grinding Station", "recipes": [
+            {"name": "Kief", "ingredients": [["Clean Weed Bud", 4]], "tools": ["Sifting Screen"]}
+        ]},
+    ]}
+    result = chat_recipe_search(data, "How do I make Heroin?")
+    assert result[0]["table"] == "Coke Table"
+    assert result[0]["recipe"] == "Heroin"
+    assert result[0]["ingredients"][0] == ["Brown Heroin Base", 1]
+    ingredient_result = chat_recipe_search(data, "where do I get Clean Weed Bud")
+    assert ingredient_result[0]["table"] == "Grinding Station"
+    assert ingredient_result[0]["recipe"] == "Kief"
+
+
 def test_shopping_list_multiplies_batches_and_sums_duplicate_rows():
     data = {"tables": [{"name": "Bench", "recipes": [
         {"name": "Widget", "ingredients": [["Wire", 2], ["Wire", 3], ["Bolt", 1]], "tools": ["Wrench"]}

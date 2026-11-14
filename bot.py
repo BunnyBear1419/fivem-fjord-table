@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed,
+    analytics_embed, chat_recipe_search,
 )
 
 PROJECT_NAME = "FiveM Crafting Directory"
@@ -206,7 +206,9 @@ class SafeModal(discord.ui.Modal):
 
 class CraftingBot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix="!", intents=discord.Intents.default())
+        intents = discord.Intents.default()
+        intents.message_content = True
+        super().__init__(command_prefix="!", intents=intents)
         self.recipe_data = None
         self.guild_commands_cleaned = False
 
@@ -873,6 +875,54 @@ class ImportConfirmView(SafeView):
         for child in self.children:
             child.disabled = True
         await interaction.response.edit_message(content="Import cancelled. No recipe data was changed.", embed=None, view=self)
+
+
+@bot.event
+async def on_message(message: discord.Message):
+    """Answer natural-language ! lookups using only the saved FiveM recipe directory."""
+    if message.author.bot:
+        return
+    content = (message.content or "").strip()
+    if not content.startswith("!"):
+        await bot.process_commands(message)
+        return
+    query = content[1:].strip()
+    if not query:
+        await message.reply("Try `!how to make [item]` or `!where is [ingredient] used`.", mention_author=False)
+        return
+    if query.casefold() in {"help", "crafting"}:
+        await bot.process_commands(message)
+        return
+    if bot.recipe_data is None:
+        await message.reply("The crafting directory is still loading. Try again shortly.", mention_author=False)
+        return
+
+    matches = chat_recipe_search(bot.recipe_data, query, limit=3)
+    if not matches:
+        await message.reply(
+            f"I couldn't find a close match for **{query[:100]}**. Try the exact item name or use `/crafting` to browse.",
+            mention_author=False,
+        )
+        return
+
+    embed = discord.Embed(
+        title=f"Crafting lookup: {query[:180]}",
+        description="Matches are taken directly from the server's FiveM crafting directory. Ingredient names and quantities are shown as recorded.",
+        color=COLOR,
+    )
+    for match in matches:
+        ingredient_lines = [
+            f"• **{name}** ×{quantity}"
+            for name, quantity in match.get("ingredients", [])
+        ]
+        value = "**Table:** " + match["table"] + "\\n"
+        value += "**Recipe:** " + match["recipe"] + "\\n"
+        value += "**Ingredients:**\\n" + ("\\n".join(ingredient_lines) if ingredient_lines else "None recorded")
+        if match.get("tools"):
+            value += "\\n**Tools (not consumed):** " + ", ".join(match["tools"])
+        embed.add_field(name=match.get("match_label", "Closest match")[:256], value=value[:1024], inline=False)
+    embed.set_footer(text="Game reference only • Use /crafting for the full directory")
+    await message.reply(embed=embed, mention_author=False)
 
 
 @bot.tree.command(name="crafting", description="Open the private FiveM crafting menu.")
