@@ -4,7 +4,7 @@ A Discord bot that provides a private, interactive reference for crafting tables
 
 ## Chat lookup shortcut
 
-Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The bot searches the existing recipe data and replies with up to three close matches, including the crafting table, recipe, ingredients, and any non-consumed tools. This is a local directory lookup, not an external AI service; it does not invent recipes or change ingredient names.
+Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The bot searches the existing recipe data, tolerates common spelling mistakes, and offers a dropdown when several close matches are found. The person who asked can select the intended recipe. This is a local directory lookup, not an external AI service; it does not invent recipes or change ingredient names.
 
 **Discord setup required:** In the Discord Developer Portal, open the bot application, go to **Bot → Privileged Gateway Intents**, enable **Message Content Intent**, and save. The bot requests this intent in code. Without the portal toggle, Discord will not provide ordinary message text to the shortcut.
 
@@ -38,7 +38,8 @@ The Admin tools submenu includes:
 - Export JSON, CSV, and Excel workbooks (each ingredient occurrence is a separate row).
 - Validate recipe data for missing names/ingredients, invalid quantities, repeated recipe names, and possible spelling variations. Findings are review-only; nothing is auto-corrected.
 - View a reversible recipe change history and restore a prior snapshot.
-- View table and recipe totals plus usage analytics.
+- View table and recipe totals plus usage analytics, including common searches that return no matches.
+- Review spelling and data warnings. Possible spelling variations are suggestions only; ingredient names are never automatically merged or renamed.
 - Configure approved staff role IDs (Manage Server is required to change role permissions).
 - Import/merge recipe JSON (up to the Discord modal's 4,000-character limit) with a preview, structural validation, skip/replace conflict handling, stale-preview protection, backup, and history snapshot.
 - Review structured issue reports and resolve a report by number.
@@ -60,7 +61,8 @@ Do not delete and reinvite the bot just to refresh commands.
 - Errors are written to the Discloud console and rotating `bot.log` files (1 MB per file, 3 rotated files retained).
 - Interactive menu, button, select, and modal failures are logged and return a private error message.
 - The optional HTTP health endpoint returns HTTP 200 only when the Discord bot is ready, and HTTP 503 while it is starting or unavailable.
-- Usage statistics store aggregate counts and popular search terms/table selections, not full message histories.
+- Usage statistics store aggregate counts, popular search terms/table selections, and bounded no-result search terms, not full message histories.
+- Saved player inventories are separated by server and Discord user ID; they are not shared with other players. They are stored on the Discloud app filesystem, so a host-side rebuild or app replacement may reset runtime data.
 - Recipe reports are stored for administrators to review.
 - The directory and all menus are ephemeral (visible only to the person who invoked them). Large inventory and multi-recipe plans include complete text attachments so Discord embed limits do not cut off the full totals.
 
@@ -70,7 +72,8 @@ Do not delete and reinvite the bot just to refresh commands.
 - `crafting-data.json` — runtime admin-edited override, created after the first admin change.
 - `crafting.py` — directory UI, search, ingredient parsing, and backup helpers.
 - `storage.py` — atomic JSON reads/writes and a process-wide storage lock.
-- `enhancements.py` — production chains, inventory and multi-recipe planning, advanced search, comparisons, imports, analytics, validation, and CSV/Excel exports.
+- `enhancements.py` — production chains, inventory and multi-recipe planning, advanced search, comparisons, imports, analytics, validation, typo-tolerant matching, and CSV/Excel exports.
+- `inventories.json` — private per-server/per-player saved stock (runtime data).
 - `history.json` — reversible administrator change snapshots, created when the first change is made.
 - `bot.py` — the one slash command, dropdown menus, admin controls, usage tracking, reports, and logging.
 

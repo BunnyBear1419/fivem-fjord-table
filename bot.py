@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search,
+    analytics_embed, chat_recipe_search, parse_inventory,
 )
 
 PROJECT_NAME = "FiveM Crafting Directory"
@@ -46,6 +46,7 @@ STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
 HISTORY_FILE = BASE_DIR / "history.json"
 PERMISSIONS_FILE = BASE_DIR / "permissions.json"
+INVENTORIES_FILE = BASE_DIR / "inventories.json"
 LOG_FILE = BASE_DIR / "bot.log"
 COLOR = discord.Color.from_rgb(57, 75, 111)
 
@@ -72,8 +73,9 @@ def recipe_fingerprint(data: dict) -> str:
 
 def record_usage(kind: str, term: str | None = None):
     with file_lock():
-        stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}})
-        stats["commands"] = int(stats.get("commands", 0)) + 1
+        stats = read_json(STATS_FILE, {"commands": 0, "searches": 0, "terms": {}, "tables": {}, "no_results": 0, "no_result_terms": {}})
+        if kind != "no_result":
+            stats["commands"] = int(stats.get("commands", 0)) + 1
         if kind == "search":
             stats["searches"] = int(stats.get("searches", 0)) + 1
             if term:
@@ -81,6 +83,13 @@ def record_usage(kind: str, term: str | None = None):
                 terms[term[:60]] = int(terms.get(term[:60], 0)) + 1
                 if len(terms) > 100:
                     stats["terms"] = dict(sorted(terms.items(), key=lambda item: item[1], reverse=True)[:100])
+        elif kind == "no_result":
+            stats["no_results"] = int(stats.get("no_results", 0)) + 1
+            if term:
+                terms = stats.setdefault("no_result_terms", {})
+                terms[term[:60]] = int(terms.get(term[:60], 0)) + 1
+                if len(terms) > 100:
+                    stats["no_result_terms"] = dict(sorted(terms.items(), key=lambda item: item[1], reverse=True)[:100])
         write_json(STATS_FILE, stats)
 
 
@@ -167,7 +176,8 @@ def help_embed():
     embed.add_field(name="Recipe shopping list", value="Choose a recipe and batch count to calculate the total ingredients needed.", inline=False)
     embed.add_field(name="Crafting table comparison", value="Compare shared ingredients and ingredients unique to each table.", inline=False)
     embed.add_field(name="Production chains", value="Trace an item's crafting dependencies back to base ingredients.", inline=False)
-    embed.add_field(name="Inventory calculator", value="Use current stock to calculate craftable batches and missing items.", inline=False)
+    embed.add_field(name="Inventory calculator", value="Calculate craftable batches from stock entered for one calculation.", inline=False)
+    embed.add_field(name="My saved inventory", value="Save your ingredient stock privately, update it later, and reuse it for recipe plans.", inline=False)
     embed.add_field(name="Multi-recipe planner", value="Combine several recipes into one shopping list.", inline=False)
     embed.add_field(name="Advanced search", value="Filter by table, ingredient, tool, keyword, and ingredient count.", inline=False)
     embed.add_field(name="Item database", value="Open an item page showing where it is made and used.", inline=False)
@@ -468,7 +478,7 @@ class AdminMenuView(SafeView):
             discord.SelectOption(label="Export recipe data (JSON)", value="export", emoji="📤"),
             discord.SelectOption(label="Export ingredients (CSV)", value="export_csv", emoji="📄"),
             discord.SelectOption(label="Export ingredients (Excel)", value="export_xlsx", emoji="📊"),
-            discord.SelectOption(label="Validate recipe data", value="validate", emoji="🧪"),
+            discord.SelectOption(label="Review spelling & data warnings", value="validate", emoji="🧪"),
             discord.SelectOption(label="View change history", value="history", emoji="🕘"),
             discord.SelectOption(label="Restore a previous version", value="restore_history", emoji="↩️"),
             discord.SelectOption(label="View directory statistics", value="stats", emoji="📊"),
@@ -628,6 +638,198 @@ class IngredientDirectoryView(SafeView):
         )
 
 
+def _saved_inventory_key(guild_id: int | None, user_id: int) -> tuple[str, str]:
+    return (str(guild_id or "dm"), str(user_id))
+
+
+def _load_saved_inventory(guild_id: int | None, user_id: int):
+    guild_key, user_key = _saved_inventory_key(guild_id, user_id)
+    all_data = read_json(INVENTORIES_FILE, {})
+    return all_data.get(guild_key, {}).get(user_key, {"items": {}, "updated_at": None})
+
+
+def _save_inventory_items(guild_id: int | None, user_id: int, items: dict[str, int]):
+    guild_key, user_key = _saved_inventory_key(guild_id, user_id)
+    with file_lock():
+        all_data = read_json(INVENTORIES_FILE, {})
+        guild_data = all_data.setdefault(guild_key, {})
+        guild_data[user_key] = {"items": items, "updated_at": discord.utils.utcnow().isoformat()}
+        write_json(INVENTORIES_FILE, all_data)
+
+
+def _delete_saved_inventory(guild_id: int | None, user_id: int):
+    guild_key, user_key = _saved_inventory_key(guild_id, user_id)
+    with file_lock():
+        all_data = read_json(INVENTORIES_FILE, {})
+        guild_data = all_data.get(guild_key, {})
+        guild_data.pop(user_key, None)
+        if not guild_data:
+            all_data.pop(guild_key, None)
+        write_json(INVENTORIES_FILE, all_data)
+
+
+def _saved_inventory_embed(items: dict[str, int], updated_at: str | None = None):
+    embed = discord.Embed(
+        title="🧺 My Saved Inventory",
+        description=f"**{len(items)} item name(s)** saved. Your stock is private to your Discord account in this server.",
+        color=COLOR,
+    )
+    lines = [f"• **{name}** ×{quantity}" for name, quantity in sorted(items.items(), key=lambda pair: pair[0].casefold())]
+    embed.add_field(name="Saved stock", value="\n".join(lines)[:3900] or "No items saved yet. Choose Update inventory to add your stock.", inline=False)
+    if updated_at:
+        embed.set_footer(text=f"Last updated: {updated_at[:19].replace('T', ' ')} UTC")
+    return embed
+
+
+class SaveInventoryModal(SafeModal, title="Update my saved inventory"):
+    inventory = discord.ui.TextInput(
+        label="Your current stock (replaces saved list)",
+        style=discord.TextStyle.paragraph,
+        placeholder="Clean Weed Bud x10, Cheesecloth x4",
+        max_length=1800,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            items = parse_inventory(self.inventory.value)
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        _save_inventory_items(interaction.guild_id, interaction.user.id, items)
+        await interaction.response.send_message(
+            embed=_saved_inventory_embed(items, discord.utils.utcnow().isoformat()),
+            ephemeral=True,
+        )
+
+
+class CheckSavedInventoryModal(SafeModal, title="Plan using my saved inventory"):
+    table = discord.ui.TextInput(label="Exact crafting table", max_length=100)
+    recipe = discord.ui.TextInput(label="Exact recipe name", max_length=100)
+    batches = discord.ui.TextInput(label="Target batches", default="1", max_length=3)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        saved = _load_saved_inventory(interaction.guild_id, interaction.user.id)
+        items = saved.get("items") or {}
+        if not items:
+            await interaction.response.send_message("You haven't saved any stock yet. Open My saved inventory and choose Update inventory first.", ephemeral=True)
+            return
+        inventory_text = ", ".join(f"{name} x{quantity}" for name, quantity in items.items())
+        try:
+            result = inventory_plan(bot.recipe_data, self.table.value, self.recipe.value, int(self.batches.value.strip()), inventory_text)
+        except (ValueError, TypeError) as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        embed = discord.Embed(
+            title="🧮 Saved inventory plan: " + result["recipe"][:180],
+            description=f"**Craftable batches:** {result['available_batches']} / {result['target_batches']}\nCalculated from your saved stock.",
+            color=COLOR,
+        )
+        missing_lines = [f"• **{name}** ×{quantity}" for name, quantity in result["missing"].items()]
+        required_lines = [f"• **{name}** ×{quantity}" for name, quantity in result["required"].items()]
+        embed.add_field(name="Still missing", value="\n".join(missing_lines)[:1000] or "Nothing missing.", inline=False)
+        embed.add_field(name="Required total", value="\n".join(required_lines)[:1000] or "None", inline=False)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+class ClearInventoryConfirmView(SafeView):
+    def __init__(self, owner_id: int, guild_id: int | None):
+        super().__init__(timeout=60)
+        self.owner_id, self.guild_id = owner_id, guild_id
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id or interaction.guild_id != self.guild_id:
+            await interaction.response.send_message("This inventory confirmation belongs to someone else.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Yes, clear my saved inventory", style=discord.ButtonStyle.danger)
+    async def confirm_clear(self, interaction: discord.Interaction, button: discord.ui.Button):
+        _delete_saved_inventory(self.guild_id, self.owner_id)
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(content="Your saved inventory has been cleared.", embed=None, view=self)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary)
+    async def cancel_clear(self, interaction: discord.Interaction, button: discord.ui.Button):
+        for child in self.children:
+            child.disabled = True
+        await interaction.response.edit_message(content="Nothing was changed.", embed=None, view=self)
+
+
+class InventoryTrackerView(SafeView):
+    def __init__(self, owner_id: int, guild_id: int | None):
+        super().__init__(timeout=300)
+        self.owner_id, self.guild_id = owner_id, guild_id
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id or interaction.guild_id != self.guild_id:
+            await interaction.response.send_message("This private inventory menu belongs to someone else. Open your own with /crafting.", ephemeral=True)
+            return False
+        return True
+
+    def current_embed(self):
+        saved = _load_saved_inventory(self.guild_id, self.owner_id)
+        return _saved_inventory_embed(saved.get("items") or {}, saved.get("updated_at"))
+
+    @discord.ui.button(label="Update inventory", style=discord.ButtonStyle.success, emoji="➕", row=0)
+    async def update_inventory(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(SaveInventoryModal())
+
+    @discord.ui.button(label="Refresh / view", style=discord.ButtonStyle.secondary, emoji="🔄", row=0)
+    async def refresh_inventory(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    @discord.ui.button(label="Plan a recipe", style=discord.ButtonStyle.primary, emoji="🧮", row=1)
+    async def plan_recipe(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(CheckSavedInventoryModal())
+
+    @discord.ui.button(label="Clear inventory", style=discord.ButtonStyle.danger, emoji="🗑️", row=1)
+    async def clear_inventory(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_message(
+            "Are you sure you want to clear your saved stock?",
+            view=ClearInventoryConfirmView(self.owner_id, self.guild_id),
+            ephemeral=True,
+        )
+
+
+class ChatRecipeMatchView(SafeView):
+    def __init__(self, owner_id: int, query: str, matches: list[dict]):
+        super().__init__(timeout=180)
+        self.owner_id, self.query, self.matches = owner_id, query, matches
+        options = [
+            discord.SelectOption(
+                label=f"{match['recipe']} • {match['table']}"[:100],
+                value=str(index),
+                description=match.get("match_label", "Recipe match")[:100],
+            )
+            for index, match in enumerate(matches[:3])
+        ]
+        select = discord.ui.Select(placeholder="Choose the closest recipe match", options=options)
+        select.callback = self.choose_match
+        self.add_item(select)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the person who asked for this lookup can choose its result.", ephemeral=True)
+            return False
+        return True
+
+    async def choose_match(self, interaction: discord.Interaction):
+        index = int(interaction.data["values"][0])
+        match = self.matches[index]
+        ingredient_lines = [f"• **{name}** ×{quantity}" for name, quantity in match.get("ingredients", [])]
+        description = f"**Table:** {match['table']}\n**Recipe:** {match['recipe']}\n**Ingredients:**\n" + ("\n".join(ingredient_lines) if ingredient_lines else "None recorded")
+        if match.get("tools"):
+            description += "\n**Tools (not consumed):** " + ", ".join(match["tools"])
+        embed = discord.Embed(
+            title=f"Crafting match: {match['recipe'][:180]}",
+            description=description[:4000],
+            color=COLOR,
+        )
+        embed.set_footer(text="Selected from the server's saved FiveM recipe directory • Use /crafting for more")
+        await interaction.response.edit_message(embed=embed, view=self)
+
+
 class MainMenuView(SafeView):
     def __init__(self, owner_id: int, admin: bool):
         super().__init__(timeout=300)
@@ -640,7 +842,8 @@ class MainMenuView(SafeView):
             discord.SelectOption(label="Recipe shopping list", value="shopping_list", description="Calculate ingredients for a chosen batch count", emoji="🧮"),
             discord.SelectOption(label="Crafting table comparison", value="compare_tables", description="See shared and table-exclusive ingredients", emoji="⚖️"),
             discord.SelectOption(label="Production chains", value="dependency", description="Trace outputs to base ingredients", emoji="🔗"),
-            discord.SelectOption(label="Inventory calculator", value="inventory", description="Calculate batches from current stock", emoji="🎒"),
+            discord.SelectOption(label="Inventory calculator", value="inventory", description="Calculate batches from stock entered once", emoji="🎒"),
+            discord.SelectOption(label="My saved inventory", value="inventory_tracker", description="Save your personal stock and reuse it for recipe plans", emoji="🧺"),
             discord.SelectOption(label="Multi-recipe planner", value="multi_plan", description="Combine several recipes into one list", emoji="🧾"),
             discord.SelectOption(label="Advanced search", value="advanced_search", description="Filter recipes by multiple criteria", emoji="🧰"),
             discord.SelectOption(label="Item database", value="item_page", description="Open an item's production and usage page", emoji="📖"),
@@ -683,6 +886,9 @@ class MainMenuView(SafeView):
             await interaction.response.send_modal(DependencyModal())
         elif action == "inventory":
             await interaction.response.send_modal(InventoryModal())
+        elif action == "inventory_tracker":
+            view = InventoryTrackerView(self.owner_id, interaction.guild_id)
+            await interaction.response.edit_message(embed=view.current_embed(), view=view)
         elif action == "multi_plan":
             await interaction.response.send_modal(MultiRecipeModal())
         elif action == "advanced_search":
@@ -879,7 +1085,7 @@ class ImportConfirmView(SafeView):
 
 @bot.event
 async def on_message(message: discord.Message):
-    """Answer natural-language ! lookups using only the saved FiveM recipe directory."""
+    """Answer typo-tolerant chat lookups using only the saved FiveM recipe directory."""
     if message.author.bot:
         return
     content = (message.content or "").strip()
@@ -888,7 +1094,7 @@ async def on_message(message: discord.Message):
         return
     query = content[1:].strip()
     if not query:
-        await message.reply("Try `!how to make [item]` or `!where is [ingredient] used`.", mention_author=False)
+        await message.reply("Try !how to make [item] or !where is [ingredient] used.", mention_author=False)
         return
     if query.casefold() in {"help", "crafting"}:
         await bot.process_commands(message)
@@ -897,33 +1103,40 @@ async def on_message(message: discord.Message):
         await message.reply("The crafting directory is still loading. Try again shortly.", mention_author=False)
         return
 
+    record_usage("search", query)
     matches = chat_recipe_search(bot.recipe_data, query, limit=3)
     if not matches:
+        record_usage("no_result", query)
         await message.reply(
-            f"I couldn't find a close match for **{query[:100]}**. Try the exact item name or use `/crafting` to browse.",
+            f"I couldn't find a close match for **{query[:100]}**. Try a shorter item name, check the spelling, or use /crafting to browse.",
             mention_author=False,
         )
         return
 
+    if len(matches) == 1:
+        match = matches[0]
+        ingredient_lines = [f"• **{name}** ×{quantity}" for name, quantity in match.get("ingredients", [])]
+        description = f"**Table:** {match['table']}\n**Recipe:** {match['recipe']}\n**Ingredients:**\n" + ("\n".join(ingredient_lines) if ingredient_lines else "None recorded")
+        if match.get("tools"):
+            description += "\n**Tools (not consumed):** " + ", ".join(match["tools"])
+        embed = discord.Embed(title=f"Crafting match: {match['recipe'][:180]}", description=description[:4000], color=COLOR)
+        embed.set_footer(text="Game reference only • Use /crafting for the full directory")
+        await message.reply(embed=embed, mention_author=False)
+        return
+
     embed = discord.Embed(
-        title=f"Crafting lookup: {query[:180]}",
-        description="Matches are taken directly from the server's FiveM crafting directory. Ingredient names and quantities are shown as recorded.",
+        title=f"Possible crafting matches: {query[:160]}",
+        description="I found a few close matches. Choose the item you meant from the dropdown.",
         color=COLOR,
     )
     for match in matches:
-        ingredient_lines = [
-            f"• **{name}** ×{quantity}"
-            for name, quantity in match.get("ingredients", [])
-        ]
-        value = "**Table:** " + match["table"] + "\n"
-        value += "**Recipe:** " + match["recipe"] + "\n"
-        value += "**Ingredients:**\n" + ("\n".join(ingredient_lines) if ingredient_lines else "None recorded")
-        if match.get("tools"):
-            value += "\n**Tools (not consumed):** " + ", ".join(match["tools"])
-        embed.add_field(name=match.get("match_label", "Closest match")[:256], value=value[:1024], inline=False)
-    embed.set_footer(text="Game reference only • Use /crafting for the full directory")
-    await message.reply(embed=embed, mention_author=False)
-
+        embed.add_field(
+            name=f"{match['recipe']} • {match['table']}"[:256],
+            value=match.get("match_label", "Closest match"),
+            inline=False,
+        )
+    embed.set_footer(text="Spelling suggestions only • Original recipe names are unchanged")
+    await message.reply(embed=embed, view=ChatRecipeMatchView(message.author.id, query, matches), mention_author=False)
 
 @bot.tree.command(name="crafting", description="Open the private FiveM crafting menu.")
 async def crafting_command(interaction: discord.Interaction):
