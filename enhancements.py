@@ -544,4 +544,7 @@ def analytics_embed(data: dict[str, Any], stats: dict[str, Any]):
     embed.add_field(name="Most browsed tables", value="\n".join(f"• {name}: {count}" for name, count in top_tables) or "No usage recorded.", inline=False)
     top_terms = sorted(stats.get("terms", {}).items(), key=lambda x: x[1], reverse=True)[:8]
     embed.add_field(name="Popular searches", value="\n".join(f"• {name}: {count}" for name, count in top_terms) or "No searches recorded.", inline=False)
+    embed.add_field(name="Unmatched searches", value=str(stats.get("no_results", 0)))
+    top_misses = sorted(stats.get("no_result_terms", {}).items(), key=lambda x: x[1], reverse=True)[:8]
+    embed.add_field(name="Searches needing better matches", value="\n".join(f"• {name}: {count}" for name, count in top_misses) or "No unmatched searches recorded.", inline=False)
     return embed

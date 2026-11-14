@@ -38,6 +38,21 @@ def test_all_features_are_in_private_dropdown_menus():
     assert "Manage Server permission or an approved crafting staff role" in source
 
 
+
+def test_saved_inventory_and_selectable_spelling_matches_are_wired_into_private_menu():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'value="inventory_tracker"' in source
+    assert "class InventoryTrackerView" in source
+    assert "class SaveInventoryModal" in source
+    assert "class CheckSavedInventoryModal" in source
+    assert "INVENTORIES_FILE = BASE_DIR / \"inventories.json\"" in source
+    assert "str(guild_id or \"dm\"), str(user_id)" in source
+    assert "class ChatRecipeMatchView" in source
+    assert "Choose the closest recipe match" in source
+    assert "record_usage(\"no_result\", query)" in source
+    assert "Searches needing better matches" in Path("enhancements.py").read_text(encoding="utf-8")
+
+
 def test_legacy_guild_commands_are_cleared_on_ready():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert "self.tree.clear_commands(guild=guild)" in source

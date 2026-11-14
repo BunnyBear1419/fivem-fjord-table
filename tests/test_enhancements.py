@@ -49,6 +49,17 @@ def test_chat_recipe_search_does_not_return_unrelated_weak_matches():
     assert chat_recipe_search(data, "how to make completely unrelated item") == []
 
 
+def test_analytics_reports_unmatched_search_terms():
+    from enhancements import analytics_embed
+    embed = analytics_embed(
+        {"tables": [{"name": "Bench", "recipes": [{"name": "Widget", "ingredients": [["Wire", 1]]}]}]},
+        {"commands": 4, "searches": 3, "no_results": 2, "no_result_terms": {"widgit": 2}},
+    )
+    fields = {field.name: field.value for field in embed.fields}
+    assert fields["Unmatched searches"] == "2"
+    assert "widgit: 2" in fields["Searches needing better matches"].lower()
+
+
 def test_shopping_list_multiplies_batches_and_sums_duplicate_rows():
     data = {"tables": [{"name": "Bench", "recipes": [
         {"name": "Widget", "ingredients": [["Wire", 2], ["Wire", 3], ["Bolt", 1]], "tools": ["Wrench"]}
