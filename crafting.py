@@ -129,7 +129,7 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
         embed.add_field(name="Tools (not consumed)", value=", ".join(tools)[:1024], inline=False)
     if not ingredients:
         embed.add_field(name="Recipe data", value="This entry needs verification against its original in-game screenshot.", inline=False)
-    embed.set_footer(text="FiveM roleplay reference • Verify against your server's current recipe")
+    embed.set_footer(text="FJORD CARTEL • FiveM roleplay reference • Verify current server recipes")
     return embed
 
 
@@ -182,10 +182,10 @@ class CraftingDirectoryView(SafeView):
 
     def current_embed(self):
         if not self.tables:
-            return discord.Embed(title="FiveM Crafting Directory", description="No crafting tables have been added yet.", color=discord.Color.orange())
+            return discord.Embed(title="Fjord Cartel Information", description="No crafting tables have been added yet.", color=discord.Color.orange())
         table = self.tables[self.table_index]
         pages = max(1, (len(table.get("recipes", [])) + 24) // 25)
-        embed = discord.Embed(title="🛠️ FiveM Crafting Directory", description=f"**Table:** {table['name']}\n**Recipes:** {len(table.get('recipes', []))}\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(57, 75, 111))
+        embed = discord.Embed(title="⚔️ Fjord Cartel Information", description=f"**Table:** {table['name']}\n**Recipes:** {len(table.get('recipes', []))}\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(24, 112, 66))
         table_pages = max(1, (len(self.tables) + 24) // 25)
         embed.set_footer(text=f"Table page {self.table_page + 1}/{table_pages} • Recipe page {self.recipe_page + 1}/{pages} • Private menu")
         return embed
@@ -307,7 +307,7 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
             if matches else
             f"No exact ingredient-name matches were found for **{ingredient_name.strip()}**."
         ),
-        color=discord.Color.from_rgb(57, 75, 111),
+        color=discord.Color.from_rgb(24, 112, 66),
     )
     outputs = find_exact_recipe_outputs(data, ingredient_name)
     if outputs:
@@ -384,7 +384,7 @@ def ingredient_directory_embed(data: dict[str, Any], page: int = 0, page_size: i
             f"**{len(data.get('tables', []))} crafting tables.**\n"
             "Each entry shows the table, recipe, and required quantity."
         ),
-        color=discord.Color.from_rgb(57, 75, 111),
+        color=discord.Color.from_rgb(24, 112, 66),
     )
     for entry in directory[start:start + page_size]:
         lines = [
@@ -404,7 +404,7 @@ def search_embed(data: dict[str, Any], query: str, table_filter: str | None = No
     description = f"Found **{len(matches)}** matching recipe(s)."
     if table_filter:
         description += f"\n**Table filter:** {table_filter}"
-    embed = discord.Embed(title=f"🔎 Crafting search: {query[:180]}", description=description, color=discord.Color.from_rgb(57, 75, 111))
+    embed = discord.Embed(title=f"🔎 Crafting search: {query[:180]}", description=description, color=discord.Color.from_rgb(24, 112, 66))
     for table_name, recipe in matches[:5]:
         items = recipe.get("ingredients") or []
         summary = ", ".join(f"{name} ×{qty}" for name, qty in items) or "Ingredients need review"
