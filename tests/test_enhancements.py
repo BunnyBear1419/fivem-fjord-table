@@ -87,6 +87,63 @@ def test_expanded_production_requirements_does_not_guess_ambiguous_producers():
     assert any("multiple possible producers" in note for note in result["notes"])
 
 
+def test_inventory_limited_batch_calculator_uses_only_stock_items_that_match_recipe():
+    from enhancements import calculate_inventory_limited_batches
+
+    data = {"tables": [{"name": "Usable Item — 2L Water Bottle", "recipes": [
+        {"name": "Meth", "ingredients": [
+            ["Pseudoephedrine", 4],
+            ["Ammonia", 1],
+            ["Sodium Hydroxide (Lye)", 1],
+            ["2L Water Bottle", 1],
+        ], "tools": ["Gas Mask"]}
+    ]}]}
+    result = calculate_inventory_limited_batches(
+        data,
+        "How much Meth can I make",
+        "pseudoephedrine x500",
+    )
+    assert result["batches"] == 125
+    assert result["required"] == {
+        "Pseudoephedrine": 500,
+        "Ammonia": 125,
+        "Sodium Hydroxide (Lye)": 125,
+        "2L Water Bottle": 125,
+    }
+    assert result["missing"] == {
+        "Ammonia": 125,
+        "Sodium Hydroxide (Lye)": 125,
+        "2L Water Bottle": 125,
+    }
+    assert result["tools"] == ["Gas Mask"]
+
+
+def test_inventory_limited_batch_calculator_reports_ambiguous_recipe_choices():
+    from enhancements import calculate_inventory_limited_batches
+
+    data = {"tables": [
+        {"name": "Table A", "recipes": [{"name": "Widget", "ingredients": [["Wire", 2]], "tools": []}]},
+        {"name": "Table B", "recipes": [{"name": "Widget", "ingredients": [["Wire", 3]], "tools": []}]},
+    ]}
+    result = calculate_inventory_limited_batches(data, "How many Widget can I make", "Wire x20")
+    assert "error" in result
+    assert "Table A" in result["error"] and "Table B" in result["error"]
+
+
+def test_production_planner_matches_space_and_underscore_item_names():
+    from enhancements import dependency_chain, expanded_production_requirements
+
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Metal Pin", "ingredients": [["Iron", 2]], "tools": []},
+        {"name": "Tension Spring", "ingredients": [["Steel", 3]], "tools": []},
+        {"name": "Lockpick", "ingredients": [["metal_pin", 2], ["tension_spring", 1]], "tools": []},
+    ]}]}
+    result = expanded_production_requirements(data, "Bench", "Lockpick", 2)
+    assert result["base_ingredients"] == {"Iron": 8, "Steel": 6}
+    chain = dependency_chain(data, "Lockpick")
+    assert chain["recipes"][0]["ingredients"][0]["source"]["recipes"][0]["recipe"] == "Metal Pin"
+
+
 def test_shopping_list_multiplies_batches_and_sums_duplicate_rows():
     data = {"tables": [{"name": "Bench", "recipes": [
         {"name": "Widget", "ingredients": [["Wire", 2], ["Wire", 3], ["Bolt", 1]], "tools": ["Wrench"]}
