@@ -1384,15 +1384,15 @@ async def on_message(message: discord.Message):
     lowered = query.casefold()
 
     # Postal/location questions search the same saved directory shown by /locations.
-    postal_match = re.search(r"\\b(\\d{3,5})\\b", query)
+    postal_match = re.search(r"\b(\d{3,5})\b", query)
     asks_location = postal_match and any(word in lowered for word in ("where", "what", "postal", "location", "at "))
     if asks_location:
         postal = postal_match.group(1)
         directory = locations_embed()
         found = []
         for field in directory.fields:
-            combined = f"{field.name}\\n{field.value}"
-            if re.search(r"(?<!\\d)" + re.escape(postal) + r"(?!\\d)", combined):
+            combined = f"{field.name}\n{field.value}"
+            if re.search(r"(?<!\d)" + re.escape(postal) + r"(?!\d)", combined):
                 found.append(field)
         if found:
             embed = discord.Embed(title=f"📍 Saved location: Postal {postal}", color=COLOR)
@@ -1411,7 +1411,7 @@ async def on_message(message: discord.Message):
         ingredient_query = query
         for phrase in ("where is ", "where's ", "what uses ", "which recipes use ", "where do i use "):
             ingredient_query = re.sub(r"^" + re.escape(phrase), "", ingredient_query, flags=re.IGNORECASE)
-        ingredient_query = re.sub(r"\\b(used in|used|use|at|the)\\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
+        ingredient_query = re.sub(r"\b(used in|used|use|at|the)\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
         if ingredient_query:
             embed = ingredient_usage_embed(data, ingredient_query)
             if embed.description and "No exact ingredient match" not in embed.description:
@@ -1421,11 +1421,11 @@ async def on_message(message: discord.Message):
             suggestions = chat_recipe_search(data, ingredient_query, limit=3)
             if suggestions and any(item.get("match_label","").startswith("Closest ingredient") for item in suggestions):
                 lines = [f"• **{item['ingredients'][0][0]}** — {item['recipe']} ({item['table']})" for item in suggestions]
-                await message.reply("I couldn't find that exact ingredient. Closest saved ingredient matches:\\n" + "\\n".join(lines), mention_author=False)
+                await message.reply("I couldn't find that exact ingredient. Closest saved ingredient matches:\n" + "\n".join(lines), mention_author=False)
                 return
 
     # Generic batch shopping list: !what do I need for 10 [recipe]?
-    batch_match = re.search(r"\\b(\\d[\\d,]*)\\s*(?:x\\s*)?(?:batches?\\s+(?:of\\s+)?)?(.+)$", query, re.IGNORECASE)
+    batch_match = re.search(r"\b(\d[\d,]*)\\s*(?:x\\s*)?(?:batches?\\s+(?:of\\s+)?)?(.+)$", query, re.IGNORECASE)
     asks_requirements = any(word in lowered for word in ("what do i need", "ingredients for", "shopping list for", "materials for", "how many ingredients", "make "))
     if batch_match and asks_requirements and any(word in lowered for word in ("need", "ingredients", "shopping", "materials", "make")):
         batch_count = int(batch_match.group(1).replace(",", ""))
@@ -1440,19 +1440,19 @@ async def on_message(message: discord.Message):
                     totals[item] = totals.get(item, 0) + int(amount) * batch_count
                 embed = discord.Embed(title=f"🧾 Shopping list: {batch_count:,} × {match['recipe']}", color=COLOR)
                 embed.add_field(name="Crafting table", value=match["table"], inline=False)
-                embed.add_field(name="Ingredients required", value="\\n".join(f"• **{name}:** {amount:,}" for name, amount in totals.items())[:1024] or "No ingredients recorded.", inline=False)
+                embed.add_field(name="Ingredients required", value="\n".join(f"• **{name}:** {amount:,}" for name, amount in totals.items())[:1024] or "No ingredients recorded.", inline=False)
                 if match.get("tools"):
                     embed.add_field(name="Tools (not consumed)", value=", ".join(match["tools"]), inline=False)
                 embed.set_footer(text="Calculated from the saved recipe directory • Tools are not multiplied")
                 await message.reply(embed=embed, mention_author=False)
                 return
             if len(exact) > 1 or matches:
-                names = "\\n".join(f"• **{m['recipe']}** — {m['table']}" for m in matches[:4])
-                await message.reply("I found multiple possible recipes. Please use the exact recipe name:\\n" + names, mention_author=False)
+                names = "\n".join(f"• **{m['recipe']}** — {m['table']}" for m in matches[:4])
+                await message.reply("I found multiple possible recipes. Please use the exact recipe name:\n" + names, mention_author=False)
                 return
 
     # Inventory-based batch calculator works for every saved recipe, not one hard-coded item.
-    stock_match = re.search(r"\\bwith\\s*:?\\s*(.+)$", query, re.IGNORECASE)
+    stock_match = re.search(r"\bwith\\s*:?\\s*(.+)$", query, re.IGNORECASE)
     if stock_match and any(word in lowered for word in ("how many", "how much", "can i make", "can i craft", "make from")):
         try:
             stock = parse_inventory(stock_match.group(1))
@@ -1473,7 +1473,7 @@ async def on_message(message: discord.Message):
         possible.sort(key=lambda row: (-row[0], row[1].casefold()))
         if possible:
             lines = [f"• **{name}** — {count:,} batch(es) · {table}" for count, name, table in possible[:20]]
-            await message.reply("**Recipes you can make with that inventory:**\\n" + "\\n".join(lines), mention_author=False)
+            await message.reply("**Recipes you can make with that inventory:**\n" + "\n".join(lines), mention_author=False)
         else:
             await message.reply("Your listed stock does not cover a complete saved recipe. Try adding more inventory or check /crafting.", mention_author=False)
         return
