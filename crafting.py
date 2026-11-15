@@ -127,6 +127,11 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
     tools = recipe.get("tools") or []
     if tools:
         embed.add_field(name="Tools (not consumed)", value=", ".join(tools)[:1024], inline=False)
+    if recipe.get("xp") is not None:
+        embed.add_field(name="Crafting XP", value=f"+{int(recipe['xp'])} XP", inline=True)
+    review = recipe.get("review")
+    if review:
+        embed.add_field(name="Screenshot note", value=str(review)[:1024], inline=False)
     if not ingredients:
         embed.add_field(name="Recipe data", value="This entry needs verification against its original in-game screenshot.", inline=False)
     embed.set_footer(text="FJORD CARTEL • FiveM roleplay reference • Verify current server recipes")
