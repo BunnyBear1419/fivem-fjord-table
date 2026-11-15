@@ -388,20 +388,23 @@ def test_system_two_watering_can_is_not_reusable():
 
 
 
-def test_generic_question_handler_keeps_bang_prefix_and_adds_data_driven_answers():
+def test_generic_question_handler_keeps_bang_prefix_and_searches_all_saved_information():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert 'if not content.startswith("!"):' in source
     assert "postal_match = re.search" in source
-    assert "ingredient_usage_embed(data, ingredient_query)" in source
-    assert "Shopping list:" in source
+    assert "query_data = include_usable_item_recipes(data)" in source
+    assert "ingredient_usage_embed(query_data, ingredient_query)" in source
+    assert "saved_information_matches(query)" in source
+    assert "calculate_inventory_limited_batches(query_data" in source
     assert "Recipes you can make with that inventory:" in source
-    assert "calculate_meth_requirements" in source
+    assert "def include_usable_item_recipes(" in source
+    assert "def saved_information_matches(" in source
 
 
-def test_no_hard_coded_pseudoephedrine_to_meth_conversion_remains():
+def test_no_item_specific_meth_calculator_is_hard_coded():
     source = Path("bot.py").read_text(encoding="utf-8") + Path("enhancements.py").read_text(encoding="utf-8")
-    assert "calculate_meth_requirements" in source
-    assert "pseudoephedrine // 4" in source
+    assert "calculate_meth_requirements" not in source
+    assert "pseudoephedrine // 4" not in source
 
 
 def test_chemical_supplier_price_lookup_covers_saved_items():
@@ -434,31 +437,47 @@ def test_chemical_supplier_price_lookup_covers_saved_items():
         assert result["shop"] == "Chemical Supplier — Postal 10105", item
 
 
-def test_meth_calculator_uses_usable_items_recipe_for_pseudoephedrine():
-    from enhancements import calculate_meth_requirements
-
-    result = calculate_meth_requirements("How much Meth can I make with 500 Pseudoephedrine?")
-    assert result["batches"] == 125
-    assert result["leftover_pseudoephedrine"] == 0
-    assert result["ingredients"] == {
-        "Pseudoephedrine": 500,
-        "Ammonia": 125,
-        "Sodium Hydroxide (Lye)": 125,
-        "2L Water Bottle": 125,
-    }
-    assert result["tools"] == {"Gas Mask": 1}
 
 
-def test_meth_calculator_reports_leftover_pseudoephedrine():
-    from enhancements import calculate_meth_requirements
+def test_usable_item_recipe_parser_keeps_tools_and_combines_hand_tablet_press_pages():
+    from enhancements import parse_usable_item_sections
 
-    result = calculate_meth_requirements("How much Meth can I make with 503 Pseudoephedrine?")
-    assert result["batches"] == 125
-    assert result["leftover_pseudoephedrine"] == 3
+    tables = parse_usable_item_sections([
+        (
+            "🧴 2L Water Bottle",
+            "• **Meth** — 4x Pseudoephedrine + 1x Ammonia + 1x 2L Water Bottle\\n"
+            "  **Tool (not consumed):** 1x Gas Mask",
+        ),
+        (
+            "💊 Hand Tablet Press — Pill Recipes (1/2)",
+            "• **Xanax** — 1x Alprazolam Powder + 1x Pill Binder",
+        ),
+        (
+            "💊 Hand Tablet Press — Pill Recipes (2/2)",
+            "• **Hydrocodone** — 1x Hydrocodone Bitartrate + 2x Acetaminophen + 1x Pill Binder",
+        ),
+    ])
+    by_name = {table["name"]: table for table in tables}
+    bottle = by_name["Usable Item — 2L Water Bottle"]["recipes"][0]
+    assert bottle["name"] == "Meth"
+    assert bottle["tools"] == ["Gas Mask"]
+    press = by_name["Usable Item — Hand Tablet Press"]["recipes"]
+    assert [recipe["name"] for recipe in press] == ["Xanax", "Hydrocodone"]
+    assert press[0]["ingredients"] == [["Alprazolam Powder", 1], ["Pill Binder", 1]]
 
 
-def test_meth_calculator_requires_meth_and_pseudoephedrine_context():
-    from enhancements import calculate_meth_requirements
+def test_saved_information_lookup_is_connected_to_shop_location_usable_and_help_pages():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    start = source.index("def saved_information_matches(")
+    end = source.index("def commands_embed(", start)
+    helper = source[start:end]
+    for page in ("shops_embed()", "locations_embed()", "usable_embed()", "commands_embed()"):
+        assert page in helper
 
-    assert calculate_meth_requirements("How much Pseudoephedrine do I have?") is None
-    assert calculate_meth_requirements("How much Meth can I make?") is None
+
+def test_location_directory_documents_unresolved_10060_hidden_materials():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "additional hidden material" in source
+    assert "exact item is not recorded" in source
+
+
