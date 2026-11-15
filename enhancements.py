@@ -152,6 +152,42 @@ SHOP_PRICE_CATALOG = [
 ]
 
 
+
+
+def calculate_meth_requirements(query: str):
+    """Calculate Meth batches from the saved Usable Items recipe."""
+    raw = str(query or "").strip()
+    if not re.search(r"\\bmeth\\b", raw, re.IGNORECASE) or not re.search(r"\\bpseudoephedrine\\b", raw, re.IGNORECASE):
+        return None
+    match = re.search(r"([0-9][0-9,]*)\\s*(?:x\\s*)?pseudoephedrine\\b", raw, re.IGNORECASE)
+    if not match:
+        return None
+    pseudoephedrine = int(match.group(1).replace(",", ""))
+    if pseudoephedrine < 1 or pseudoephedrine > 1_000_000_000:
+        return {"error": "Please enter a Pseudoephedrine amount between 1 and 1,000,000,000."}
+    batches = pseudoephedrine // 4
+    if batches < 1:
+        return {
+            "pseudoephedrine": pseudoephedrine,
+            "batches": 0,
+            "leftover_pseudoephedrine": pseudoephedrine,
+            "ingredients": {},
+            "tools": {"Gas Mask": 1},
+        }
+    return {
+        "pseudoephedrine": pseudoephedrine,
+        "batches": batches,
+        "leftover_pseudoephedrine": pseudoephedrine - (batches * 4),
+        "ingredients": {
+            "Pseudoephedrine": batches * 4,
+            "Ammonia": batches,
+            "Sodium Hydroxide (Lye)": batches,
+            "2L Plastic Bottle": batches,
+        },
+        "tools": {"Gas Mask": 1},
+    }
+
+
 def calculate_raw_cocaine_requirements(query: str):
     """Estimate pickup materials for a requested Raw Cocaine target."""
     raw = str(query or "").strip()
