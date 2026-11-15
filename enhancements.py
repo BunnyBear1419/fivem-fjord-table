@@ -95,6 +95,13 @@ SHOP_PRICE_CATALOG = [
     {"name": "Orang-O-Tang Bottle", "shop": "Convenience Store", "price": 4, "aliases": ("orang o tang bottle", "orang-o-tang bottle")},
     {"name": "E-Cola Light Bottle", "shop": "Convenience Store", "price": 5, "aliases": ("e cola light bottle", "e-cola light bottle")},
     {"name": "Sprunk Light Bottle", "shop": "Convenience Store", "price": 5, "aliases": ("sprunk light bottle",)},
+    {"name": "Safrole oil", "shop": "Blackmarket Doctor — Postal 3009", "price": 200, "aliases": ("safrole oil", "safrole")},
+    {"name": "NPP chemical", "shop": "Blackmarket Doctor — Postal 3009", "price": 300, "aliases": ("npp chemical", "npp")},
+    {"name": "Aniline solution", "shop": "Blackmarket Doctor — Postal 3009", "price": 250, "aliases": ("aniline solution", "aniline")},
+    {"name": "Anesthetic", "shop": "Blackmarket Doctor — Postal 3009", "price": 250, "aliases": ("anesthetic", "anaesthetic")},
+    {"name": "Dextromethorphan Cough Syrup", "shop": "Blackmarket Doctor — Postal 3009", "price": 60, "aliases": ("dextromethorphan cough syrup", "cough syrup", "dextromethorphan")},
+    {"name": "Syringe", "shop": "Blackmarket Doctor — Postal 3009", "price": 15, "aliases": ("syringe", "syringes")},
+
 ]
 
 def calculate_shop_price_query(query: str):
