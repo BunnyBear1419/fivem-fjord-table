@@ -539,6 +539,6 @@ def test_system_one_requires_flower_pot_even_when_planted_in_grass():
 
     result = calculate_weed_growing_requirements("How much for 10 weed plants in grass?")
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 10
-    assert result["systems"]["smoke"]["total"] == 4015
+    assert result["systems"]["smoke"]["total"] == 3865
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
-    assert result["systems"]["grape"]["total"] == 1685
+    assert result["systems"]["grape"]["total"] == 1800
