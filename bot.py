@@ -1724,6 +1724,7 @@ def locations_embed():
         name="4000s Postal Codes — Hidden Locations",
         value=(
             "• **4001 — Prison tunnel.**\n"
+            "• **4013–4014 — Cement:** Collect cement.\n"
             "• **4019 — Empty Lab.**"
         ),
         inline=False,
