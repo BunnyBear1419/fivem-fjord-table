@@ -1660,6 +1660,14 @@ def locations_embed():
         value="• **Filter Paper:** $10 each",
         inline=False,
     )
+    embed.add_field(
+        name="Hidden Location • RVs — Postal 4024",
+        value=(
+            "• **Cook Meth:** Use the RV location at Postal 4024.\\n"
+            "• **Other RVs/Campers:** Meth can also be cooked in any RV or Camper you find or purchase."
+        ),
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
