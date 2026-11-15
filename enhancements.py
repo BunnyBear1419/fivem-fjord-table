@@ -54,21 +54,16 @@ SHOP_PRICE_CATALOG = [
 ]
 
 def calculate_shop_price_query(query: str):
-    """Parse a natural-language bulk-buy question and calculate its shop total.
-
-    Returns None when the message is not a price question, otherwise a result
-    dictionary or an error dictionary. Saved item names and prices are untouched.
-    """
+    """Resolve shop/location price questions, with optional bulk quantity."""
     raw = str(query or "").strip()
     normalized = _normalize_chat_search(raw)
-    intent_words = ("how much", "cost", "spend", "price", "buy", "purchase", "total")
-    if not any(word in normalized for word in intent_words):
+    price_intent = any(word in normalized for word in ("how much", "cost", "spend", "price", "total"))
+    location_intent = "where" in normalized and any(word in normalized for word in ("buy", "get", "purchase", "find"))
+    if not (price_intent or location_intent):
         return None
 
-    quantity_match = re.search(r"(?<![a-z])([0-9][0-9,]*)\b", raw, re.IGNORECASE)
-    if not quantity_match:
-        return {"error": "Tell me how many you want, for example: !If I want 2000 45 ammo how much will I spend?"}
-    quantity = int(quantity_match.group(1).replace(",", ""))
+    quantity_match = re.search(r"(?<![a-z])([0-9][0-9,]*)\\b", raw, re.IGNORECASE)
+    quantity = int(quantity_match.group(1).replace(",", "")) if quantity_match else None
     if quantity is not None and (quantity < 1 or quantity > 1_000_000_000):
         return {"error": "Please enter a quantity between 1 and 1,000,000,000."}
 
@@ -79,14 +74,14 @@ def calculate_shop_price_query(query: str):
             if alias_normalized and re.search(r"(?<![a-z0-9])" + re.escape(alias_normalized) + r"(?![a-z0-9])", normalized):
                 matches.append((len(alias_normalized), item))
     if not matches:
-        return {"error": "I couldn't match that item to a priced shop listing. Try the item name from /dashboard → Shops."}
+        return {"error": "I couldn't match that item to a priced shop or location listing. Try the item name from /dashboard."}
 
     matches.sort(key=lambda row: row[0], reverse=True)
     best_length = matches[0][0]
     best_items = {row[1]["name"]: row[1] for row in matches if row[0] == best_length}
     if len(best_items) != 1:
         names = ", ".join(sorted(best_items))
-        return {"error": f"I found more than one possible shop item ({names}). Please use the full item name."}
+        return {"error": f"I found more than one possible item ({names}). Please use the full item name."}
 
     item = next(iter(best_items.values()))
     return {
