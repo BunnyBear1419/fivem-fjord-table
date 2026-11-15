@@ -1407,12 +1407,9 @@ async def on_message(message: discord.Message):
 def dashboard_embed():
     embed = discord.Embed(
         title="⚔️ Fjord Cartel Information",
-        description="**PRIVATE MEMBER DASHBOARD**\\n\\nWelcome to the Fjord Cartel directory. Choose the command for the information you need.",
+        description="**PRIVATE MEMBER DASHBOARD**\\n\\nWelcome to the Fjord Cartel directory. Select a section from the menu below.",
         color=COLOR,
     )
-    embed.add_field(name="📚 Crafting", value="`/crafting` — Browse recipes, tables, ingredients, and stock planning.", inline=False)
-    embed.add_field(name="🛒 Shops", value="`/shops` — Browse shop information and available items.", inline=False)
-    embed.add_field(name="📍 Locations", value="`/locations` — Browse saved locations and postal references.", inline=False)
     embed.set_footer(text="FJORD CARTEL • BLOOD IN THE WATER, STEEL IN THE VEINS")
     return embed
 
@@ -1420,7 +1417,7 @@ def dashboard_embed():
 def shops_embed():
     embed = discord.Embed(
         title="🛒 Fjord Cartel • Shops",
-        description="The shop directory is ready. Shop entries can be added as you provide their names, items, and prices.",
+        description="The shop directory is ready for your shop names, items, and prices.",
         color=COLOR,
     )
     embed.set_footer(text="FJORD CARTEL • SHOP DIRECTORY")
@@ -1479,32 +1476,74 @@ def locations_embed():
     return embed
 
 
+def usable_embed():
+    embed = discord.Embed(
+        title="🎒 Fjord Cartel • Usable Items",
+        description="This directory is ready for items that can be used directly from a player's FiveM inventory. No items have been added yet.",
+        color=COLOR,
+    )
+    embed.set_footer(text="FJORD CARTEL • USABLE ITEM DIRECTORY")
+    return embed
+
+
+class DashboardMenuView(discord.ui.View):
+    def __init__(self, owner_id: int):
+        super().__init__(timeout=300)
+        self.owner_id = owner_id
+        select = discord.ui.Select(
+            placeholder="Choose a Fjord Cartel section...",
+            min_values=1,
+            max_values=1,
+            options=[
+                discord.SelectOption(label="Crafting", value="crafting", description="Recipes, tables, ingredients, and inventory tools", emoji="📚"),
+                discord.SelectOption(label="Shops", value="shops", description="Shop directory and available items", emoji="🛒"),
+                discord.SelectOption(label="Locations", value="locations", description="Saved locations and postal references", emoji="📍"),
+                discord.SelectOption(label="Usable Items", value="usable", description="Items usable directly from inventory", emoji="🎒"),
+            ],
+        )
+        select.callback = self.choose_section
+        self.add_item(select)
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("This private dashboard belongs to someone else. Run /dashboard to open your own.", ephemeral=True)
+            return False
+        return True
+
+    async def choose_section(self, interaction: discord.Interaction):
+        section = interaction.data["values"][0]
+        if section == "crafting":
+            if bot.recipe_data is None:
+                await interaction.response.send_message("The crafting directory is still loading. Try again shortly.", ephemeral=True)
+                return
+            record_usage("open")
+            await interaction.response.edit_message(
+                embed=help_embed(),
+                view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
+            )
+            return
+        embeds = {
+            "shops": shops_embed,
+            "locations": locations_embed,
+            "usable": usable_embed,
+        }
+        embed_factory = embeds.get(section)
+        if embed_factory is None:
+            await interaction.response.send_message("That dashboard section could not be found.", ephemeral=True)
+            return
+        await interaction.response.edit_message(
+            embed=embed_factory(),
+            view=DashboardMenuView(interaction.user.id),
+        )
+
+
 @bot.tree.command(name="dashboard", description="Open the Fjord Cartel Information dashboard.")
 async def dashboard_command(interaction: discord.Interaction):
-    await interaction.response.send_message(embed=dashboard_embed(), ephemeral=True)
-
-
-@bot.tree.command(name="crafting", description="Open the private crafting and recipe directory.")
-async def crafting_command(interaction: discord.Interaction):
-    if bot.recipe_data is None:
-        await interaction.response.send_message("The crafting directory is still loading. Try again shortly.", ephemeral=True)
-        return
-    record_usage("open")
     await interaction.response.send_message(
-        embed=help_embed(),
-        view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
+        embed=dashboard_embed(),
+        view=DashboardMenuView(interaction.user.id),
         ephemeral=True,
     )
-
-
-@bot.tree.command(name="shops", description="Open the Fjord Cartel shop directory.")
-async def shops_command(interaction: discord.Interaction):
-    await interaction.response.send_message(embed=shops_embed(), ephemeral=True)
-
-
-@bot.tree.command(name="locations", description="Open the Fjord Cartel location directory.")
-async def locations_command(interaction: discord.Interaction):
-    await interaction.response.send_message(embed=locations_embed(), ephemeral=True)
 
 
 @bot.tree.error
