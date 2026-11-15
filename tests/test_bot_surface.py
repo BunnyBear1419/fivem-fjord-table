@@ -432,3 +432,33 @@ def test_chemical_supplier_price_lookup_covers_saved_items():
         result = calculate_shop_price_query(f"where can I buy {item}?")
         assert result["unit_price"] == price, item
         assert result["shop"] == "Chemical Supplier — Postal 10105", item
+
+
+def test_meth_calculator_uses_usable_items_recipe_for_pseudoephedrine():
+    from enhancements import calculate_meth_requirements
+
+    result = calculate_meth_requirements("How much Meth can I make with 500 Pseudoephedrine?")
+    assert result["batches"] == 125
+    assert result["leftover_pseudoephedrine"] == 0
+    assert result["ingredients"] == {
+        "Pseudoephedrine": 500,
+        "Ammonia": 125,
+        "Sodium Hydroxide (Lye)": 125,
+        "2L Plastic Bottle": 125,
+    }
+    assert result["tools"] == {"Gas Mask": 1}
+
+
+def test_meth_calculator_reports_leftover_pseudoephedrine():
+    from enhancements import calculate_meth_requirements
+
+    result = calculate_meth_requirements("How much Meth can I make with 503 Pseudoephedrine?")
+    assert result["batches"] == 125
+    assert result["leftover_pseudoephedrine"] == 3
+
+
+def test_meth_calculator_requires_meth_and_pseudoephedrine_context():
+    from enhancements import calculate_meth_requirements
+
+    assert calculate_meth_requirements("How much Pseudoephedrine do I have?") is None
+    assert calculate_meth_requirements("How much Meth can I make?") is None
