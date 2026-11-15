@@ -38,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -2212,45 +2212,11 @@ def usable_embed():
 
 def include_usable_item_recipes(data: dict):
     """Combine saved crafting tables and usable-item recipes without mutating source data."""
-    combined = dict(data)
-    tables = []
-    for source_table in data.get("tables", []):
-        table = dict(source_table)
-        table["recipes"] = []
-        for source_recipe in source_table.get("recipes", []):
-            recipe = dict(source_recipe)
-            recipe["notes"] = list(source_recipe.get("notes") or [])
-            table["recipes"].append(recipe)
-        tables.append(table)
-
-    # Location notes explicitly record hidden materials for several Postal 10060
-    # recipes, but do not identify those materials. Carry that warning into every
-    # recipe answer instead of presenting the stored ingredient list as complete.
-    for field in locations_embed().fields:
-        for raw_line in field.value.splitlines():
-            line = raw_line.strip()
-            match = re.match(r"• \*\*(.+?)\*\*:\s*(.+)$", line)
-            if not match:
-                continue
-            label, details = match.groups()
-            recipe_name = re.sub(r"\s*\(\+\d+ XP\)$", "", label).strip()
-            if "hidden material" not in details.casefold():
-                continue
-            note = (
-                "Postal 10060 location notes list 1 additional hidden material, "
-                "but its exact item name is not recorded in the saved recipe table."
-            )
-            if recipe_name.casefold() == "heist drill":
-                note += (
-                    " The saved ingredient name 'drill_bit' also does not exactly match "
-                    "the output name 'Tungsten Drill Bit'; confirm whether they are the same item."
-                )
-            for table in tables:
-                for recipe in table.get("recipes", []):
-                    if recipe.get("name", "").casefold().strip() == recipe_name.casefold():
-                        if note not in recipe["notes"]:
-                            recipe["notes"].append(note)
-
+    combined = attach_location_recipe_warnings(
+        data,
+        [(field.name, field.value) for field in locations_embed().fields],
+    )
+    tables = list(combined.get("tables", []))
     sections = [(field.name, field.value) for field in usable_embed().fields]
     usable_tables = parse_usable_item_sections(sections)
     for table in usable_tables:
