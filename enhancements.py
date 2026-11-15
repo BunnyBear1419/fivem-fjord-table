@@ -148,9 +148,9 @@ def calculate_weed_growing_requirements(query: str):
     match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?(?:weed\s+)?plants?\b", raw, re.IGNORECASE)
     if not match:
         match = re.search(r"\b(?:grow|growing)\s+([0-9][0-9,]*)\b", raw, re.IGNORECASE)
-    if not match:
-        return None
-    plants = int(match.group(1).replace(",", ""))
+    # If the member asks what is needed without specifying a target, show the
+    # per-plant shopping list rather than falling through to the shop-price lookup.
+    plants = int(match.group(1).replace(",", "")) if match else 1
     if plants < 1 or plants > 100000:
         return {"error": "Please enter a plant amount between 1 and 100,000."}
     grass = bool(re.search(r"\b(?:grass|in\s+the\s+grass)\b", raw, re.IGNORECASE))
