@@ -1687,6 +1687,11 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
+        name="Coke Island",
+        value="In the water roughly between Humane Labs and Davis Quartz.",
+        inline=False,
+    )
+    embed.add_field(
         name="Rotating NPC — Old Man",
         value="• **Moonshine:** Sell Moonshine to the Old Man. His location rotates and is marked on the map.",
         inline=False,
