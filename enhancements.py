@@ -417,6 +417,48 @@ def parse_usable_item_sections(sections: list[tuple[str, str]]):
     ]
 
 
+
+def attach_location_recipe_warnings(data: dict[str, Any], location_sections: list[tuple[str, str]]):
+    """Copy recipe data and attach explicit caveats found in saved location notes."""
+    combined = dict(data)
+    tables = []
+    for source_table in data.get("tables", []):
+        table = dict(source_table)
+        table["recipes"] = []
+        for source_recipe in source_table.get("recipes", []):
+            recipe = dict(source_recipe)
+            recipe["notes"] = list(source_recipe.get("notes") or [])
+            table["recipes"].append(recipe)
+        tables.append(table)
+
+    for _title, value in location_sections:
+        for raw_line in str(value or "").splitlines():
+            line = raw_line.strip()
+            match = re.match(r"• \\*\\*(.+?)\\*\\*:\\s*(.+)$", line)
+            if not match:
+                continue
+            label, details = match.groups()
+            recipe_name = re.sub(r"\\s*\\(\\+\\d+ XP\\)$", "", label).strip()
+            if "hidden material" not in details.casefold():
+                continue
+            note = (
+                "Postal 10060 location notes list 1 additional hidden material, "
+                "but its exact item name is not recorded in the saved recipe table."
+            )
+            if recipe_name.casefold() == "heist drill":
+                note += (
+                    " The saved ingredient name 'drill_bit' also does not exactly match "
+                    "the output name 'Tungsten Drill Bit'; confirm whether they are the same item."
+                )
+            for table in tables:
+                for recipe in table.get("recipes", []):
+                    if recipe.get("name", "").casefold().strip() == recipe_name.casefold():
+                        if note not in recipe["notes"]:
+                            recipe["notes"].append(note)
+    combined["tables"] = tables
+    return combined
+
+
 def related_table_search(data: dict[str, Any], query: str, limit: int = 8):
     """Find tables related to broad topics, listing only saved recipes and ingredients."""
     cleaned = _normalize_chat_search(query)
