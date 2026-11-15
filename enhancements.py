@@ -772,7 +772,13 @@ def parse_simple_items(text: str):
         if match:
             name, quantity = match.group(1).strip(), int(match.group(2))
         else:
-            name, quantity = item, 1
+            quantity_first = re.match(r"^([0-9][0-9,]*)\s*(?:[x×]\s*)+(.+)$", item, re.IGNORECASE)
+            if not quantity_first:
+                quantity_first = re.match(r"^([0-9][0-9,]*)\s+([A-Za-z].+)$", item)
+            if quantity_first:
+                quantity, name = int(quantity_first.group(1).replace(",", "")), quantity_first.group(2).strip()
+            else:
+                name, quantity = item, 1
         if not name or quantity < 1:
             raise ValueError(f"Invalid inventory entry: {item}")
         parsed.append((name, quantity))
