@@ -1715,6 +1715,7 @@ def locations_embed():
     embed.add_field(
         name="2000s Postal Codes — Equipment & Locations",
         value=(
+            "• **2048 — Empty Lab.**\n"
             "• **2006 — Meth Cooking Station:** $15,000.\n"
             "• **2006 — Gasoline:** Collect gasoline.\n"
             "• **2060 — Ammonia Tanks.**\n"
