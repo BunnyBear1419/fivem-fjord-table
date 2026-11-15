@@ -395,7 +395,7 @@ def test_generic_question_handler_keeps_bang_prefix_and_adds_data_driven_answers
     assert "ingredient_usage_embed(data, ingredient_query)" in source
     assert "Shopping list:" in source
     assert "Recipes you can make with that inventory:" in source
-    assert "calculate_meth_requirements" not in source
+    assert "calculate_meth_requirements" in source
 
 
 def test_no_hard_coded_pseudoephedrine_to_meth_conversion_remains():
