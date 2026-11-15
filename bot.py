@@ -2131,7 +2131,7 @@ def usable_embed():
     embed.add_field(
         name="🧴 2L Water Bottle",
         value=(
-            "• **Meth** — 4x Pseudoephedrine + 1x Ammonia + 1x Sodium Hydroxide (Lye) + 1x 2L Plastic Bottle\n"
+            "• **Meth** — 4x Pseudoephedrine + 1x Ammonia + 1x Sodium Hydroxide (Lye) + 1x 2L Water Bottle\n"
             "  **Tool (not consumed):** 1x Gas Mask"
         ),
         inline=False,
