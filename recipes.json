@@ -3385,6 +3385,58 @@
         }
       ],
       "id": "table_013"
+    },
+    {
+      "id": "table_014",
+      "name": "Chop Shop",
+      "recipes": [
+        {
+          "name": "Repair Kit",
+          "ingredients": [
+            [
+              "Steel",
+              42
+            ],
+            [
+              "Plastic",
+              37
+            ],
+            [
+              "Recycled Rubber",
+              36
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "table_014_0001"
+        },
+        {
+          "name": "Bank Card",
+          "ingredients": [
+            [
+              "Iron",
+              25
+            ],
+            [
+              "Metal Scrap",
+              15
+            ],
+            [
+              "Recycled Rubber",
+              18
+            ],
+            [
+              "Cash",
+              500
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe; includes $500 cash cost",
+          "source": "User supplied text",
+          "id": "table_014_0002"
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
