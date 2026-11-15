@@ -38,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_meth_requirements,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1324,30 +1324,6 @@ async def on_message(message: discord.Message):
         return
 
 
-    meth_result = calculate_meth_requirements(query)
-    if meth_result is not None:
-        if meth_result.get("error"):
-            await message.reply(meth_result["error"], mention_author=False)
-            return
-        embed = discord.Embed(
-            title="🧪 Meth Production Calculator",
-            description=(
-                f"**Pseudoephedrine available:** {meth_result['pseudoephedrine']:,}\n"
-                f"**Meth batches possible:** {meth_result['batches']:,}\n"
-                f"**Unused Pseudoephedrine:** {meth_result['leftover_pseudoephedrine']:,}"
-            ),
-            color=COLOR,
-        )
-        if meth_result["ingredients"]:
-            ingredient_lines = [f"• **{name}:** {quantity:,}" for name, quantity in meth_result["ingredients"].items()]
-            embed.add_field(name="Ingredients required", value="\n".join(ingredient_lines), inline=False)
-        else:
-            embed.add_field(name="Ingredients required", value="You need 4x Pseudoephedrine for each batch.", inline=False)
-        embed.add_field(name="Reusable tool", value="• **Gas Mask:** 1 (not consumed)", inline=False)
-        embed.set_footer(text="FJORD CARTEL • Based on the Meth recipe in Usable Items")
-        await message.reply(embed=embed, mention_author=False)
-        return
-
     raw_cocaine_result = calculate_raw_cocaine_requirements(query)
     if raw_cocaine_result is not None:
         if raw_cocaine_result.get("error"):
@@ -1405,6 +1381,7 @@ async def on_message(message: discord.Message):
         return
 
     data = get_guild_recipe_data(message.guild.id)
+    query_data = include_usable_item_recipes(data)
     lowered = query.casefold()
 
     # Postal/location questions search the same saved directory shown by /locations.
@@ -1429,26 +1406,6 @@ async def on_message(message: discord.Message):
         await message.reply(f"I couldn't find Postal **{postal}** in the saved location directory. I won't guess its location.", mention_author=False)
         return
 
-    # General saved activity/location questions (e.g. Moonshine and the rotating Old Man).
-    directory = locations_embed()
-    ignored_terms = {"where", "what", "whats", "how", "does", "do", "the", "and", "for", "can", "you", "i", "is", "at", "find", "get", "sell", "make", "need", "tell", "me", "about", "please", "location", "postal"}
-    search_terms = [term for term in re.findall(r"[a-z0-9]+", lowered) if len(term) >= 3 and term not in ignored_terms]
-    if search_terms and (any(word in lowered for word in ("where", "tell me", "find", "sell", "location")) or re.search(r"\bat\b", lowered)):
-        scored_fields = []
-        for field in directory.fields:
-            field_text = f"{field.name} {field.value}".casefold()
-            matched_terms = [term for term in search_terms if term in field_text]
-            if matched_terms:
-                scored_fields.append((len(matched_terms), field))
-        scored_fields.sort(key=lambda pair: (-pair[0], pair[1].name.casefold()))
-        if scored_fields:
-            embed = discord.Embed(title="📍 Saved activity & location information", color=COLOR)
-            for _, field in scored_fields[:4]:
-                embed.add_field(name=field.name[:256], value=field.value[:1024], inline=False)
-            embed.set_footer(text="FJORD CARTEL • Answers are limited to saved directory entries")
-            await message.reply(embed=embed, mention_author=False)
-            return
-
     # Questions about where an ingredient is used / what recipes use it.
     usage_markers = ("where is", "where's", "what uses", "which recipes use", "where do i use", "used in")
     if any(marker in lowered for marker in usage_markers):
@@ -1457,16 +1414,67 @@ async def on_message(message: discord.Message):
             ingredient_query = re.sub(r"^" + re.escape(phrase), "", ingredient_query, flags=re.IGNORECASE)
         ingredient_query = re.sub(r"\b(used in|used|use|at|the)\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
         if ingredient_query:
-            embed = ingredient_usage_embed(data, ingredient_query)
+            embed = ingredient_usage_embed(query_data, ingredient_query)
             if embed.description and "No exact ingredient match" not in embed.description:
                 await message.reply(embed=embed, mention_author=False)
                 return
             # Try a typo-tolerant ingredient match, but label it as a suggestion.
-            suggestions = chat_recipe_search(data, ingredient_query, limit=3)
+            suggestions = chat_recipe_search(query_data, ingredient_query, limit=3)
             if suggestions and any(item.get("match_label","").startswith("Closest ingredient") for item in suggestions):
                 lines = [f"• **{item['ingredients'][0][0]}** — {item['recipe']} ({item['table']})" for item in suggestions]
                 await message.reply("I couldn't find that exact ingredient. Closest saved ingredient matches:\n" + "\n".join(lines), mention_author=False)
                 return
+
+    # Search the same saved shops, locations, usable items and help pages shown by slash commands.
+    if any(term in lowered for term in ("where", "find", "sell", "location", "what is", "what does", "how do i use", "how to use", "tell me about", "what do i do")):
+        info_matches = saved_information_matches(query)
+        if info_matches:
+            embed = discord.Embed(title="📚 Saved Fjord Cartel Information", color=COLOR)
+            for item in info_matches[:6]:
+                embed.add_field(name=f"{item['source']} · {item['title']}"[:256], value=item["value"][:1024] or "No details recorded.", inline=False)
+            embed.set_footer(text="Answers are taken from the saved Shops, Locations, Usable Items and Commands pages.")
+            await message.reply(embed=embed, mention_author=False)
+            return
+
+    # Estimate a recipe's batch count from the inventory the member supplies.
+    inventory_query = re.search(r"\\bwith\\s*:?\\s*(.+)$", query, re.IGNORECASE)
+    if inventory_query and any(term in lowered for term in ("how many", "how much", "can i make", "can i craft", "can i produce")):
+        target_query = query[:inventory_query.start()].strip()
+        try:
+            limited_result = calculate_inventory_limited_batches(query_data, target_query, inventory_query.group(1))
+        except ValueError as exc:
+            await message.reply(f"Inventory format error: {exc}", mention_author=False)
+            return
+        if limited_result is not None:
+            if limited_result.get("error"):
+                await message.reply(limited_result["error"], mention_author=False)
+                return
+            embed = discord.Embed(
+                title="🧮 Inventory-Limited Recipe Calculator",
+                description=(
+                    f"**Recipe:** {limited_result['recipe']}\\n"
+                    f"**Table:** {limited_result['table']}\\n"
+                    f"**Maximum batches from the stock you listed:** {limited_result['batches']:,}"
+                ),
+                color=COLOR,
+            )
+            if limited_result["stock_used"]:
+                embed.add_field(
+                    name="Your listed stock",
+                    value="\\n".join(f"• **{name}:** {quantity:,}" for name, quantity in limited_result["stock_used"].items()),
+                    inline=False,
+                )
+            if limited_result["missing"]:
+                embed.add_field(
+                    name="Other ingredients still needed",
+                    value="\\n".join(f"• **{name}:** {quantity:,}" for name, quantity in limited_result["missing"].items())[:1024],
+                    inline=False,
+                )
+            if limited_result["tools"]:
+                embed.add_field(name="Tools (not consumed)", value=", ".join(limited_result["tools"]), inline=False)
+            embed.set_footer(text="The batch limit uses only the stock you listed; missing ingredients are shown separately.")
+            await message.reply(embed=embed, mention_author=False)
+            return
 
     # Generic batch shopping list: !what do I need for 10 [recipe]?
     batch_match = re.search(r"\b(\d[\d,]*)\s*(?:x\s*)?(?:batches?\s+(?:of\s+)?)?(.+)$", query, re.IGNORECASE)
@@ -1475,7 +1483,7 @@ async def on_message(message: discord.Message):
         batch_count = int(batch_match.group(1).replace(",", ""))
         target_text = batch_match.group(2).strip(" ?.! ")
         if 1 <= batch_count <= 100000 and target_text:
-            matches = chat_recipe_search(data, target_text, limit=4)
+            matches = chat_recipe_search(query_data, target_text, limit=4)
             exact = [m for m in matches if m.get("score", 0) >= 0.90]
             if len(exact) == 1:
                 match = exact[0]
@@ -1504,7 +1512,7 @@ async def on_message(message: discord.Message):
             await message.reply(f"Inventory format error: {exc}", mention_author=False)
             return
         possible = []
-        for table in data.get("tables", []):
+        for table in query_data.get("tables", []):
             for recipe in table.get("recipes", []):
                 required = {}
                 for item, amount in recipe.get("ingredients", []):
@@ -1525,7 +1533,7 @@ async def on_message(message: discord.Message):
     related_prefixes = ("what tables", "which tables", "tables related", "related tables", "what table", "which table")
     if query.casefold().startswith(related_prefixes) or ("table" in query.casefold() and any(term in query.casefold() for term in ("weed", "marijuana", "cannabis", "bud"))):
         data = get_guild_recipe_data(message.guild.id if message.guild else None)
-        results = related_table_search(data, query, limit=8)
+        results = related_table_search(query_data, query, limit=8)
         if not results:
             await message.reply("I couldn't find related tables in the saved recipe directory. Try a different keyword or use /dashboard to browse.", mention_author=False)
             return
@@ -1565,7 +1573,7 @@ async def on_message(message: discord.Message):
             return
         data = get_guild_recipe_data(message.guild.id if message.guild else None)
         craftable = []
-        for table in data.get("tables", []):
+        for table in query_data.get("tables", []):
             for recipe in table.get("recipes", []):
                 needed = {}
                 for name, qty in recipe.get("ingredients", []):
@@ -1584,7 +1592,7 @@ async def on_message(message: discord.Message):
     record_usage("search", query)
     aliases = guild_aliases(message.guild.id if message.guild else None)
     alias_target = next((target for alias, target in aliases.items() if alias.casefold() == query.casefold()), None)
-    matches = chat_recipe_search(get_guild_recipe_data(message.guild.id if message.guild else None), alias_target or query, limit=3)
+    matches = chat_recipe_search(query_data, alias_target or query, limit=3)
     if not matches:
         record_usage("no_result", query)
         await message.reply(
@@ -2179,6 +2187,89 @@ def usable_embed():
     )
     embed.set_footer(text="FJORD CARTEL • USABLE ITEM DIRECTORY")
     return embed
+
+
+def include_usable_item_recipes(data: dict):
+    """Combine the saved crafting tables with recipes listed in the Usable Items page."""
+    combined = dict(data)
+    tables = list(data.get("tables", []))
+    grouped = {}
+    for field in usable_embed().fields:
+        section = re.sub(r"^[^A-Za-z0-9]+", "", field.name).strip()
+        section = re.sub(r"\\s+—\\s+Pill Recipes \\(\\d+/\\d+\\)$", "", section).strip()
+        table_name = f"Usable Item — {section}"
+        recipes = grouped.setdefault(table_name, [])
+        current_recipe = None
+        for raw_line in field.value.splitlines():
+            line = raw_line.strip()
+            recipe_match = re.match(r"• \\*\\*(.+?)\\*\\* — (.+)$", line)
+            if recipe_match:
+                recipe_name, ingredient_text = recipe_match.groups()
+                ingredients = []
+                for part in re.split(r"\\s+\\+\\s+", ingredient_text):
+                    ingredient_match = re.fullmatch(r"\\s*(\\d+)\\s*x\\s*(.+?)\\s*", part)
+                    if ingredient_match:
+                        ingredients.append([ingredient_match.group(2).strip(), int(ingredient_match.group(1))])
+                if ingredients:
+                    current_recipe = {"name": recipe_name.strip(), "ingredients": ingredients, "tools": []}
+                    recipes.append(current_recipe)
+                else:
+                    current_recipe = None
+            elif current_recipe and "Tool (not consumed)" in line:
+                for quantity, tool_name in re.findall(r"(\\d+)\\s*x\\s*([^,+]+)", line):
+                    current_recipe["tools"].append(tool_name.strip())
+    for table_name, recipes in grouped.items():
+        if recipes:
+            tables.append({"name": table_name, "recipes": recipes})
+    combined["tables"] = tables
+    return combined
+
+
+def saved_information_matches(query: str):
+    """Search the same saved information pages exposed through slash commands."""
+    normalized = re.sub(r"[^a-z0-9]+", " ", str(query or "").casefold()).strip()
+    ignored = {
+        "where", "what", "whats", "how", "do", "does", "i", "you", "is", "are",
+        "the", "a", "an", "to", "for", "me", "please", "can", "could", "tell",
+        "about", "find", "get", "buy", "use", "used", "sell", "at", "in", "on",
+        "my", "your", "and", "of", "it", "this", "that", "item",
+    }
+    terms = [word for word in normalized.split() if len(word) > 1 and word not in ignored]
+    if not terms:
+        return []
+    sources = (
+        ("Shops", shops_embed()),
+        ("Locations", locations_embed()),
+        ("Usable Items", usable_embed()),
+        ("Commands", commands_embed()),
+    )
+    matches = []
+    for source_name, embed in sources:
+        for field in embed.fields:
+            title_norm = re.sub(r"[^a-z0-9]+", " ", field.name.casefold()).strip()
+            value_lines = field.value.splitlines()
+            value_norm = re.sub(r"[^a-z0-9]+", " ", field.value.casefold()).strip()
+            hits = [term for term in terms if term in (title_norm + " " + value_norm).split()]
+            if not hits:
+                continue
+            if len(terms) > 1 and len(hits) < len(terms):
+                continue
+            if all(term in title_norm.split() for term in terms):
+                selected_value = field.value
+            else:
+                selected_lines = [
+                    line for line in value_lines
+                    if any(term in re.sub(r"[^a-z0-9]+", " ", line.casefold()).split() for term in terms)
+                ]
+                selected_value = "\\n".join(selected_lines) if selected_lines else field.value
+            matches.append({
+                "source": source_name,
+                "title": field.name,
+                "value": selected_value,
+                "score": len(hits),
+            })
+    matches.sort(key=lambda item: (-item["score"], item["source"], item["title"].casefold()))
+    return matches
 
 
 def commands_embed():
