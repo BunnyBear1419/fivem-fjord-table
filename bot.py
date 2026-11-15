@@ -1414,7 +1414,7 @@ async def on_message(message: discord.Message):
     )
     if asks_usage:
         ingredient_query = query
-        for phrase in ("where is ", "where's ", "what uses ", "what recipes use ", "which recipes use ", "where do i use ", "what does "):
+        for phrase in ("where is ", "where's ", "what is ", "what's ", "what uses ", "what recipes use ", "which recipes use ", "where do i use ", "what does "):
             ingredient_query = re.sub(r"^" + re.escape(phrase), "", ingredient_query, flags=re.IGNORECASE)
         ingredient_query = re.sub(r"\b(used in|used for|used|use|made|at|the|for|do)\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
         if ingredient_query:
