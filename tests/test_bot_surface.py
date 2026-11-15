@@ -312,6 +312,7 @@ def test_pharmacy_postal_9072_items_are_in_shop_directory_and_price_lookup():
         "chill pills": 100,
         "electrolyte drink": 20,
         "cough syrup": 50,
+        "dextromethorphan cough syrup": 60,
         "condoms": 10,
         "pregnancy test box": 200,
         "prenatal vitamins": 100,
