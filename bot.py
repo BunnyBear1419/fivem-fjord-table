@@ -1417,8 +1417,71 @@ def dashboard_embed():
 def shops_embed():
     embed = discord.Embed(
         title="🛒 Fjord Cartel • Shops",
-        description="The shop directory is ready for your shop names, items, and prices.",
+        description="Shop directory • Prices and stock are recorded as provided.",
         color=COLOR,
+    )
+    embed.add_field(
+        name="📱 Digital Den (Electronics)",
+        value=(
+            "• **Phone:** $500\n"
+            "• **Radio:** $500\n"
+            "• **Laptop:** $2,000"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="🔫 Weapon & Ammo Store",
+        value=(
+            "**Ammo**\n"
+            "• **Pistol Ammo:** $10 — Out of stock\n"
+            "• **Rifle Ammo (5.56):** $20 — Out of stock\n"
+            "• **SMG Ammo (.45 ACP):** $23 — Out of stock\n"
+            "• **Rifle Ammo (7.62):** $25 — Out of stock\n"
+            "• **Shotgun Ammo (12 Gauge):** $55 — 240 in stock\n\n"
+            "**Pistol Weapons**\n"
+            "• **Black Pistol:** $2,000 — 80 in stock\n"
+            "• **Pink Pistol:** $4,800 — 94 in stock\n\n"
+            "**Melee Weapons**\n"
+            "• **Snowball:** $100 — Out of stock\n"
+            "• **Bat:** $250 — Out of stock\n"
+            "• **Knife:** $250 — 229 in stock"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="🏪 Convenience Store",
+        value=(
+            "**Misc**\n"
+            "• **Lockpick:** $20\n"
+            "• **Jerry Can:** $200\n"
+            "• **Outfit Bag:** $5,000\n\n"
+            "**Chips**\n"
+            "• **Classic Chips:** $3\n"
+            "• **Cheese Chips:** $3\n"
+            "• **Salted Chips:** $3\n"
+            "• **Ribs Chips:** $4\n"
+            "• **Habanero Chips:** $5\n\n"
+            "**Cigarettes**\n"
+            "• **Redwood Cigarettes:** $5\n"
+            "• **Vape:** $1,000\n\n"
+            "**Meals**\n"
+            "• **Hot Dog:** $2\n"
+            "• **Homemade Sandwich:** $3\n"
+            "• **Chicken Noodles:** $3\n"
+            "• **Seafood Noodles:** $3\n\n"
+            "**Drinks**\n"
+            "• **E-Cola:** $3\n"
+            "• **E-Cola Light:** $3\n"
+            "• **Orang-O-Tang:** $3\n"
+            "• **Sprunk:** $3\n"
+            "• **Sprunk Bottle:** $3\n"
+            "• **Sprunk Light:** $4\n"
+            "• **E-Cola Bottle:** $4\n"
+            "• **Orang-O-Tang Bottle:** $4\n"
+            "• **E-Cola Light Bottle:** $5\n"
+            "• **Sprunk Light Bottle:** $5"
+        ),
+        inline=False,
     )
     embed.set_footer(text="FJORD CARTEL • SHOP DIRECTORY")
     return embed
