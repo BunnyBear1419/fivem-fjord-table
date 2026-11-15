@@ -147,7 +147,7 @@ def test_location_recipe_warnings_are_attached_without_mutating_saved_data():
         {"name": "Tungsten Drill Bit", "ingredients": [["hardened_alloy", 2]], "tools": []},
     ]}]}
     sections = [("10060", (
-        "• **Heist Drill (+15 XP):** 2x drill_bit + 1 hidden material\\n"
+        "• **Heist Drill (+15 XP):** 2x drill_bit + 1 hidden material\n"
         "• **Tungsten Drill Bit (+12 XP):** 2x hardened_alloy + 1 hidden material"
     ))]
     reviewed = attach_location_recipe_warnings(data, sections)
