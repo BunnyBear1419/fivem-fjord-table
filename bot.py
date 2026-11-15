@@ -1404,7 +1404,87 @@ async def on_message(message: discord.Message):
     embed.set_footer(text="Spelling suggestions only • Original recipe names are unchanged")
     await message.reply(embed=embed, view=ChatRecipeMatchView(message.author.id, query, matches), mention_author=False)
 
-@bot.tree.command(name="crafting", description="Open the private FiveM crafting menu.")
+def dashboard_embed():
+    embed = discord.Embed(
+        title="⚔️ Fjord Cartel Information",
+        description="**PRIVATE MEMBER DASHBOARD**\\n\\nWelcome to the Fjord Cartel directory. Choose the command for the information you need.",
+        color=COLOR,
+    )
+    embed.add_field(name="📚 Crafting", value="`/crafting` — Browse recipes, tables, ingredients, and stock planning.", inline=False)
+    embed.add_field(name="🛒 Shops", value="`/shops` — Browse shop information and available items.", inline=False)
+    embed.add_field(name="📍 Locations", value="`/locations` — Browse saved locations and postal references.", inline=False)
+    embed.set_footer(text="FJORD CARTEL • BLOOD IN THE WATER, STEEL IN THE VEINS")
+    return embed
+
+
+def shops_embed():
+    embed = discord.Embed(
+        title="🛒 Fjord Cartel • Shops",
+        description="The shop directory is ready. Shop entries can be added as you provide their names, items, and prices.",
+        color=COLOR,
+    )
+    embed.set_footer(text="FJORD CARTEL • SHOP DIRECTORY")
+    return embed
+
+
+def locations_embed():
+    embed = discord.Embed(
+        title="📍 Fjord Cartel • Locations",
+        description="Saved location references for cartel members.",
+        color=COLOR,
+    )
+    embed.add_field(
+        name="Chemical Supplier — Postal 10105",
+        value=(
+            "**Acids & Bases (5 items)**\\n"
+            "• **Sodium Hydroxide (Lye):** $80 each\\n"
+            "• **Citric Acid:** $20 each\\n"
+            "• **Sulfuric Acid:** $50 each\\n"
+            "• **Slaked Lime:** $15 each\\n"
+            "• **Succinic Acid:** $40 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Solvents (6 items)",
+        value=(
+            "• **Acetone:** $60 each\\n"
+            "• **Isopropyl Alcohol:** $50 each\\n"
+            "• **Distilled Water:** $20 each\\n"
+            "• **Naphtha:** $70 each\\n"
+            "• **Grain Alcohol:** $45 each\\n"
+            "• **Butane Canister:** $30 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Reagents (7 items)",
+        value=(
+            "• **Sodium Benzoate:** $150 each\\n"
+            "• **Ammonia:** $175 each\\n"
+            "• **Hydrogen Peroxide:** $40 each\\n"
+            "• **Urea:** $25 each\\n"
+            "• **Formaldehyde:** $60 each\\n"
+            "• **Potassium Permanganate:** $60 each\\n"
+            "• **Sodium Acetate:** $40 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Lab Gear & Safety (1 item)",
+        value="• **Filter Paper:** $10 each",
+        inline=False,
+    )
+    embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATION • POSTAL 10105")
+    return embed
+
+
+@bot.tree.command(name="dashboard", description="Open the Fjord Cartel Information dashboard.")
+async def dashboard_command(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=dashboard_embed(), ephemeral=True)
+
+
+@bot.tree.command(name="crafting", description="Open the private crafting and recipe directory.")
 async def crafting_command(interaction: discord.Interaction):
     if bot.recipe_data is None:
         await interaction.response.send_message("The crafting directory is still loading. Try again shortly.", ephemeral=True)
@@ -1415,6 +1495,16 @@ async def crafting_command(interaction: discord.Interaction):
         view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
         ephemeral=True,
     )
+
+
+@bot.tree.command(name="shops", description="Open the Fjord Cartel shop directory.")
+async def shops_command(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=shops_embed(), ephemeral=True)
+
+
+@bot.tree.command(name="locations", description="Open the Fjord Cartel location directory.")
+async def locations_command(interaction: discord.Interaction):
+    await interaction.response.send_message(embed=locations_embed(), ephemeral=True)
 
 
 @bot.tree.error
