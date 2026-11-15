@@ -262,7 +262,7 @@ class CraftingBot(commands.Bot):
 
     async def setup_hook(self):
         self.recipe_data = ensure_stable_ids(load_recipe_data())
-        # Syncing the one-command local tree replaces the old global command set.
+        # Sync the current global slash-command set.
         synced = await self.tree.sync()
         count = sum(len(table.get("recipes", [])) for table in self.recipe_data["tables"])
         logger.info("Synced %s global slash command(s). Loaded %s table(s) and %s recipe(s).", len(synced), len(self.recipe_data["tables"]), count)
@@ -1945,7 +1945,7 @@ def locations_embed():
         name="1000s Postal Codes — Hidden Locations",
         value=(
             "• **1012 — Propane:** Orange gas station next to the compound, near the garage. Buy propane for $1,000; sell empty container for $300.\n"
-            "• **1016–1018 & 9241 — Box Collection:** Collect boxes, then take them to the NPC to trade the boxes for materials.\\n"
+            "• **1016–1018 & 9241 — Box Collection:** Collect boxes, then take them to the NPC to trade the boxes for materials.\n"
             "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. Access and details unconfirmed.\n"
             "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\n"
             "• **Drug Runs — Mysterious Person:** Drug runs are marked on the map as \"Mysterious Person\".\n"
@@ -2296,8 +2296,9 @@ def commands_embed():
         name="📚 Dashboard tools",
         value=(
             "**/dashboard** — open the main menu.\n"
-            "Crafting includes recipe browsing, ingredient search, shopping lists, inventory planning, production chains, and issue reports.\n"
-            "Shops, Locations, and Usable Items are available from the dashboard dropdown."
+            "**/crafting** — open recipes. **/shops** — browse prices.\n"
+            "**/locations** — browse postal codes. **/moonshine** — Old Man selling information.\n"
+            "The dashboard also includes Usable Items and the full crafting tools."
         ),
         inline=False,
     )
