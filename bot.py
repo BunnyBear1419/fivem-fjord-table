@@ -1462,7 +1462,7 @@ def dashboard_embed():
 
 def shops_embed():
     embed = discord.Embed(
-        title="🛒 Fjord Cartel • Shops",
+        title="🛒 Fjord Cartel • Shops (Listed)",
         description="Shop directory • Item prices.",
         color=COLOR,
     )
@@ -1535,7 +1535,7 @@ def shops_embed():
 
 def locations_embed():
     embed = discord.Embed(
-        title="📍 Fjord Cartel • Locations",
+        title="📍 Fjord Cartel • Locations/Shops (Hidden)",
         description="Saved location references for cartel members. Farm Supplier: Postals 2002–2003.",
         color=COLOR,
     )
