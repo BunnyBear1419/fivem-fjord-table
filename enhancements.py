@@ -889,7 +889,7 @@ def expanded_production_requirements(
             else:
                 base_totals[str(ingredient_name)] += amount
 
-    expand(target_table, target_recipe, batches, 0, {str(target_recipe.get("name", "")).casefold().strip()})
+    expand(target_table, target_recipe, batches, 0, {_normalize_chat_search(str(target_recipe.get("name", "")))})
     return {
         "table": target["table"],
         "recipe": target["recipe"],
