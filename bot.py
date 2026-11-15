@@ -1582,6 +1582,28 @@ def shops_embed():
         inline=False,
     )
     embed.add_field(
+        name="💊 Pharmacy — Postal 9072",
+        value=(
+            "**Medical & Wellness (9 items)**\n"
+            "• **Bandage:** $150 each\n"
+            "• **Feminine Pad:** $10 each\n"
+            "• **Chill Pills:** $100 each\n"
+            "• **Electrolyte Drink:** $20 each\n"
+            "• **Cough Syrup:** $50 each\n"
+            "• **Condoms:** $10 each\n"
+            "• **Pregnancy Test Box:** $200 each\n"
+            "• **Prenatal Vitamins:** $100 each\n"
+            "• **Baby Oil:** $50 each\n\n"
+            "**Party & Gender Reveal (5 items)**\n"
+            "• **Confetti Cannon:** $50 each\n"
+            "• **Confetti Popper:** $50 each\n"
+            "• **Gender Reveal Balloon:** $50 each\n"
+            "• **Gender Reveal Gift Box:** $50 each\n"
+            "• **Gender Reveal Smoke:** $50 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="🥕 Farmers Market",
         value=(
             "• **Bag of Corn:** $10\n"
