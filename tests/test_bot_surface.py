@@ -384,3 +384,35 @@ def test_system_two_watering_can_is_not_reusable():
     assert result["systems"]["grape"]["costs"]["Watering Can"] == 7500
     assert result["systems"]["grape"]["total"] == 210100
     assert "one Watering Can per plant" in result["systems"]["grape"]["note"]
+
+
+
+def test_meth_calculator_converts_pseudoephedrine_into_batches_and_other_ingredients():
+    from enhancements import calculate_meth_requirements
+
+    result = calculate_meth_requirements("How much meth can I make with 500 Pseudoephedrine?")
+    assert result["pseudoephedrine"] == 500
+    assert result["batches"] == 125
+    assert result["meth_output"] == 125
+    assert result["leftover_pseudoephedrine"] == 0
+    assert result["other_ingredients"] == {
+        "Ammonia": 125,
+        "Sodium Hydroxide (Lye)": 125,
+        "2L Plastic Bottle": 125,
+    }
+    assert result["tools"] == ["Gas Mask"]
+
+
+def test_meth_calculator_reports_leftover_pseudoephedrine():
+    from enhancements import calculate_meth_requirements
+
+    result = calculate_meth_requirements("How much meth from 502x Pseudoephedrine?")
+    assert result["batches"] == 125
+    assert result["leftover_pseudoephedrine"] == 2
+
+
+def test_meth_calculator_ignores_queries_without_meth_and_pseudoephedrine():
+    from enhancements import calculate_meth_requirements
+
+    assert calculate_meth_requirements("How much is 500 Pseudoephedrine?") is None
+    assert calculate_meth_requirements("How much meth can I make?") is None
