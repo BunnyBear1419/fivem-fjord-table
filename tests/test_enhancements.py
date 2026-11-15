@@ -139,6 +139,49 @@ def test_inventory_limited_batch_calculator_reports_ambiguous_recipe_choices():
     assert "Table A" in result["error"] and "Table B" in result["error"]
 
 
+def test_location_recipe_warnings_are_attached_without_mutating_saved_data():
+    from enhancements import attach_location_recipe_warnings
+
+    data = {"tables": [{"name": "Crafting Bench", "recipes": [
+        {"name": "Heist Drill", "ingredients": [["drill_bit", 2]], "tools": []},
+        {"name": "Tungsten Drill Bit", "ingredients": [["hardened_alloy", 2]], "tools": []},
+    ]}]}
+    sections = [("10060", (
+        "• **Heist Drill (+15 XP):** 2x drill_bit + 1 hidden material\\n"
+        "• **Tungsten Drill Bit (+12 XP):** 2x hardened_alloy + 1 hidden material"
+    ))]
+    reviewed = attach_location_recipe_warnings(data, sections)
+    recipes = {item["name"]: item for item in reviewed["tables"][0]["recipes"]}
+    assert len(recipes["Heist Drill"]["notes"]) == 1
+    assert "drill_bit" in recipes["Heist Drill"]["notes"][0]
+    assert "Tungsten Drill Bit" in recipes["Heist Drill"]["notes"][0]
+    assert "hidden material" in recipes["Tungsten Drill Bit"]["notes"][0]
+    assert "notes" not in data["tables"][0]["recipes"][0]
+
+
+def test_recipe_calculator_and_production_expansion_keep_data_review_notes():
+    from enhancements import (
+        calculate_recipe_ingredients,
+        chat_recipe_search,
+        expanded_production_requirements,
+        recipe_shopping_embed,
+    )
+
+    note = "Postal 10060 notes list an unnamed hidden material."
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Metal Pin", "ingredients": [["Iron", 2]], "tools": [], "notes": []},
+        {"name": "Lockpick", "ingredients": [["metal_pin", 2]], "tools": [], "notes": [note]},
+    ]}]}
+    matches = chat_recipe_search(data, "How to make Lockpick")
+    assert matches[0]["notes"] == [note]
+    shopping = calculate_recipe_ingredients(data, "Bench", "Lockpick", 3)
+    assert shopping["notes"] == [note]
+    embed = recipe_shopping_embed(shopping)
+    assert any(field.name == "Data review notes" for field in embed.fields)
+    expanded = expanded_production_requirements(data, "Bench", "Lockpick", 1)
+    assert note in expanded["notes"]
+
+
 def test_production_planner_matches_space_and_underscore_item_names():
     from enhancements import dependency_chain, expanded_production_requirements
 
