@@ -1407,8 +1407,12 @@ async def on_message(message: discord.Message):
         return
 
     # Questions about where an ingredient is used / what recipes use it.
-    usage_markers = ("where is", "where's", "what uses", "which recipes use", "where do i use", "used in")
-    if any(marker in lowered for marker in usage_markers):
+    usage_markers = ("what uses", "which recipes use", "where do i use", "used in", "used for")
+    asks_usage = any(marker in lowered for marker in usage_markers) or (
+        any(marker in lowered for marker in ("where is", "where's"))
+        and any(word in lowered for word in ("used", "use", "made", "recipe"))
+    )
+    if asks_usage:
         ingredient_query = query
         for phrase in ("where is ", "where's ", "what uses ", "which recipes use ", "where do i use "):
             ingredient_query = re.sub(r"^" + re.escape(phrase), "", ingredient_query, flags=re.IGNORECASE)
