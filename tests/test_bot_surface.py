@@ -413,6 +413,8 @@ def test_generic_question_handler_keeps_bang_prefix_and_searches_all_saved_infor
     assert "calculate_inventory_limited_batches(query_data" in source
     assert "Recipes you can make with that inventory:" in source
     assert "def include_usable_item_recipes(" in source
+    assert "attach_location_recipe_warnings(" in source
+    assert "match.get(\"notes\")" in source
     assert "def saved_information_matches(" in source
 
 
