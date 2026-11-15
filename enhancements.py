@@ -182,7 +182,7 @@ def calculate_meth_requirements(query: str):
             "Pseudoephedrine": batches * 4,
             "Ammonia": batches,
             "Sodium Hydroxide (Lye)": batches,
-            "2L Plastic Bottle": batches,
+            "2L Water Bottle": batches,
         },
         "tools": {"Gas Mask": 1},
     }
