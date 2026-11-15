@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_meth_requirements, calculate_weed_growing_requirements,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1319,6 +1319,35 @@ async def on_message(message: discord.Message):
             embed.set_footer(text="Mention System 1 / Smoke On The Water or System 2 / Grapeseed to show just one.")
         else:
             embed.set_footer(text="Water and reusable tools are counted as one purchase each; Flower Pots are omitted for grass planting.")
+        await message.reply(embed=embed, mention_author=False)
+        return
+
+    meth_result = calculate_meth_requirements(query)
+    if meth_result is not None:
+        if meth_result.get("error"):
+            await message.reply(meth_result["error"], mention_author=False)
+            return
+        embed = discord.Embed(
+            title="🧮 Meth Production Calculator",
+            description=(
+                f"**Pseudoephedrine available:** {meth_result['pseudoephedrine']:,}\n"
+                f"**Meth batches / estimated output:** {meth_result['batches']:,}"
+            ),
+            color=COLOR,
+        )
+        ingredient_lines = [
+            f"• **{name}:** {quantity:,}"
+            for name, quantity in meth_result["other_ingredients"].items()
+        ]
+        embed.add_field(name="Other ingredients required", value="\\n".join(ingredient_lines), inline=False)
+        embed.add_field(name="Tool (not consumed)", value=", ".join(meth_result["tools"]), inline=False)
+        if meth_result["leftover_pseudoephedrine"]:
+            embed.add_field(
+                name="Leftover",
+                value=f"{meth_result['leftover_pseudoephedrine']}x Pseudoephedrine — not enough for another batch.",
+                inline=False,
+            )
+        embed.set_footer(text="FJORD CARTEL • In-game recipe estimate")
         await message.reply(embed=embed, mention_author=False)
         return
 
