@@ -116,6 +116,20 @@ SHOP_PRICE_CATALOG = [
     {"name": "Anesthetic", "shop": "Blackmarket Doctor — Postal 3009", "price": 250, "aliases": ("anesthetic", "anaesthetic")},
     {"name": "Dextromethorphan Cough Syrup", "shop": "Blackmarket Doctor — Postal 3009", "price": 60, "aliases": ("dextromethorphan cough syrup", "cough syrup", "dextromethorphan")},
     {"name": "Syringe", "shop": "Blackmarket Doctor — Postal 3009", "price": 15, "aliases": ("syringe", "syringes")},
+    {"name": "Bandage", "shop": "Pharmacy — Postal 9072", "price": 150, "aliases": ("bandage", "bandages",)},
+    {"name": "Feminine Pad", "shop": "Pharmacy — Postal 9072", "price": 10, "aliases": ("feminine pad", "feminine pads",)},
+    {"name": "Chill Pills", "shop": "Pharmacy — Postal 9072", "price": 100, "aliases": ("chill pills", "chill pill",)},
+    {"name": "Electrolyte Drink", "shop": "Pharmacy — Postal 9072", "price": 20, "aliases": ("electrolyte drink", "electrolyte drinks",)},
+    {"name": "Cough Syrup", "shop": "Pharmacy — Postal 9072", "price": 50, "aliases": ("cough syrup",)},
+    {"name": "Condoms", "shop": "Pharmacy — Postal 9072", "price": 10, "aliases": ("condom", "condoms",)},
+    {"name": "Pregnancy Test Box", "shop": "Pharmacy — Postal 9072", "price": 200, "aliases": ("pregnancy test box", "pregnancy test", "pregnancy tests",)},
+    {"name": "Prenatal Vitamins", "shop": "Pharmacy — Postal 9072", "price": 100, "aliases": ("prenatal vitamins", "prenatal vitamin",)},
+    {"name": "Baby Oil", "shop": "Pharmacy — Postal 9072", "price": 50, "aliases": ("baby oil",)},
+    {"name": "Confetti Cannon", "shop": "Pharmacy — Postal 9072", "price": 50, "aliases": ("confetti cannon", "confetti cannons",)},
+    {"name": "Confetti Popper", "shop": "Pharmacy — Postal 9072", "price": 50, "aliases": ("confetti popper", "confetti poppers",)},
+    {"name": "Gender Reveal Balloon", "shop": "Pharmacy — Postal 9072", "price": 50, "aliases": ("gender reveal balloon", "gender reveal balloons",)},
+    {"name": "Gender Reveal Gift Box", "shop": "Pharmacy — Postal 9072", "price": 50, "aliases": ("gender reveal gift box", "gender reveal gift boxes",)},
+    {"name": "Gender Reveal Smoke", "shop": "Pharmacy — Postal 9072", "price": 50, "aliases": ("gender reveal smoke",)},
 
 ]
 
