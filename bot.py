@@ -1529,6 +1529,18 @@ def shops_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="🥕 Farmers Market",
+        value=(
+            "• **Bag of Corn:** $10\\n"
+            "• **Bag of Sugar:** $10\\n"
+            "• **Bag of Yeast:** $10\\n"
+            "• **Gallon of Water:** $5\\n"
+            "• **Empty Barrel:** $100\\n"
+            "• **Empty Jug:** $50"
+        ),
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • SHOP DIRECTORY")
     return embed
 
