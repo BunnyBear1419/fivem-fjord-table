@@ -353,6 +353,7 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
                     "recipe": name,
                     "ingredients": list(recipe.get("ingredients") or []),
                     "tools": list(recipe.get("tools") or []),
+                    "notes": list(recipe.get("notes") or []),
                     "score": score,
                     "match_label": "Recipe match" if score >= 0.94 else "Closest spelling match",
                 })
@@ -373,6 +374,7 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
                         "recipe": recipe.get("name", "Unknown recipe"),
                         "ingredients": [[ingredient_name, quantity]],
                         "tools": [],
+                        "notes": list(recipe.get("notes") or []),
                         "score": score,
                         "match_label": f"Closest ingredient spelling: {ingredient_name}",
                     })
@@ -505,7 +507,7 @@ def calculate_recipe_ingredients(data: dict[str, Any], table_name: str, recipe_n
     totals = {}
     for name, quantity in recipe.get("ingredients") or []:
         totals[name] = totals.get(name, 0) + int(quantity) * batches
-    return {"table": table["name"], "recipe": recipe["name"], "batches": batches, "ingredients": totals, "tools": recipe.get("tools") or []}
+    return {"table": table["name"], "recipe": recipe["name"], "batches": batches, "ingredients": totals, "tools": recipe.get("tools") or [], "notes": list(recipe.get("notes") or [])}
 
 
 def recipe_shopping_embed(result: dict[str, Any]) -> discord.Embed:
@@ -521,6 +523,8 @@ def recipe_shopping_embed(result: dict[str, Any]) -> discord.Embed:
     embed.add_field(name="Total ingredients required", value=text, inline=False)
     if result["tools"]:
         embed.add_field(name="Tools (not consumed)", value=", ".join(result["tools"])[:1024], inline=False)
+    if result.get("notes"):
+        embed.add_field(name="Data review notes", value="\n".join(f"• {note}" for note in result["notes"])[:1024], inline=False)
     return embed
 
 
@@ -769,7 +773,7 @@ def dependency_chain(data: dict[str, Any], item_name: str, max_depth: int = 8):
             ingredients = []
             for name, qty in recipe.get("ingredients") or []:
                 ingredients.append({"name": str(name), "quantity": int(qty), "source": walk(name, depth + 1)})
-            matches.append({"table": table.get("name", ""), "recipe": recipe.get("name", ""), "ingredients": ingredients})
+            matches.append({"table": table.get("name", ""), "recipe": recipe.get("name", ""), "ingredients": ingredients, "notes": list(recipe.get("notes") or [])})
         visited.remove(key)
         return {"item": item, "cycle": False, "recipes": matches}
     return walk(item_name, 0)
@@ -785,6 +789,7 @@ def dependency_lines(node, depth=0, limit=60):
         return [f"{prefix}• {node['item']} (no recipe output found; treated as base item)"]
     for entry in recipes:
         lines.append(f"{prefix}🛠️ {entry['recipe']} — {entry['table']}")
+        lines.extend(f"{prefix}  ⚠️ {note}" for note in entry.get("notes", []))
         for ingredient in entry["ingredients"]:
             lines.append(f"{prefix}  • {ingredient['name']} ×{ingredient['quantity']}")
             lines.extend(dependency_lines(ingredient["source"], depth + 2, limit)[:max(0, limit-len(lines))])
@@ -900,13 +905,15 @@ def calculate_inventory_limited_batches(
         "required": required,
         "missing": missing,
         "tools": list(selected.get("tools") or []),
+        "notes": list(selected.get("notes") or []),
     }
 
 
 def inventory_plan(data: dict[str, Any], table_name: str, recipe_name: str, target_batches: int, inventory_text: str):
     if not isinstance(target_batches, int) or not 1 <= target_batches <= 999:
         raise ValueError("Target batches must be between 1 and 999.")
-    required = calculate_recipe_ingredients(data, table_name, recipe_name, target_batches)["ingredients"]
+    recipe_result = calculate_recipe_ingredients(data, table_name, recipe_name, target_batches)
+    required = recipe_result["ingredients"]
     stock = parse_inventory(inventory_text)
     available_batches = None
     for name, per_target in required.items():
@@ -915,7 +922,7 @@ def inventory_plan(data: dict[str, Any], table_name: str, recipe_name: str, targ
         available_batches = possible if available_batches is None else min(available_batches, possible)
     available_batches = available_batches or 0
     missing = {name: max(0, quantity-inventory_quantity(stock, name)) for name, quantity in required.items() if inventory_quantity(stock, name) < quantity}
-    return {"available_batches": min(available_batches, 999), "target_batches": target_batches, "required": required, "stock": stock, "missing": missing}
+    return {"available_batches": min(available_batches, 999), "target_batches": target_batches, "required": required, "stock": stock, "missing": missing, "notes": recipe_result.get("notes", [])}
 
 
 def expanded_production_requirements(
@@ -954,6 +961,7 @@ def expanded_production_requirements(
         label = f"{table.get('name', 'Unknown table')} — {recipe.get('name', 'Unknown recipe')}"
         expanded.append({"table": table.get("name", "Unknown table"), "recipe": recipe.get("name", "Unknown recipe"), "batches": multiplier})
         tools.update(str(tool) for tool in (recipe.get("tools") or []) if str(tool).strip())
+        notes.extend(str(note) for note in (recipe.get("notes") or []) if str(note).strip())
         for ingredient_name, quantity in recipe.get("ingredients") or []:
             amount = int(quantity) * multiplier
             key = _normalize_chat_search(str(ingredient_name))
@@ -992,6 +1000,7 @@ def multi_recipe_plan(data: dict[str, Any], requests: list[tuple[str, str, int]]
     from collections import defaultdict
     totals = defaultdict(int)
     tools = set()
+    notes = []
     selected = []
     for table, recipe, batches in requests:
         result = calculate_recipe_ingredients(data, table, recipe, batches)
@@ -999,7 +1008,8 @@ def multi_recipe_plan(data: dict[str, Any], requests: list[tuple[str, str, int]]
         for name, quantity in result["ingredients"].items():
             totals[name] += quantity
         tools.update(result["tools"])
-    return {"selected": selected, "ingredients": dict(totals), "tools": sorted(tools, key=str.casefold)}
+        notes.extend(result.get("notes", []))
+    return {"selected": selected, "ingredients": dict(totals), "tools": sorted(tools, key=str.casefold), "notes": list(dict.fromkeys(notes))}
 
 
 def advanced_search(data: dict[str, Any], query: str = "", table_filter: str = "", ingredient_filter: str = "", tool_filter: str = "", min_ingredients: int = 0):
