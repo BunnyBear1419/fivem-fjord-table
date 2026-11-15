@@ -386,7 +386,7 @@ def parse_usable_item_sections(sections: list[tuple[str, str]]):
     grouped = {}
     for raw_title, raw_value in sections:
         section = re.sub(r"^[^A-Za-z0-9]+", "", str(raw_title or "")).strip()
-        section = re.sub(r"\\s+—\\s+Pill Recipes \\(\\d+/\\d+\\)$", "", section).strip()
+        section = re.sub(r"\s+—\s+Pill Recipes \(\d+/\d+\)$", "", section).strip()
         if not section:
             continue
         table_name = f"Usable Item — {section}"
@@ -394,12 +394,12 @@ def parse_usable_item_sections(sections: list[tuple[str, str]]):
         current_recipe = None
         for raw_line in str(raw_value or "").splitlines():
             line = raw_line.strip()
-            recipe_match = re.match(r"• \\*\\*(.+?)\\*\\* — (.+)$", line)
+            recipe_match = re.match(r"• \*\*(.+?)\*\* — (.+)$", line)
             if recipe_match:
                 recipe_name, ingredient_text = recipe_match.groups()
                 ingredients = []
-                for part in re.split(r"\\s+\\+\\s+", ingredient_text):
-                    ingredient_match = re.fullmatch(r"\\s*(\\d+)\\s*x\\s*(.+?)\\s*", part)
+                for part in re.split(r"\s+\+\s+", ingredient_text):
+                    ingredient_match = re.fullmatch(r"\s*(\d+)\s*x\s*(.+?)\s*", part)
                     if ingredient_match:
                         ingredients.append([ingredient_match.group(2).strip(), int(ingredient_match.group(1))])
                 if ingredients:
@@ -408,7 +408,7 @@ def parse_usable_item_sections(sections: list[tuple[str, str]]):
                 else:
                     current_recipe = None
             elif current_recipe and "Tool (not consumed)" in line:
-                for quantity, tool_name in re.findall(r"(\\d+)\\s*x\\s*([^,+]+)", line):
+                for quantity, tool_name in re.findall(r"(\d+)\s*x\s*([^,+]+)", line):
                     current_recipe["tools"].append(tool_name.strip())
     return [
         {"name": table_name, "recipes": recipes}
