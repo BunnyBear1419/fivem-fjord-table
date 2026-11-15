@@ -119,6 +119,27 @@ SHOP_PRICE_CATALOG = [
 
 ]
 
+def calculate_raw_cocaine_requirements(query: str):
+    """Estimate pickup materials for a requested Raw Cocaine target."""
+    raw = str(query or "").strip()
+    if not re.search(r"\braw\s+cocaine\b", raw, re.IGNORECASE):
+        return None
+    match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?(?:raw\s+)?cocaine\b", raw, re.IGNORECASE)
+    if not match:
+        return None
+    target = int(match.group(1).replace(",", ""))
+    if target < 1 or target > 1_000_000_000:
+        return {"error": "Please enter a Raw Cocaine target between 1 and 1,000,000,000."}
+    picks = (target + 799) // 800
+    return {
+        "target": target,
+        "picks": picks,
+        "estimated_output": picks * 800,
+        "materials": {"Cement": picks * 6, "Hydrochloric Acid": picks * 4, "Gasoline": picks * 8},
+        "total_cost": 0,
+    }
+
+
 def calculate_shop_price_query(query: str):
     """Resolve shop/location price questions, with optional bulk quantity."""
     raw = str(query or "").strip()
