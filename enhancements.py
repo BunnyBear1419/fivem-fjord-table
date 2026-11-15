@@ -154,40 +154,6 @@ SHOP_PRICE_CATALOG = [
 
 
 
-def calculate_meth_requirements(query: str):
-    """Calculate Meth batches from the saved Usable Items recipe."""
-    raw = str(query or "").strip()
-    if not re.search(r"\bmeth\b", raw, re.IGNORECASE) or not re.search(r"\bpseudoephedrine\b", raw, re.IGNORECASE):
-        return None
-    match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?pseudoephedrine\b", raw, re.IGNORECASE)
-    if not match:
-        return None
-    pseudoephedrine = int(match.group(1).replace(",", ""))
-    if pseudoephedrine < 1 or pseudoephedrine > 1_000_000_000:
-        return {"error": "Please enter a Pseudoephedrine amount between 1 and 1,000,000,000."}
-    batches = pseudoephedrine // 4
-    if batches < 1:
-        return {
-            "pseudoephedrine": pseudoephedrine,
-            "batches": 0,
-            "leftover_pseudoephedrine": pseudoephedrine,
-            "ingredients": {},
-            "tools": {"Gas Mask": 1},
-        }
-    return {
-        "pseudoephedrine": pseudoephedrine,
-        "batches": batches,
-        "leftover_pseudoephedrine": pseudoephedrine - (batches * 4),
-        "ingredients": {
-            "Pseudoephedrine": batches * 4,
-            "Ammonia": batches,
-            "Sodium Hydroxide (Lye)": batches,
-            "2L Water Bottle": batches,
-        },
-        "tools": {"Gas Mask": 1},
-    }
-
-
 def calculate_raw_cocaine_requirements(query: str):
     """Estimate pickup materials for a requested Raw Cocaine target."""
     raw = str(query or "").strip()
@@ -343,7 +309,7 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
     cleaned = _normalize_chat_search(query)
     prefixes = (
         "how do i make ", "how do you make ", "how to make ", "how can i make ",
-        "make ", "recipe for ", "how do i craft ", "how to craft ",
+        "how much ", "how many ", "make ", "recipe for ", "how do i craft ", "how to craft ",
         "where do i find ", "where do i get ", "where can i find ", "where can i get ",
         "where is ", "find ", "what is the recipe for ",
     )
@@ -351,7 +317,7 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
         if cleaned.startswith(prefix):
             cleaned = cleaned[len(prefix):].strip()
             break
-    for suffix in (" please", " pls", " for me"):
+    for suffix in (" can i make", " can i craft", " can i produce", " can i get", " please", " pls", " for me"):
         if cleaned.endswith(suffix):
             cleaned = cleaned[:-len(suffix)].strip()
     if not cleaned or not isinstance(limit, int) or limit < 1:
@@ -696,10 +662,10 @@ def dependency_chain(data: dict[str, Any], item_name: str, max_depth: int = 8):
     by_output = {}
     for table in data.get("tables", []):
         for recipe in table.get("recipes", []):
-            by_output.setdefault(str(recipe.get("name", "")).casefold().strip(), []).append((table, recipe))
+            by_output.setdefault(_normalize_chat_search(str(recipe.get("name", ""))), []).append((table, recipe))
     visited = set()
     def walk(item, depth):
-        key = str(item).casefold().strip()
+        key = _normalize_chat_search(str(item))
         if not key or depth >= max_depth or key in visited:
             return {"item": item, "cycle": key in visited, "recipes": []}
         visited.add(key)
@@ -762,6 +728,80 @@ def parse_simple_items(text: str):
     return parsed
 
 
+
+def _inventory_quantity(stock: dict[str, int], item_name: str) -> int:
+    """Read inventory quantities case-insensitively and with spaces/punctuation normalized."""
+    target = _normalize_chat_search(item_name)
+    return sum(
+        int(quantity)
+        for name, quantity in stock.items()
+        if _normalize_chat_search(name) == target
+    )
+
+
+def calculate_inventory_limited_batches(
+    data: dict[str, Any],
+    recipe_query: str,
+    inventory_text: str,
+):
+    """Estimate batches of one saved recipe from the quantities the player lists.
+
+    A batch limit is calculated from only the supplied stock items that are
+    ingredients in the selected recipe. Other ingredients are then reported as
+    additional requirements, rather than silently assumed to be available.
+    """
+    stock = parse_inventory(inventory_text)
+    matches = chat_recipe_search(data, recipe_query, limit=25)
+    exact = [item for item in matches if item.get("score", 0) >= 0.94]
+    stock_names = {_normalize_chat_search(name) for name in stock}
+    viable = [
+        item for item in exact
+        if any(_normalize_chat_search(name) in stock_names for name, _ in item.get("ingredients", []))
+    ]
+    if not viable:
+        return None
+    if len(viable) > 1:
+        choices = sorted(
+            {f"{item.get('recipe', 'Unknown')} — {item.get('table', 'Unknown table')}" for item in viable},
+            key=str.casefold,
+        )
+        return {"error": "I found multiple saved recipes that use those items. Choose the table/recipe: " + "; ".join(choices[:8])}
+
+    selected = viable[0]
+    per_batch = {}
+    for name, quantity in selected.get("ingredients", []):
+        per_batch[name] = per_batch.get(name, 0) + int(quantity)
+    limits = [
+        _inventory_quantity(stock, name) // quantity
+        for name, quantity in per_batch.items()
+        if _inventory_quantity(stock, name) > 0 and quantity > 0
+    ]
+    if not limits:
+        return None
+    batches = min(limits)
+    planned_batches = max(1, batches)
+    required = {name: quantity * planned_batches for name, quantity in per_batch.items()}
+    missing = {
+        name: max(0, quantity - _inventory_quantity(stock, name))
+        for name, quantity in required.items()
+        if _inventory_quantity(stock, name) < quantity
+    }
+    return {
+        "recipe": selected.get("recipe", "Unknown"),
+        "table": selected.get("table", "Unknown table"),
+        "batches": batches,
+        "planned_batches": planned_batches,
+        "stock_used": {
+            name: min(_inventory_quantity(stock, name), quantity)
+            for name, quantity in required.items()
+            if _inventory_quantity(stock, name) > 0
+        },
+        "required": required,
+        "missing": missing,
+        "tools": list(selected.get("tools") or []),
+    }
+
+
 def inventory_plan(data: dict[str, Any], table_name: str, recipe_name: str, target_batches: int, inventory_text: str):
     if not isinstance(target_batches, int) or not 1 <= target_batches <= 999:
         raise ValueError("Target batches must be between 1 and 999.")
@@ -815,7 +855,7 @@ def expanded_production_requirements(
         tools.update(str(tool) for tool in (recipe.get("tools") or []) if str(tool).strip())
         for ingredient_name, quantity in recipe.get("ingredients") or []:
             amount = int(quantity) * multiplier
-            key = str(ingredient_name).casefold().strip()
+            key = _normalize_chat_search(str(ingredient_name))
             options = producers.get(key, [])
             if key in stack:
                 base_totals[str(ingredient_name)] += amount
