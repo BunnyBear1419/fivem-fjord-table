@@ -131,6 +131,8 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
         embed.add_field(name="Tools (not consumed)", value=", ".join(tools)[:1024], inline=False)
     if recipe.get("xp") is not None:
         embed.add_field(name="Crafting XP", value=f"+{int(recipe['xp'])} XP", inline=True)
+    if recipe.get("notes"):
+        embed.add_field(name="Data review notes", value="\n".join(f"• {note}" for note in recipe["notes"])[:1024], inline=False)
     review = recipe.get("review")
     if review:
         embed.add_field(name="Screenshot note", value=str(review)[:1024], inline=False)
@@ -279,6 +281,7 @@ def find_ingredient_usage(data: dict[str, Any], ingredient_name: str):
                     "recipe": recipe.get("name", "Unnamed recipe"),
                     "quantity": sum(quantities),
                     "occurrences": len(quantities),
+                    "notes": list(recipe.get("notes") or []),
                 })
         if table_matches:
             matches.append({"table": table.get("name", "Unnamed table"), "recipes": table_matches})
@@ -304,6 +307,7 @@ def find_tool_usage(data: dict[str, Any], tool_name: str):
                     "recipe": recipe.get("name", "Unnamed recipe"),
                     "tool": tool_name.strip(),
                     "occurrences": len(tools),
+                    "notes": list(recipe.get("notes") or []),
                 })
         if table_matches:
             matches.append({"table": table.get("name", "Unnamed table"), "recipes": table_matches})
@@ -358,6 +362,7 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
             ) or "Ingredients need review"
             ingredients = ingredients[:350]
             made_lines.append(f"• **{output['recipe'].get('name', 'Unnamed recipe')}** at **{output['table']}**\n  Requires: {ingredients}")
+            made_lines.extend(f"  ⚠️ {note}" for note in output["recipe"].get("notes", []))
         embed.add_field(name=f"Where {ingredient_name.strip()[:80]} is made", value="\n".join(made_lines)[:850], inline=False)
 
     for group in matches[:5]:
@@ -366,6 +371,7 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
             + (f" ({item['occurrences']} ingredient entries)" if item["occurrences"] > 1 else "")
             for item in group["recipes"][:8]
         ]
+        lines.extend(f"  ⚠️ {note}" for item in group["recipes"][:8] for note in item.get("notes", []))
         embed.add_field(name=f"Used at: {group['table']}"[:256], value="\n".join(lines)[:700] or "No uses recorded.", inline=False)
 
     for group in tool_matches[:5]:
@@ -373,6 +379,7 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
             f"• **{item['recipe']}** requires **{ingredient_name.strip()}** (not consumed)"
             for item in group["recipes"][:8]
         ]
+        lines.extend(f"  ⚠️ {note}" for item in group["recipes"][:8] for note in item.get("notes", []))
         embed.add_field(name=f"Required as a tool: {group['table']}"[:256], value="\n".join(lines)[:700] or "No tool uses recorded.", inline=False)
 
     if len(matches) > 5 or len(tool_matches) > 5:
@@ -459,7 +466,9 @@ def search_embed(data: dict[str, Any], query: str, table_filter: str | None = No
         tools = recipe.get("tools") or []
         if tools:
             summary += "\nTools: " + ", ".join(tools)
-        embed.add_field(name=f"{recipe['name']} · {table_name}"[:256], value=summary[:700], inline=False)
+        if recipe.get("notes"):
+            summary += "\nData review: " + " ".join(recipe["notes"])
+        embed.add_field(name=f"{recipe['name']} · {table_name}"[:256], value=summary[:900], inline=False)
     if len(matches) > 5:
         embed.set_footer(text=f"Showing first 5 of {len(matches)} results. Narrow your search or filter by table.")
     return embed
