@@ -1687,6 +1687,11 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
+        name="Rotating NPC — Old Man",
+        value="• **Moonshine:** Sell Moonshine to the Old Man. His location rotates and is marked on the map.",
+        inline=False,
+    )
+    embed.add_field(
         name="Hidden Location • RVs — Postal 4024",
         value=(
             "• **Cook Meth:** Use the RV location at Postal 4024.\n"
