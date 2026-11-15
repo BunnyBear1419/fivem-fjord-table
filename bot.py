@@ -997,6 +997,8 @@ class ChatRecipeMatchView(SafeView):
         description = f"**Table:** {match['table']}\n**Recipe:** {match['recipe']}\n**Ingredients:**\n" + ("\n".join(ingredient_lines) if ingredient_lines else "None recorded")
         if match.get("tools"):
             description += "\n**Tools (not consumed):** " + ", ".join(match["tools"])
+        if match.get("notes"):
+            description += "\n\n**Data review notes:**\n" + "\n".join(f"• {note}" for note in match["notes"])
         embed = discord.Embed(
             title=f"Crafting match: {match['recipe'][:180]}",
             description=description[:4000],
