@@ -1445,7 +1445,7 @@ async def on_message(message: discord.Message):
                 return
 
     # Generic batch shopping list: !what do I need for 10 [recipe]?
-    batch_match = re.search(r"\b(\d[\d,]*)\\s*(?:x\\s*)?(?:batches?\\s+(?:of\\s+)?)?(.+)$", query, re.IGNORECASE)
+    batch_match = re.search(r"\b(\d[\d,]*)\s*(?:x\s*)?(?:batches?\s+(?:of\s+)?)?(.+)$", query, re.IGNORECASE)
     asks_requirements = any(word in lowered for word in ("what do i need", "ingredients for", "shopping list for", "materials for", "how many ingredients", "make "))
     if batch_match and asks_requirements and any(word in lowered for word in ("need", "ingredients", "shopping", "materials", "make")):
         batch_count = int(batch_match.group(1).replace(",", ""))
@@ -1472,7 +1472,7 @@ async def on_message(message: discord.Message):
                 return
 
     # Inventory-based batch calculator works for every saved recipe, not one hard-coded item.
-    stock_match = re.search(r"\bwith\\s*:?\\s*(.+)$", query, re.IGNORECASE)
+    stock_match = re.search(r"\bwith\s*:?\s*(.+)$", query, re.IGNORECASE)
     if stock_match and any(word in lowered for word in ("how many", "how much", "can i make", "can i craft", "make from")):
         try:
             stock = parse_inventory(stock_match.group(1))
