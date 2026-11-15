@@ -378,7 +378,7 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
     if len(matches) > 5 or len(tool_matches) > 5:
         embed.set_footer(text="Showing up to 5 tables per category. Browse the full directory for complete results.")
     else:
-        embed.set_footer(text="Exact name match only • tools are not consumed • similar spellings remain separate")
+        embed.set_footer(text="Exact name match only • tools are not consumed • Coca Leaf and Coca Leaves are treated separately")
     return embed
 
 
