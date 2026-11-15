@@ -659,11 +659,11 @@ class AdminMenuView(SafeView):
             await interaction.response.send_message(embed=embed, ephemeral=True)
         elif action == "audit":
             entries = [item for item in read_json(AUDIT_FILE, []) if item.get("guild_id") == interaction.guild_id][-10:]
-            embed = discord.Embed(title="🧾 Staff Activity Audit Log", color=COLOR)
+            embed = discord.Embed(title="🧾 Activity Audit Log", color=COLOR)
             for item in reversed(entries):
                 embed.add_field(name=f"{item.get('action')} · {item.get('created_at', '')[:19]}", value=f"By user ID: {item.get('actor_id')}\n{item.get('details', '')}", inline=False)
             if not entries:
-                embed.description = "No tracked staff actions yet. Recipe changes and inventory restores will appear here."
+                embed.description = "No tracked actions yet. Recipe changes and inventory restores will appear here."
             await interaction.response.send_message(embed=embed, ephemeral=True)
         elif action == "aliases":
             await interaction.response.send_modal(AliasManagerModal())
