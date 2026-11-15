@@ -1710,7 +1710,9 @@ def locations_embed():
     embed.add_field(
         name="2000s Postal Codes — Equipment & Locations",
         value=(
-            "• **2006 — Meth Cooking Station:** $15,000.\n"            "• **2060 — Ammonia Tanks.**\n"
+            "• **2006 — Meth Cooking Station:** $15,000.\n"
+            "• **2006 — Gasoline:** Collect gasoline.\n"
+            "• **2060 — Ammonia Tanks.**\n"
             "• **2006 — RV Meth Cooking Kit:** $10,000.\n"
             "• **2006 — Ethanol Distiller:** $25,000.\n"
             "• **2006 — Propane:** Also listed as a propane buy/sell postal in the earlier location notes.\n"
@@ -1742,6 +1744,7 @@ def locations_embed():
         value=(
             "• **9035:** Guy near the Long Pig Mini Market — gang spray and removal.\n"
             "• **9050:** Under the bridge — Hobo King / scrap collector.\n"
+            "• **9051 — Gasoline:** Collect gasoline.\n"
             "• **9093:** Near Postal 9187, side entrance on blue trailer — Coke lab.\n"
             "• **9120:** Hobo bowling.\n"
             "• **9142:** Behind Cluckin' Bell — sell stolen phones.\n"
@@ -1764,8 +1767,16 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
+        name="7000s Postal Codes — Pickups",
+        value="• **7001 — Gasoline:** Collect gasoline.",
+        inline=False,
+    )
+    embed.add_field(
         name="8000s Postal Codes — Street Pickups",
-        value="• **8040 — Vials & Syringes:** Search black trash bags on the street.",
+        value=(
+            "• **8040 — Vials & Syringes:** Search black trash bags on the street.\n"
+            "• **8254 — Gasoline:** Collect gasoline."
+        ),
         inline=False,
     )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
