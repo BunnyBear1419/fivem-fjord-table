@@ -13,6 +13,8 @@ import discord
 # --- Natural-language shop price calculator ---
 
 SHOP_PRICE_CATALOG = [
+    {"name": "Repair Kit", "shop": "PDM", "price": 2000, "aliases": ("repair kit", "repair kits")},
+    {"name": "Contract", "shop": "PDM — Special Role Required", "price": 1000, "aliases": ("contract", "contracts")},
     {"name": "Phone", "shop": "Digital Den", "price": 500, "aliases": ("phone",)},
     {"name": "Radio", "shop": "Digital Den", "price": 500, "aliases": ("radio",)},
     {"name": "Laptop", "shop": "Digital Den", "price": 2000, "aliases": ("laptop",)},
