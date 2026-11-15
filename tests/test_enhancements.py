@@ -254,7 +254,7 @@ def test_new_features_are_exposed_in_private_menu_and_admin_tools():
     source = open("bot.py", encoding="utf-8").read()
     for feature in ("Production chains", "Inventory calculator", "Multi-recipe planner", "Advanced search", "Item database", "Recipe comparison"):
         assert feature in source
-    for feature in ("Import / merge recipe JSON", "Configure staff roles", "View crafting analytics"):
+    for feature in ("Import / merge recipe JSON", "Activity audit log", "View crafting analytics"):
         assert feature in source
 
 
