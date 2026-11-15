@@ -1430,7 +1430,7 @@ async def on_message(message: discord.Message):
                 return
 
     # Search the same saved shops, locations, usable items and help pages shown by slash commands.
-    if any(term in lowered for term in ("where", "find", "sell", "location", "what is", "what does", "how do i use", "how to use", "tell me about", "what do i do")):
+    if any(term in lowered for term in ("where", "find", "sell", "location", "what is", "what does", "how do i use", "how to use", "how do i do", "how to do", "how do i start", "how to start", "how do i collect", "how to collect", "how do i get to", "tell me about", "what do i do")):
         info_matches = saved_information_matches(query)
         if info_matches:
             embed = discord.Embed(title="📚 Saved Fjord Cartel Information", color=COLOR)
