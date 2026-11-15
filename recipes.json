@@ -3382,27 +3382,6 @@
           "xp": 10,
           "source": "User supplied crafting bench screenshot notes",
           "id": "recipe_10060_0020"
-        },
-        {
-          "name": "Repair Kit",
-          "ingredients": [
-            [
-              "Steel",
-              42
-            ],
-            [
-              "Plastic",
-              37
-            ],
-            [
-              "Recycled Rubber",
-              36
-            ]
-          ],
-          "tools": [],
-          "review": "User-provided FiveM recipe",
-          "source": "User supplied text",
-          "id": "recipe_10060_repair_kit"
         }
       ],
       "id": "table_013"
@@ -3434,10 +3413,33 @@
           "tools": [],
           "review": "User-provided FiveM recipe; includes $500 cash cost",
           "source": "User supplied text",
-          "id": "table_014_0002"
+          "id": "table_014_0002",
+          "station": "Printer"
+        },
+        {
+          "name": "Repair Kit",
+          "ingredients": [
+            [
+              "Steel",
+              42
+            ],
+            [
+              "Plastic",
+              37
+            ],
+            [
+              "Recycled Rubber",
+              36
+            ]
+          ],
+          "tools": [],
+          "review": "User-provided FiveM recipe",
+          "source": "User supplied text",
+          "id": "table_014_0001",
+          "station": "Crafting Bench"
         }
       ],
-      "description": "The Welding Machine is where you sell car parts and receive regular materials. The Printer is used to craft Bank Cards."
+      "description": "The Chop Shop is a hidden interior business with three workstations: the Welding Machine is where you sell car parts and receive regular materials, the Printer is used to craft Bank Cards, and the Crafting Bench is used to craft Repair Kits."
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
