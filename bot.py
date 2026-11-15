@@ -1706,6 +1706,17 @@ def usable_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="💉 Syringe",
+        value=(
+            "• **Meth syringe** — 5x Meth + 1x Syringe\\n"
+            "• **Crack syringe** — 5x Crack + 1x Syringe\\n"
+            "• **Heroin syringe** — 5x Heroin + 1x Syringe\\n"
+            "• **Krokodil Shot** — 1x Krokodil + 1x Syringe\\n"
+            "• **Speedball** — 3x Heroin + 3x Raw Cocaine + 1x Syringe"
+        ),
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • USABLE ITEM DIRECTORY")
     return embed
 
