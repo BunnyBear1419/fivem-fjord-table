@@ -120,7 +120,9 @@ def parse_ingredients(value: str) -> list[list[Any]]:
 
 
 def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
-    embed = discord.Embed(title=f"🧪 {recipe['name']}", description=f"**Crafting table:** {table_name}", color=discord.Color.from_rgb(91, 119, 190))
+    station = recipe.get("station")
+    location_label = f"**Section:** {table_name}" + (f"\n**Workstation:** {station}" if station else "")
+    embed = discord.Embed(title=f"🧪 {recipe['name']}", description=location_label, color=discord.Color.from_rgb(91, 119, 190))
     ingredients = recipe.get("ingredients") or []
     if ingredients:
         embed.add_field(name="Required ingredients", value="\n".join(f"• **{name}** × {quantity}" for name, quantity in ingredients)[:1024], inline=False)
