@@ -9,6 +9,93 @@ from typing import Any
 import discord
 
 
+
+# --- Natural-language shop price calculator ---
+
+SHOP_PRICE_CATALOG = [
+    {"name": "Phone", "shop": "Digital Den", "price": 500, "aliases": ("phone",)},
+    {"name": "Radio", "shop": "Digital Den", "price": 500, "aliases": ("radio",)},
+    {"name": "Laptop", "shop": "Digital Den", "price": 2000, "aliases": ("laptop",)},
+    {"name": "Pistol Ammo", "shop": "Weapon & Ammo Store", "price": 10, "aliases": ("pistol ammo", "pistol bullets", "pistol bullet")},
+    {"name": "Rifle Ammo (5.56)", "shop": "Weapon & Ammo Store", "price": 20, "aliases": ("rifle ammo 556", "556 ammo", "5.56 ammo", "556 bullets", "5.56 bullets")},
+    {"name": "SMG Ammo (.45 ACP)", "shop": "Weapon & Ammo Store", "price": 23, "aliases": ("45 ammo", ".45 ammo", "45 acp", ".45 acp", "45 acp ammo", "smg ammo", "smg bullets")},
+    {"name": "Rifle Ammo (7.62)", "shop": "Weapon & Ammo Store", "price": 25, "aliases": ("rifle ammo 762", "762 ammo", "7.62 ammo", "762 bullets", "7.62 bullets")},
+    {"name": "Shotgun Ammo (12 Gauge)", "shop": "Weapon & Ammo Store", "price": 55, "aliases": ("shotgun ammo", "12 gauge ammo", "12 gauge shells", "shotgun shells")},
+    {"name": "Black Pistol", "shop": "Weapon & Ammo Store", "price": 2000, "aliases": ("black pistol",)},
+    {"name": "Pink Pistol", "shop": "Weapon & Ammo Store", "price": 4800, "aliases": ("pink pistol",)},
+    {"name": "Snowball", "shop": "Weapon & Ammo Store", "price": 100, "aliases": ("snowball",)},
+    {"name": "Bat", "shop": "Weapon & Ammo Store", "price": 250, "aliases": ("bat",)},
+    {"name": "Knife", "shop": "Weapon & Ammo Store", "price": 250, "aliases": ("knife",)},
+    {"name": "Lockpick", "shop": "Convenience Store", "price": 20, "aliases": ("lockpick", "lock picks")},
+    {"name": "Jerry Can", "shop": "Convenience Store", "price": 200, "aliases": ("jerry can", "gas can")},
+    {"name": "Outfit Bag", "shop": "Convenience Store", "price": 5000, "aliases": ("outfit bag",)},
+    {"name": "Classic Chips", "shop": "Convenience Store", "price": 3, "aliases": ("classic chips",)},
+    {"name": "Cheese Chips", "shop": "Convenience Store", "price": 3, "aliases": ("cheese chips",)},
+    {"name": "Salted Chips", "shop": "Convenience Store", "price": 3, "aliases": ("salted chips",)},
+    {"name": "Ribs Chips", "shop": "Convenience Store", "price": 4, "aliases": ("ribs chips",)},
+    {"name": "Habanero Chips", "shop": "Convenience Store", "price": 5, "aliases": ("habanero chips",)},
+    {"name": "Redwood Cigarettes", "shop": "Convenience Store", "price": 5, "aliases": ("redwood cigarettes", "cigarettes", "cigs")},
+    {"name": "Vape", "shop": "Convenience Store", "price": 1000, "aliases": ("vape",)},
+    {"name": "Hot Dog", "shop": "Convenience Store", "price": 2, "aliases": ("hot dog", "hot dogs", "hotdog", "hotdogs")},
+    {"name": "Homemade Sandwich", "shop": "Convenience Store", "price": 3, "aliases": ("homemade sandwich", "sandwich")},
+    {"name": "Chicken Noodles", "shop": "Convenience Store", "price": 3, "aliases": ("chicken noodles",)},
+    {"name": "Seafood Noodles", "shop": "Convenience Store", "price": 3, "aliases": ("seafood noodles",)},
+    {"name": "E-Cola", "shop": "Convenience Store", "price": 3, "aliases": ("e cola", "e-cola")},
+    {"name": "E-Cola Light", "shop": "Convenience Store", "price": 3, "aliases": ("e cola light", "e-cola light")},
+    {"name": "Orang-O-Tang", "shop": "Convenience Store", "price": 3, "aliases": ("orang o tang", "orang-o-tang")},
+    {"name": "Sprunk", "shop": "Convenience Store", "price": 3, "aliases": ("sprunk",)},
+    {"name": "Sprunk Bottle", "shop": "Convenience Store", "price": 3, "aliases": ("sprunk bottle",)},
+    {"name": "Sprunk Light", "shop": "Convenience Store", "price": 4, "aliases": ("sprunk light",)},
+    {"name": "E-Cola Bottle", "shop": "Convenience Store", "price": 4, "aliases": ("e cola bottle", "e-cola bottle")},
+    {"name": "Orang-O-Tang Bottle", "shop": "Convenience Store", "price": 4, "aliases": ("orang o tang bottle", "orang-o-tang bottle")},
+    {"name": "E-Cola Light Bottle", "shop": "Convenience Store", "price": 5, "aliases": ("e cola light bottle", "e-cola light bottle")},
+    {"name": "Sprunk Light Bottle", "shop": "Convenience Store", "price": 5, "aliases": ("sprunk light bottle",)},
+]
+
+def calculate_shop_price_query(query: str):
+    """Parse a natural-language bulk-buy question and calculate its shop total.
+
+    Returns None when the message is not a price question, otherwise a result
+    dictionary or an error dictionary. Saved item names and prices are untouched.
+    """
+    raw = str(query or "").strip()
+    normalized = _normalize_chat_search(raw)
+    intent_words = ("how much", "cost", "spend", "price", "buy", "purchase", "total")
+    if not any(word in normalized for word in intent_words):
+        return None
+
+    quantity_match = re.search(r"(?<![a-z])([0-9][0-9,]*)\b", raw, re.IGNORECASE)
+    if not quantity_match:
+        return {"error": "Tell me how many you want, for example: !If I want 2000 45 ammo how much will I spend?"}
+    quantity = int(quantity_match.group(1).replace(",", ""))
+    if quantity < 1 or quantity > 1_000_000_000:
+        return {"error": "Please enter a quantity between 1 and 1,000,000,000."}
+
+    matches = []
+    for item in SHOP_PRICE_CATALOG:
+        for alias in item["aliases"]:
+            alias_normalized = _normalize_chat_search(alias)
+            if alias_normalized and re.search(r"(?<![a-z0-9])" + re.escape(alias_normalized) + r"(?![a-z0-9])", normalized):
+                matches.append((len(alias_normalized), item))
+    if not matches:
+        return {"error": "I couldn't match that item to a priced shop listing. Try the item name from /dashboard → Shops."}
+
+    matches.sort(key=lambda row: row[0], reverse=True)
+    best_length = matches[0][0]
+    best_items = {row[1]["name"]: row[1] for row in matches if row[0] == best_length}
+    if len(best_items) != 1:
+        names = ", ".join(sorted(best_items))
+        return {"error": f"I found more than one possible shop item ({names}). Please use the full item name."}
+
+    item = next(iter(best_items.values()))
+    return {
+        "quantity": quantity,
+        "item": item["name"],
+        "shop": item["shop"],
+        "unit_price": item["price"],
+        "total": quantity * item["price"],
+    }
+
 def _normalize_chat_search(value: str) -> str:
     """Normalize user input for matching without modifying saved recipe names."""
     return re.sub(r"[^a-z0-9]+", " ", str(value or "").casefold()).strip()
