@@ -1807,9 +1807,45 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
-        name="10000s Postal Codes — Crafting & Suppliers",
+        name="10000s Postal Codes — Crafting Bench",
+        value="• **10060 — Second Floor:** Crafting bench / scrapyard bench for thermites, drills, advanced lockpicks, and other items.",
+        inline=False,
+    )
+    embed.add_field(
+        name="10060 Crafting Bench — Basic Components & Materials",
         value=(
-            "• **10060 — Second Floor:** Crafting bench / scrapyard bench for thermites, drills, advanced lockpicks, and other items. Two references combined."
+            "• **Metal Pin (+3 XP):** 8x material_iron + 4x material_steel\n"
+            "• **Tension Spring (+3 XP):** 10x material_steel + 6x material_aluminum\n"
+            "• **Nylon Weave (+3 XP):** 24x material_plastic + 10x material_rubber\n"
+            "• **Optical Lens (+5 XP):** 20x material_glass + 10x material_plastic\n"
+            "• **Honed Blade (+8 XP):** 14x material_steel + 10x material_iron\n"
+            "• **Hardened Alloy (+10 XP):** 20x material_steel + 12x material_aluminum + 5x material_copper"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="10060 Crafting Bench — Tools & Gear",
+        value=(
+            "• **Tungsten Drill Bit (+12 XP):** 2x hardened_alloy + 8x material_copper + 40x material_metalscrap + 1 hidden material\n"
+            "• **Lockpick (+12 XP):** 2x metal_pin + 1x tension_spring + 6x material_plastic\n"
+            "• **Rope (+12 XP):** 3x nylon_weave + 10x material_rubber\n"
+            "• **Crowbar (+10 XP):** 25x material_iron + 8x material_rubber + 1x hardened_alloy\n"
+            "• **Binoculars (+10 XP):** 2x optical_lens + 1x tension_spring + 20x material_plastic + 1 hidden material\n"
+            "• **Parachute (+10 XP):** 8x nylon_weave + 2x rope + 2x tension_spring + 1 hidden material"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="10060 Crafting Bench — Advanced Tools & Weapons",
+        value=(
+            "• **Advanced Lockpick (+15 XP):** 4x metal_pin + 2x tension_spring + 1x hardened_alloy + 1 hidden material\n"
+            "• **Brass Knuckles (+15 XP):** 2x hardened_alloy + 20x material_metalscrap + 6x material_rubber\n"
+            "• **Switchblade (+15 XP):** 1x honed_blade + 1x hardened_alloy + 1x tension_spring + 1 hidden material\n"
+            "• **Improvised Handcuffs (+20 XP):** 4x metal_pin + 2x tension_spring + 1x hardened_alloy + 1 hidden material\n"
+            "• **Heist Drill (+15 XP):** 2x drill_bit + 3x hardened_alloy + 2x tension_spring + 1 hidden material\n"
+            "• **Vector (+15 XP):** 2,000x material_metalscrap + 2,000x material_iron\n"
+            "• **NV Rifle (+15 XP):** 2,500x material_metalscrap + 2,500x material_iron\n"
+            "• **Thermite (+10 XP):** 200x material_metalscrap + 200x material_iron"
         ),
         inline=False,
     )
