@@ -2211,11 +2211,57 @@ def usable_embed():
 
 
 def include_usable_item_recipes(data: dict):
-    """Combine the saved crafting tables with recipes listed in the Usable Items page."""
+    """Combine saved crafting tables and usable-item recipes without mutating source data."""
     combined = dict(data)
-    tables = list(data.get("tables", []))
+    tables = []
+    for source_table in data.get("tables", []):
+        table = dict(source_table)
+        table["recipes"] = []
+        for source_recipe in source_table.get("recipes", []):
+            recipe = dict(source_recipe)
+            recipe["notes"] = list(source_recipe.get("notes") or [])
+            table["recipes"].append(recipe)
+        tables.append(table)
+
+    # Location notes explicitly record hidden materials for several Postal 10060
+    # recipes, but do not identify those materials. Carry that warning into every
+    # recipe answer instead of presenting the stored ingredient list as complete.
+    for field in locations_embed().fields:
+        for raw_line in field.value.splitlines():
+            line = raw_line.strip()
+            match = re.match(r"• \\*\\*(.+?)\\*\\*:\\s*(.+)$", line)
+            if not match:
+                continue
+            label, details = match.groups()
+            recipe_name = re.sub(r"\\s*\\(\\+\\d+ XP\\)$", "", label).strip()
+            if "hidden material" not in details.casefold():
+                continue
+            note = (
+                "Postal 10060 location notes list 1 additional hidden material, "
+                "but its exact item name is not recorded in the saved recipe table."
+            )
+            if recipe_name.casefold() == "heist drill":
+                note += (
+                    " The saved ingredient name 'drill_bit' also does not exactly match "
+                    "the output name 'Tungsten Drill Bit'; confirm whether they are the same item."
+                )
+            for table in tables:
+                for recipe in table.get("recipes", []):
+                    if recipe.get("name", "").casefold().strip() == recipe_name.casefold():
+                        if note not in recipe["notes"]:
+                            recipe["notes"].append(note)
+
     sections = [(field.name, field.value) for field in usable_embed().fields]
-    tables.extend(parse_usable_item_sections(sections))
+    usable_tables = parse_usable_item_sections(sections)
+    for table in usable_tables:
+        for recipe in table.get("recipes", []):
+            recipe["notes"] = []
+            if any(str(name).casefold() == "2l water bottle" for name, _ in recipe.get("ingredients", [])):
+                recipe["notes"].append(
+                    "The Usable Items page calls this ingredient '2L Water Bottle', while the Head Shop list calls its item '2L Plastic Bottle'. "
+                    "The saved information does not confirm they are the same item, so the Head Shop price is not assumed to apply."
+                )
+    tables.extend(usable_tables)
     combined["tables"] = tables
     return combined
 
