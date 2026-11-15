@@ -93,10 +93,26 @@ def test_ingredient_lookup_includes_non_consumed_tool_requirements():
     assert matches == [{
         "table": "Bench",
         "recipes": [
-            {"recipe": "Widget", "tool": "press", "occurrences": 1},
-            {"recipe": "Other Widget", "tool": "press", "occurrences": 1},
+            {"recipe": "Widget", "tool": "press", "occurrences": 1, "notes": []},
+            {"recipe": "Other Widget", "tool": "press", "occurrences": 1, "notes": []},
         ],
     }]
     embed = ingredient_usage_embed(data, "Press")
     assert any(field.name == "Required as a tool: Bench" for field in embed.fields)
     assert "not consumed" in next(field.value for field in embed.fields if field.name == "Required as a tool: Bench")
+
+
+
+def test_recipe_search_and_recipe_embed_surface_location_data_warnings():
+    from crafting import recipe_embed, search_embed
+
+    data = {"tables": [{"name": "Bench", "recipes": [{
+        "name": "Heist Drill",
+        "ingredients": [["drill_bit", 2]],
+        "tools": [],
+        "notes": ["Postal 10060 notes list an unnamed hidden material."],
+    }]}]}
+    embed = recipe_embed("Bench", data["tables"][0]["recipes"][0])
+    assert any(field.name == "Data review notes" for field in embed.fields)
+    search = search_embed(data, "Heist Drill")
+    assert "Postal 10060 notes list an unnamed hidden material." in search.fields[0].value
