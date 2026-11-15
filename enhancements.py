@@ -64,6 +64,7 @@ SHOP_PRICE_CATALOG = [
     {"name": "Gallon of Water", "shop": "Farmers Market", "price": 5, "aliases": ("gallon of water",)},
     {"name": "Empty Barrel", "shop": "Farmers Market", "price": 100, "aliases": ("empty barrel", "barrel")},
     {"name": "Empty Jug", "shop": "Farmers Market", "price": 50, "aliases": ("empty jug", "jug")},
+    {"name": "Propane", "shop": "Hidden Locations — Postals 1012 & 2006", "price": 1000, "aliases": ("propane", "propane tank", "filled propane container")},
     {"name": "Lockpick", "shop": "Convenience Store", "price": 20, "aliases": ("lockpick", "lock picks")},
     {"name": "Jerry Can", "shop": "Convenience Store", "price": 200, "aliases": ("jerry can", "gas can")},
     {"name": "Outfit Bag", "shop": "Convenience Store", "price": 5000, "aliases": ("outfit bag",)},
