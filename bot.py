@@ -1688,6 +1688,11 @@ def locations_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="NPC Pickup Supplies — Postals 1017–1019",
+        value="• **NPC Pickup Supplies:** Available at Postals 1017–1019. You do not have permission to access this location.",
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
