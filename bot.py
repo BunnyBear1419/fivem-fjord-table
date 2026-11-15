@@ -1713,6 +1713,7 @@ def locations_embed():
     embed.add_field(
         name="3000s Postal Codes — Hidden Locations",
         value=(
+            "• **3026 — Liquor Store:** Collect Acetone, Rubbing Alcohol & Pseudoephedrine. Caution: An NPC may attack when you go around the back.\n"
             "• **3042 — Shed:** Meth cooking / rubbing alcohol distiller; turns rubbing alcohol into ethanol.\n"
             "• **3048 — Recycling Yard:** Battery acid. Third-eye batteries on the ground to get acid; junked cars can also give lithium batteries or corroded batteries. Landmark wording needs verification.\n"
             "• **3051 — Side of Gas Station:** Gang paint ($200,000) / cleaner ($40,000)."
