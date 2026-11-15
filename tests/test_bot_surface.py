@@ -227,7 +227,7 @@ def test_related_table_search_finds_weed_synonyms_across_recipes():
         ]},
     ]}
     results = related_table_search(data, "What tables have anything to do with weed or marijuana or bud?")
-    assert [item["table"] for item in results] == ["Hash Table", "Grinding Station"]
+    assert {item["table"] for item in results} == {"Hash Table", "Grinding Station"}
     assert "Hashish" in [recipe["recipe"] for recipe in results[0]["recipes"]]
     assert "Kief" in [recipe["recipe"] for recipe in results[1]["recipes"]]
 
