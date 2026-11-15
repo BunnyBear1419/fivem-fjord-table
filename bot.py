@@ -1417,7 +1417,7 @@ def dashboard_embed():
 def shops_embed():
     embed = discord.Embed(
         title="🛒 Fjord Cartel • Shops",
-        description="Shop directory • Prices and stock are recorded as provided.",
+        description="Shop directory • Item prices.",
         color=COLOR,
     )
     embed.add_field(
@@ -1433,18 +1433,18 @@ def shops_embed():
         name="🔫 Weapon & Ammo Store",
         value=(
             "**Ammo**\n"
-            "• **Pistol Ammo:** $10 — Out of stock\n"
-            "• **Rifle Ammo (5.56):** $20 — Out of stock\n"
-            "• **SMG Ammo (.45 ACP):** $23 — Out of stock\n"
-            "• **Rifle Ammo (7.62):** $25 — Out of stock\n"
-            "• **Shotgun Ammo (12 Gauge):** $55 — 240 in stock\n\n"
+            "• **Pistol Ammo:** $10\n"
+            "• **Rifle Ammo (5.56):** $20\n"
+            "• **SMG Ammo (.45 ACP):** $23\n"
+            "• **Rifle Ammo (7.62):** $25\n"
+            "• **Shotgun Ammo (12 Gauge):** $55\n\n"
             "**Pistol Weapons**\n"
-            "• **Black Pistol:** $2,000 — 80 in stock\n"
-            "• **Pink Pistol:** $4,800 — 94 in stock\n\n"
+            "• **Black Pistol:** $2,000\n"
+            "• **Pink Pistol:** $4,800\n\n"
             "**Melee Weapons**\n"
-            "• **Snowball:** $100 — Out of stock\n"
-            "• **Bat:** $250 — Out of stock\n"
-            "• **Knife:** $250 — 229 in stock"
+            "• **Snowball:** $100\n"
+            "• **Bat:** $250\n"
+            "• **Knife:** $250"
         ),
         inline=False,
     )
