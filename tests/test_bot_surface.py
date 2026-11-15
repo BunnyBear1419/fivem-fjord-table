@@ -262,7 +262,8 @@ def test_weed_growing_calculator_returns_both_systems_and_correct_shop_costs():
     assert result["systems"]["smoke"]["items"]["Trowel"] == 1
     assert result["systems"]["smoke"]["total"] == 37615
     assert result["systems"]["grape"]["items"]["Bloom Booster"] == 100
-    assert result["systems"]["grape"]["total"] == 40615
+    assert result["systems"]["grape"]["items"]["Watering Can"] == 100
+    assert result["systems"]["grape"]["total"] == 42100
 
 
 def test_weed_growing_calculator_omits_flower_pots_for_grass_planting():
@@ -272,7 +273,8 @@ def test_weed_growing_calculator_omits_flower_pots_for_grass_planting():
     assert "Flower Pot" not in result["systems"]["smoke"]["items"]
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
     assert result["systems"]["smoke"]["total"] == 12615
-    assert result["systems"]["grape"]["total"] == 15615
+    assert result["systems"]["grape"]["items"]["Watering Can"] == 100
+    assert result["systems"]["grape"]["total"] == 17100
 
 
 
@@ -307,3 +309,14 @@ def test_weed_growing_calculator_defaults_to_one_plant_when_quantity_is_omitted(
     assert result["systems"]["grape"]["total"] == 520
     assert result["systems"]["smoke"]["items"]["Weed Seed"] == 1
     assert result["systems"]["grape"]["items"]["Bloom Booster"] == 1
+
+
+
+def test_system_two_watering_can_is_not_reusable():
+    from enhancements import calculate_weed_growing_requirements
+
+    result = calculate_weed_growing_requirements("How much for 500 weed plants System 2?")
+    assert result["systems"]["grape"]["items"]["Watering Can"] == 500
+    assert result["systems"]["grape"]["costs"]["Watering Can"] == 7500
+    assert result["systems"]["grape"]["total"] == 210100
+    assert "one Watering Can per plant" in result["systems"]["grape"]["note"]
