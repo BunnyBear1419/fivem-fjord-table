@@ -38,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_meth_requirements,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1323,6 +1323,30 @@ async def on_message(message: discord.Message):
         await message.reply(embed=embed, mention_author=False)
         return
 
+
+    meth_result = calculate_meth_requirements(query)
+    if meth_result is not None:
+        if meth_result.get("error"):
+            await message.reply(meth_result["error"], mention_author=False)
+            return
+        embed = discord.Embed(
+            title="🧪 Meth Production Calculator",
+            description=(
+                f"**Pseudoephedrine available:** {meth_result['pseudoephedrine']:,}\\n"
+                f"**Meth batches possible:** {meth_result['batches']:,}\\n"
+                f"**Unused Pseudoephedrine:** {meth_result['leftover_pseudoephedrine']:,}"
+            ),
+            color=COLOR,
+        )
+        if meth_result["ingredients"]:
+            ingredient_lines = [f"• **{name}:** {quantity:,}" for name, quantity in meth_result["ingredients"].items()]
+            embed.add_field(name="Ingredients required", value="\\n".join(ingredient_lines), inline=False)
+        else:
+            embed.add_field(name="Ingredients required", value="You need 4x Pseudoephedrine for each batch.", inline=False)
+        embed.add_field(name="Reusable tool", value="• **Gas Mask:** 1 (not consumed)", inline=False)
+        embed.set_footer(text="FJORD CARTEL • Based on the Meth recipe in Usable Items")
+        await message.reply(embed=embed, mention_author=False)
+        return
 
     raw_cocaine_result = calculate_raw_cocaine_requirements(query)
     if raw_cocaine_result is not None:
