@@ -1409,7 +1409,7 @@ async def on_message(message: discord.Message):
     directory = locations_embed()
     ignored_terms = {"where", "what", "whats", "how", "does", "do", "the", "and", "for", "can", "you", "i", "is", "at", "find", "get", "sell", "make", "need", "tell", "me", "about", "please", "location", "postal"}
     search_terms = [term for term in re.findall(r"[a-z0-9]+", lowered) if len(term) >= 3 and term not in ignored_terms]
-    if search_terms and (any(word in lowered for word in ("where", "tell me", "find", "sell", "location")) or re.search(r"\\bat\\b", lowered)):
+    if search_terms and (any(word in lowered for word in ("where", "tell me", "find", "sell", "location")) or re.search(r"\bat\b", lowered)):
         scored_fields = []
         for field in directory.fields:
             field_text = f"{field.name} {field.value}".casefold()
