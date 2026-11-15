@@ -2107,6 +2107,22 @@ class DashboardMenuView(discord.ui.View):
         await interaction.response.edit_message(embed=pager.current_embed(), view=pager)
 
 
+@bot.tree.command(name="moonshine", description="Show where to sell Moonshine.")
+async def moonshine_command(interaction: discord.Interaction):
+    embed = discord.Embed(
+        title="🥃 Fjord Cartel • Moonshine",
+        description=(
+            "**Sell Moonshine to the Old Man.**\n\n"
+            "• The Old Man's location rotates.\n"
+            "• His current location is marked on the map.\n"
+            "• Find him at the marked location to sell your Moonshine."
+        ),
+        color=COLOR,
+    )
+    embed.set_footer(text="FJORD CARTEL • MOONSHINE INFORMATION")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
 @bot.tree.command(name="setrole", description="Set which Discord role can access Fjord Cartel Information.")
 @app_commands.describe(
     role="Select the Discord role that should have access",
