@@ -1693,6 +1693,11 @@ def usable_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="🥤 Styrofoam Cup",
+        value="• **Lean** — 1x Promethazine-Codeine Syrup + 1x Sprunk + 2x Styrofoam Cup",
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • USABLE ITEM DIRECTORY")
     return embed
 
