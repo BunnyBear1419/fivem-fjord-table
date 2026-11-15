@@ -1728,6 +1728,11 @@ def locations_embed():
     embed.add_field(
         name="3000s Postal Codes — Hidden Locations",
         value=(
+            "• **3009 — Blackmarket Doctor:** Supplier with the items and prices listed below.\\n"
+            "  **Precursors:** Safrole oil ($200), NPP chemical ($300), Aniline solution ($250).\\n"
+            "  **Pharmaceuticals:** Anesthetic ($250), Dextromethorphan Cough Syrup ($60).\\n"
+            "  **Packaging:** Syringe ($15).\\n"
+            "• **3009 — Desert Still.**\\n"
             "• **3026 — Liquor Store:** Collect Acetone, Rubbing Alcohol & Pseudoephedrine. Caution: An NPC may attack when you go around the back.\n"
             "• **3042 — Shed:** Meth cooking / rubbing alcohol distiller; turns rubbing alcohol into ethanol.\n"
             "• **3048 — Recycling Yard:** Battery acid. Third-eye batteries on the ground to get acid; junked cars can also give lithium batteries or corroded batteries. Landmark wording needs verification.\n"
