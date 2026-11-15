@@ -1713,6 +1713,11 @@ def locations_embed():
         value="• **Coke Run:** Postal 1044.",
         inline=False,
     )
+    embed.add_field(
+        name="Wild Amanita Pickup — Postal 1082",
+        value="• **Pick Wild Amanita:** Postal 1082.",
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
