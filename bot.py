@@ -1998,6 +1998,36 @@ def usable_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="💊 Hand Tablet Press — Pill Recipes (1/2)",
+        value=(
+            "• **Xanax** — 1x Alprazolam Powder + 1x Pill Binder\n"
+            "• **Valium** — 1x Diazepam Powder + 1x Pill Binder\n"
+            "• **Adderall** — 1x Amphetamine Powder + 1x Pill Binder\n"
+            "• **Quaaludes** — 1x Methaqualone Powder + 1x Pill Binder\n"
+            "• **Tramadol** — 1x Tramadol HCl + 1x Pill Binder\n"
+            "• **Ritalin** — 1x Methylphenidate Powder + 1x Pill Binder\n"
+            "• **Captagon** — 1x Fenethylline Powder + 1x Pill Binder\n"
+            "• **Modafinil** — 1x Modafinil Powder + 1x Pill Binder"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="💊 Hand Tablet Press — Pill Recipes (2/2)",
+        value=(
+            "• **DOM** — 1x DOM Powder + 1x Pill Binder\n"
+            "• **Dilaudid** — 1x Hydromorphone HCl + 1x Pill Binder\n"
+            "• **Opana** — 1x Oxymorphone HCl + 1x Pill Binder\n"
+            "• **Klonopin** — 1x Clonazepam Powder + 1x Pill Binder\n"
+            "• **Ambien** — 1x Zolpidem Powder + 1x Pill Binder\n"
+            "• **Soma** — 1x Carisoprodol Powder + 1x Pill Binder\n"
+            "• **6-APB** — 1x 6-APB Succinate + 1x Pill Binder\n"
+            "• **BZP** — 1x BZP HCl + 1x Pill Binder\n"
+            "• **Ecstasy pill** — 1x Ecstasy crystals + 1x Pill Binder\n"
+            "• **Hydrocodone** — 1x Hydrocodone Bitartrate + 2x Acetaminophen + 1x Pill Binder"
+        ),
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • USABLE ITEM DIRECTORY")
     return embed
 
