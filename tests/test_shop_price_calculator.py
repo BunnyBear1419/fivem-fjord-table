@@ -46,3 +46,30 @@ def test_distilled_water_price_question_without_quantity():
     assert result["unit_price"] == 20
     assert result["quantity"] is None
     assert result["total"] is None
+
+
+
+def test_equipment_dealer_prices_are_searchable_from_the_saved_locations_directory():
+    expected = {
+        "Meth Table": 5000,
+        "Weed Table": 4000,
+        "Coke Table": 5000,
+        "Chemistry Table": 6500,
+        "Pill Press": 7500,
+        "Reflux Rig": 9000,
+        "Extraction Bench": 8000,
+        "Glovebox": 15000,
+        "Brewing Kettle": 2500,
+        "Lab Freezer": 4000,
+        "Herb Drying Rack": 2000,
+        "Grinding Station": 3000,
+        "Capsule Filler": 3500,
+        "Burner Phone": 500,
+        "Tablet Die Set": 1200,
+        "Hand Tablet Press": 900,
+    }
+    for item, price in expected.items():
+        result = calculate_shop_price_query(f"how much is {item}?")
+        assert result["item"] == item
+        assert result["unit_price"] == price
+        assert result["shop"] == "Equipment Dealer — Postals 9275–9277"
