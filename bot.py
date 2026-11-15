@@ -1525,9 +1525,13 @@ async def on_message(message: discord.Message):
         return
 
     if query.casefold().startswith(("what can i craft", "what can i make", "what can i produce")):
-        raw_stock = query.split(":", 1)[1] if ":" in query else ""
+        if ":" in query:
+            raw_stock = query.split(":", 1)[1]
+        else:
+            stock_match = re.search(r"\\bwith\\s+(.+)$", query, re.IGNORECASE)
+            raw_stock = stock_match.group(1) if stock_match else ""
         if not raw_stock:
-            await message.reply("Use !what can I craft: Item x10, Item x5", mention_author=False)
+            await message.reply("Use !what can I craft with Item x10, Item x5 (or use a colon before the inventory).", mention_author=False)
             return
         try:
             stock = parse_inventory(raw_stock)
