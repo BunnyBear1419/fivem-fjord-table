@@ -1405,6 +1405,26 @@ async def on_message(message: discord.Message):
         await message.reply(f"I couldn't find Postal **{postal}** in the saved location directory. I won't guess its location.", mention_author=False)
         return
 
+    # General saved activity/location questions (e.g. Moonshine and the rotating Old Man).
+    directory = locations_embed()
+    ignored_terms = {"where", "what", "whats", "how", "does", "do", "the", "and", "for", "can", "you", "i", "is", "at", "find", "get", "sell", "make", "need", "tell", "me", "about", "please", "location", "postal"}
+    search_terms = [term for term in re.findall(r"[a-z0-9]+", lowered) if len(term) >= 3 and term not in ignored_terms]
+    if search_terms and any(word in lowered for word in ("where", "how", "what", "tell me", "find", "sell", "location")):
+        scored_fields = []
+        for field in directory.fields:
+            field_text = f"{field.name} {field.value}".casefold()
+            matched_terms = [term for term in search_terms if term in field_text]
+            if matched_terms:
+                scored_fields.append((len(matched_terms), field))
+        scored_fields.sort(key=lambda pair: (-pair[0], pair[1].name.casefold()))
+        if scored_fields:
+            embed = discord.Embed(title="📍 Saved activity & location information", color=COLOR)
+            for _, field in scored_fields[:4]:
+                embed.add_field(name=field.name[:256], value=field.value[:1024], inline=False)
+            embed.set_footer(text="FJORD CARTEL • Answers are limited to saved directory entries")
+            await message.reply(embed=embed, mention_author=False)
+            return
+
     # Questions about where an ingredient is used / what recipes use it.
     usage_markers = ("where is", "where's", "what uses", "which recipes use", "where do i use", "used in")
     if any(marker in lowered for marker in usage_markers):
