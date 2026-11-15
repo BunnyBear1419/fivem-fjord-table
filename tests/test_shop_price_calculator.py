@@ -73,3 +73,16 @@ def test_equipment_dealer_prices_are_searchable_from_the_saved_locations_directo
         assert result["item"] == item
         assert result["unit_price"] == price
         assert result["shop"] == "Equipment Dealer — Postals 9275–9277"
+
+
+
+def test_rifle_ammo_display_names_match_the_saved_shop_catalog():
+    expected = {
+        "Rifle Ammo (5.56)": 20,
+        "Rifle Ammo (7.62)": 25,
+    }
+    for item, price in expected.items():
+        result = calculate_shop_price_query(f"how much is {item}?")
+        assert result["item"] == item
+        assert result["unit_price"] == price
+        assert result["shop"] == "Weapon & Ammo Store"
