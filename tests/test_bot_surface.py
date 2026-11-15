@@ -210,3 +210,36 @@ def test_server_profile_and_audit_data_are_guild_scoped():
     assert "def save_guild_recipe_data(guild_id, data)" in source
     assert '"guild_id": guild_id' in source
     assert 'item.get("guild_id") == interaction.guild_id' in source
+
+
+def test_related_table_search_finds_weed_synonyms_across_recipes():
+    from enhancements import related_table_search
+
+    data = {"tables": [
+        {"name": "Hash Table", "recipes": [
+            {"name": "Hashish", "ingredients": [["Clean Weed Bud", 5], ["Distilled Water", 2]]},
+        ]},
+        {"name": "Grinding Station", "recipes": [
+            {"name": "Kief", "ingredients": [["Clean Weed Bud", 4]]},
+        ]},
+        {"name": "Unrelated Table", "recipes": [
+            {"name": "Sandwich", "ingredients": [["Bread", 1]]},
+        ]},
+    ]}
+    results = related_table_search(data, "What tables have anything to do with weed or marijuana or bud?")
+    assert [item["table"] for item in results] == ["Hash Table", "Grinding Station"]
+    assert "Hashish" in [recipe["recipe"] for recipe in results[0]["recipes"]]
+    assert "Kief" in [recipe["recipe"] for recipe in results[1]["recipes"]]
+
+
+def test_related_table_search_does_not_invent_tables_or_recipes():
+    from enhancements import related_table_search
+
+    data = {"tables": [{"name": "Plain Table", "recipes": [{"name": "Sandwich", "ingredients": [["Bread", 1]]}]}]}
+    assert related_table_search(data, "weed marijuana bud") == []
+
+
+def test_chat_message_handler_exposes_related_table_search():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "related_table_search" in source
+    assert "Related crafting tables:" in source
