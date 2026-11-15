@@ -1340,13 +1340,18 @@ async def on_message(message: discord.Message):
         if price_result.get("error"):
             await message.reply(price_result["error"], mention_author=False)
             return
-        embed = discord.Embed(title="🧮 Shop Price Calculator", color=COLOR)
+        has_quantity = price_result["quantity"] is not None
+        embed = discord.Embed(
+            title="🧮 Shop & Price Lookup" if not has_quantity else "🧮 Shop Price Calculator",
+            color=COLOR,
+        )
         embed.add_field(name="Item", value=price_result["item"], inline=True)
-        embed.add_field(name="Shop", value=price_result["shop"], inline=True)
-        embed.add_field(name="Quantity", value=f"{price_result['quantity']:,}", inline=True)
+        embed.add_field(name="Where to buy", value=price_result["shop"], inline=True)
         embed.add_field(name="Price per item", value=f"${price_result['unit_price']:,}", inline=True)
-        embed.add_field(name="Total cost", value=f"**${price_result['total']:,}**", inline=True)
-        embed.set_footer(text="FJORD CARTEL • Prices from the Shops directory")
+        if has_quantity:
+            embed.add_field(name="Quantity", value=f"{price_result['quantity']:,}", inline=True)
+            embed.add_field(name="Total cost", value=f"**${price_result['total']:,}**", inline=True)
+        embed.set_footer(text="FJORD CARTEL • Shop & location directory")
         await message.reply(embed=embed, mention_author=False)
         return
 
