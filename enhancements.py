@@ -140,6 +140,67 @@ def calculate_raw_cocaine_requirements(query: str):
     }
 
 
+def calculate_weed_growing_requirements(query: str):
+    """Calculate shopping requirements for either of the two weed-growing systems."""
+    raw = str(query or "").strip()
+    if not re.search(r"\bweed\b", raw, re.IGNORECASE) or not re.search(r"\b(?:plant|plants|grow|growing)\b", raw, re.IGNORECASE):
+        return None
+    match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?(?:weed\s+)?plants?\b", raw, re.IGNORECASE)
+    if not match:
+        match = re.search(r"\b(?:grow|growing)\s+([0-9][0-9,]*)\b", raw, re.IGNORECASE)
+    if not match:
+        return None
+    plants = int(match.group(1).replace(",", ""))
+    if plants < 1 or plants > 100000:
+        return {"error": "Please enter a plant amount between 1 and 100,000."}
+    grass = bool(re.search(r"\b(?:grass|in\s+the\s+grass)\b", raw, re.IGNORECASE))
+    prices = {
+        "Weed Seed": 60, "Fertilizer": 40, "Spring Water": 25,
+        "Watering Can": 15, "Flower Pot": 250, "Trowel": 100,
+        "Bloom Booster": 70,
+    }
+    systems = {
+        "smoke": {
+            "name": "System 1 — Smoke On The Water + Grapeseed",
+            "items": {
+                "Weed Seed": plants, "Fertilizer": plants, "Spring Water": plants,
+                "Watering Can": 1, "Trowel": 1,
+                **({} if grass else {"Flower Pot": plants}),
+            },
+            "locations": {
+                "Smoke On The Water": ["Weed Seed", "Spring Water", "Watering Can"],
+                "Grapeseed": ["Fertilizer", "Trowel"] + ([] if grass else ["Flower Pot"]),
+            },
+            "note": "Fill the Watering Can by opening inventory and dragging Spring Water onto it until full. The Trowel is reusable.",
+        },
+        "grape": {
+            "name": "System 2 — Grapeseed",
+            "items": {
+                "Weed Seed": plants, "Spring Water": plants, "Watering Can": 1,
+                "Bloom Booster": plants, "Trowel": 1,
+                **({} if grass else {"Flower Pot": plants}),
+            },
+            "locations": {
+                "Grapeseed": ["Weed Seed", "Spring Water", "Watering Can", "Bloom Booster", "Trowel"] + ([] if grass else ["Flower Pot"]),
+            },
+            "note": "The Watering Can and Trowel are counted once as reusable equipment.",
+        },
+    }
+    total_cost = lambda items: sum(prices[item] * quantity for item, quantity in items.items())
+    return {
+        "plants": plants,
+        "grass": grass,
+        "systems": {
+            key: {
+                **value,
+                "costs": {item: prices[item] * quantity for item, quantity in value["items"].items()},
+                "total": total_cost(value["items"]),
+            }
+            for key, value in systems.items()
+        },
+    }
+
+
 def calculate_shop_price_query(query: str):
     """Resolve shop/location price questions, with optional bulk quantity."""
     raw = str(query or "").strip()
