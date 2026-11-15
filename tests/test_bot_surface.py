@@ -252,6 +252,35 @@ def test_chat_message_handler_exposes_related_table_search():
 
 
 
+
+def test_hand_tablet_press_usable_directory_lists_all_pill_recipes_and_exact_ingredients():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    expected = (
+        "Hand Tablet Press — Pill Recipes (1/2)",
+        "Hand Tablet Press — Pill Recipes (2/2)",
+        "Xanax** — 1x Alprazolam Powder + 1x Pill Binder",
+        "Valium** — 1x Diazepam Powder + 1x Pill Binder",
+        "Adderall** — 1x Amphetamine Powder + 1x Pill Binder",
+        "Quaaludes** — 1x Methaqualone Powder + 1x Pill Binder",
+        "Tramadol** — 1x Tramadol HCl + 1x Pill Binder",
+        "Ritalin** — 1x Methylphenidate Powder + 1x Pill Binder",
+        "Captagon** — 1x Fenethylline Powder + 1x Pill Binder",
+        "Modafinil** — 1x Modafinil Powder + 1x Pill Binder",
+        "DOM** — 1x DOM Powder + 1x Pill Binder",
+        "Dilaudid** — 1x Hydromorphone HCl + 1x Pill Binder",
+        "Opana** — 1x Oxymorphone HCl + 1x Pill Binder",
+        "Klonopin** — 1x Clonazepam Powder + 1x Pill Binder",
+        "Ambien** — 1x Zolpidem Powder + 1x Pill Binder",
+        "Soma** — 1x Carisoprodol Powder + 1x Pill Binder",
+        "6-APB** — 1x 6-APB Succinate + 1x Pill Binder",
+        "BZP** — 1x BZP HCl + 1x Pill Binder",
+        "Ecstasy pill** — 1x Ecstasy crystals + 1x Pill Binder",
+        "Hydrocodone** — 1x Hydrocodone Bitartrate + 2x Acetaminophen + 1x Pill Binder",
+    )
+    for entry in expected:
+        assert entry in source, entry
+
+
 def test_weed_growing_calculator_returns_both_systems_and_correct_shop_costs():
     from enhancements import calculate_weed_growing_requirements
 
