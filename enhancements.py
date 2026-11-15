@@ -81,7 +81,7 @@ SHOP_PRICE_CATALOG = [
     {"name": "Art papers", "shop": "Head Shop — Postal 3057", "price": 150, "aliases": ("art papers", "art paper")},
     {"name": "Nitrous Oxide Charger", "shop": "Head Shop — Postal 3057", "price": 15, "aliases": ("nitrous oxide charger", "nitrous charger")},
     {"name": "Balloon", "shop": "Head Shop — Postal 3057", "price": 5, "aliases": ("balloon", "balloons")},
-    {"name": "Cigarette", "shop": "Head Shop — Postal 3057", "price": 5, "aliases": ("cigarette", "cigarettes")},
+    {"name": "Cigarette", "shop": "Head Shop — Postal 3057", "price": 5, "aliases": ("cigarette",)},
     {"name": "Weed papers", "shop": "Head Shop — Postal 3057", "price": 30, "aliases": ("weed papers", "weed paper")},
     {"name": "Pipe", "shop": "Head Shop — Postal 3057", "price": 10, "aliases": ("pipe", "smoking pipe")},
     {"name": "Cheesecloth", "shop": "Head Shop — Postal 3057", "price": 5, "aliases": ("cheesecloth", "cheese cloth")},
