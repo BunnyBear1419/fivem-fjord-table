@@ -1820,6 +1820,95 @@ def usable_embed():
     return embed
 
 
+def commands_embed():
+    embed = discord.Embed(
+        title="⌨️ Fjord Cartel • Commands & Quick Help",
+        description="Quick examples for chat lookups. Use the dashboard menu for the full crafting tools.",
+        color=COLOR,
+    )
+    embed.add_field(
+        name="💬 Chat lookups (start with !)",
+        value=(
+            "`!how to make [item]` — find a recipe and its ingredients.\n"
+            "`!where is [ingredient] used` — find recipes that use an ingredient.\n"
+            "`!what tables are related to [topic]` — find matching crafting tables.\n"
+            "`!what can I craft: Item x10, Item x5` — check what your stock can make."
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="💰 Shop prices",
+        value=(
+            "`!how much is [item]` — find its unit price and shop.\n"
+            "`!where do I buy [item]` — find where it is sold.\n"
+            "`!how much would 500 [item] cost` — calculate a quantity total."
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="📚 Dashboard tools",
+        value=(
+            "**/dashboard** — open the main menu.\n"
+            "Crafting includes recipe browsing, ingredient search, shopping lists, inventory planning, production chains, and issue reports.\n"
+            "Shops, Locations, and Usable Items are available from the dashboard dropdown."
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="✍️ Search tips",
+        value="Use the item's name or a few key words. Small spelling mistakes are supported. If a result looks wrong or is missing, report it through the Crafting menu.",
+        inline=False,
+    )
+    embed.set_footer(text="FJORD CARTEL • QUICK REFERENCE")
+    return embed
+
+
+class InformationPagerView(discord.ui.View):
+    def __init__(self, owner_id: int, source_embed: discord.Embed, page_size: int = 3):
+        super().__init__(timeout=300)
+        self.owner_id = owner_id
+        self.source_embed = source_embed
+        self.page_size = page_size
+        self.page = 0
+        self.total_pages = max(1, (len(source_embed.fields) + page_size - 1) // page_size)
+        self.previous_button.disabled = True
+        self.next_button.disabled = self.total_pages <= 1
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("This private directory belongs to someone else. Run /dashboard to open your own.", ephemeral=True)
+            return False
+        return True
+
+    def current_embed(self) -> discord.Embed:
+        embed = discord.Embed.from_dict(self.source_embed.to_dict())
+        embed.clear_fields()
+        start = self.page * self.page_size
+        for field in self.source_embed.fields[start:start + self.page_size]:
+            embed.add_field(name=field.name, value=field.value, inline=field.inline)
+        embed.set_footer(text=f"FJORD CARTEL • PAGE {self.page + 1}/{self.total_pages} • Use buttons to browse")
+        return embed
+
+    async def refresh(self, interaction: discord.Interaction):
+        self.previous_button.disabled = self.page <= 0
+        self.next_button.disabled = self.page >= self.total_pages - 1
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary)
+    async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page = max(0, self.page - 1)
+        await self.refresh(interaction)
+
+    @discord.ui.button(label="Next", emoji="➡️", style=discord.ButtonStyle.primary)
+    async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.page = min(self.total_pages - 1, self.page + 1)
+        await self.refresh(interaction)
+
+    @discord.ui.button(label="Dashboard", emoji="🏠", style=discord.ButtonStyle.success)
+    async def dashboard_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(embed=dashboard_embed(), view=DashboardMenuView(self.owner_id))
+
+
 class DashboardMenuView(discord.ui.View):
     def __init__(self, owner_id: int):
         super().__init__(timeout=300)
@@ -1829,10 +1918,11 @@ class DashboardMenuView(discord.ui.View):
             min_values=1,
             max_values=1,
             options=[
-                discord.SelectOption(label="Crafting", value="crafting", description="Recipes, tables, ingredients, and inventory tools", emoji="📚"),
-                discord.SelectOption(label="Shops", value="shops", description="Shop directory and available items", emoji="🛒"),
-                discord.SelectOption(label="Locations", value="locations", description="Saved locations and postal references", emoji="📍"),
-                discord.SelectOption(label="Usable Items", value="usable", description="Items usable directly from inventory", emoji="🎒"),
+                discord.SelectOption(label="Crafting", value="crafting", description="Recipes, tables, ingredients, and planning tools", emoji="📚"),
+                discord.SelectOption(label="Commands & Help", value="commands", description="Chat commands and examples", emoji="⌨️"),
+                discord.SelectOption(label="Shops & Prices", value="shops", description="Browse shop items and prices", emoji="🛒"),
+                discord.SelectOption(label="Locations", value="locations", description="Browse postal locations a few at a time", emoji="📍"),
+                discord.SelectOption(label="Usable Items", value="usable", description="Inventory items and their requirements", emoji="🎒"),
             ],
         )
         select.callback = self.choose_section
@@ -1856,19 +1946,20 @@ class DashboardMenuView(discord.ui.View):
                 view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
             )
             return
-        embeds = {
-            "shops": shops_embed,
-            "locations": locations_embed,
-            "usable": usable_embed,
+        embed_factories = {
+            "commands": (commands_embed, 4),
+            "shops": (shops_embed, 2),
+            "locations": (locations_embed, 3),
+            "usable": (usable_embed, 2),
         }
-        embed_factory = embeds.get(section)
-        if embed_factory is None:
+        selected = embed_factories.get(section)
+        if selected is None:
             await interaction.response.send_message("That dashboard section could not be found.", ephemeral=True)
             return
-        await interaction.response.edit_message(
-            embed=embed_factory(),
-            view=DashboardMenuView(interaction.user.id),
-        )
+        embed_factory, page_size = selected
+        source_embed = embed_factory()
+        pager = InformationPagerView(interaction.user.id, source_embed, page_size)
+        await interaction.response.edit_message(embed=pager.current_embed(), view=pager)
 
 
 @bot.tree.command(name="dashboard", description="Open the Fjord Cartel Information dashboard.")
