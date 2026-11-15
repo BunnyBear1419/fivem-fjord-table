@@ -26,7 +26,7 @@ def _commands(path):
 
 
 def test_dashboard_and_explicit_utility_admin_commands_are_registered():
-    assert set(_commands("bot.py")) == {"dashboard", "moonshine", "setrole"}
+    assert set(_commands("bot.py")) == {"dashboard", "crafting", "shops", "locations", "moonshine", "setrole"}
 
 
 def test_all_features_are_in_private_dropdown_menus():
