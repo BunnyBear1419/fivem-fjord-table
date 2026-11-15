@@ -556,7 +556,7 @@ class ProfileSelectModal(SafeModal, title="Switch server recipe profile"):
         profiles[str(interaction.guild_id)] = self.profile.value.strip()
         write_json(GUILD_PROFILES_FILE, profiles)
         record_audit_event(interaction.guild_id, interaction.user.id, "profile_switch", f"Activated profile {self.profile.value.strip()}")
-        await interaction.response.send_message(f"Activated server recipe profile **{self.profile.value.strip()}**. New /crafting sessions will use it.", ephemeral=True)
+        await interaction.response.send_message(f"Activated server recipe profile **{self.profile.value.strip()}**. New /dashboard sessions will use it.", ephemeral=True)
 
 
 class ProfileCreateModal(SafeModal, title="Create a server recipe profile"):
@@ -957,7 +957,7 @@ class InventoryTrackerView(SafeView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.owner_id or interaction.guild_id != self.guild_id:
-            await interaction.response.send_message("This private inventory menu belongs to someone else. Open your own with /crafting.", ephemeral=True)
+            await interaction.response.send_message("This private inventory menu belongs to someone else. Open your own with /dashboard.", ephemeral=True)
             return False
         return True
 
@@ -1030,7 +1030,7 @@ class ChatRecipeMatchView(SafeView):
             description=description[:4000],
             color=COLOR,
         )
-        embed.set_footer(text="Selected from the server's saved FiveM recipe directory • Use /crafting for more")
+        embed.set_footer(text="Selected from the server's saved FiveM recipe directory • Use /dashboard for more")
         await interaction.response.edit_message(embed=embed, view=self)
 
 
@@ -1064,7 +1064,7 @@ class MainMenuView(SafeView):
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.owner_id:
-            await interaction.response.send_message("This private menu belongs to someone else. Run /crafting to open your own.", ephemeral=True)
+            await interaction.response.send_message("This private menu belongs to someone else. Run /dashboard to open your own.", ephemeral=True)
             return False
         return True
 
@@ -1361,7 +1361,7 @@ async def on_message(message: discord.Message):
                     craftable.append((batches, table.get("name", "Unknown"), recipe.get("name", "Unknown")))
         craftable.sort(key=lambda row: (-row[0], row[2].casefold()))
         if not craftable:
-            await message.reply("Your stock does not cover a complete recipe yet. Try /crafting to browse the directory.", mention_author=False)
+            await message.reply("Your stock does not cover a complete recipe yet. Try /dashboard to browse the directory.", mention_author=False)
         else:
             lines = [f"• **{name}** — {batches} batch(es) · {table}" for batches, table, name in craftable[:20]]
             await message.reply("**Recipes you can make from that stock:**\n" + "\n".join(lines), mention_author=False)
@@ -1374,7 +1374,7 @@ async def on_message(message: discord.Message):
     if not matches:
         record_usage("no_result", query)
         await message.reply(
-            f"I couldn't find a close match for **{query[:100]}**. Try a shorter item name, check the spelling, or use /crafting to browse.",
+            f"I couldn't find a close match for **{query[:100]}**. Try a shorter item name, check the spelling, or use /dashboard to browse.",
             mention_author=False,
         )
         return
@@ -1386,7 +1386,7 @@ async def on_message(message: discord.Message):
         if match.get("tools"):
             description += "\n**Tools (not consumed):** " + ", ".join(match["tools"])
         embed = discord.Embed(title=f"Crafting match: {match['recipe'][:180]}", description=description[:4000], color=COLOR)
-        embed.set_footer(text="Game reference only • Use /crafting for the full directory")
+        embed.set_footer(text="Game reference only • Use /dashboard for the full directory")
         await message.reply(embed=embed, mention_author=False)
         return
 
@@ -1407,7 +1407,7 @@ async def on_message(message: discord.Message):
 def dashboard_embed():
     embed = discord.Embed(
         title="⚔️ Fjord Cartel Information",
-        description="**PRIVATE MEMBER DASHBOARD**\\n\\nWelcome to the Fjord Cartel directory. Select a section from the menu below.",
+        description="**PRIVATE MEMBER DASHBOARD**\n\nWelcome to the Fjord Cartel directory. Select a section from the menu below.",
         color=COLOR,
     )
     embed.set_footer(text="FJORD CARTEL • BLOOD IN THE WATER, STEEL IN THE VEINS")
@@ -1496,11 +1496,11 @@ def locations_embed():
     embed.add_field(
         name="Chemical Supplier — Postal 10105",
         value=(
-            "**Acids & Bases (5 items)**\\n"
-            "• **Sodium Hydroxide (Lye):** $80 each\\n"
-            "• **Citric Acid:** $20 each\\n"
-            "• **Sulfuric Acid:** $50 each\\n"
-            "• **Slaked Lime:** $15 each\\n"
+            "**Acids & Bases (5 items)**\n"
+            "• **Sodium Hydroxide (Lye):** $80 each\n"
+            "• **Citric Acid:** $20 each\n"
+            "• **Sulfuric Acid:** $50 each\n"
+            "• **Slaked Lime:** $15 each\n"
             "• **Succinic Acid:** $40 each"
         ),
         inline=False,
@@ -1508,11 +1508,11 @@ def locations_embed():
     embed.add_field(
         name="Solvents (6 items)",
         value=(
-            "• **Acetone:** $60 each\\n"
-            "• **Isopropyl Alcohol:** $50 each\\n"
-            "• **Distilled Water:** $20 each\\n"
-            "• **Naphtha:** $70 each\\n"
-            "• **Grain Alcohol:** $45 each\\n"
+            "• **Acetone:** $60 each\n"
+            "• **Isopropyl Alcohol:** $50 each\n"
+            "• **Distilled Water:** $20 each\n"
+            "• **Naphtha:** $70 each\n"
+            "• **Grain Alcohol:** $45 each\n"
             "• **Butane Canister:** $30 each"
         ),
         inline=False,
@@ -1520,12 +1520,12 @@ def locations_embed():
     embed.add_field(
         name="Reagents (7 items)",
         value=(
-            "• **Sodium Benzoate:** $150 each\\n"
-            "• **Ammonia:** $175 each\\n"
-            "• **Hydrogen Peroxide:** $40 each\\n"
-            "• **Urea:** $25 each\\n"
-            "• **Formaldehyde:** $60 each\\n"
-            "• **Potassium Permanganate:** $60 each\\n"
+            "• **Sodium Benzoate:** $150 each\n"
+            "• **Ammonia:** $175 each\n"
+            "• **Hydrogen Peroxide:** $40 each\n"
+            "• **Urea:** $25 each\n"
+            "• **Formaldehyde:** $60 each\n"
+            "• **Potassium Permanganate:** $60 each\n"
             "• **Sodium Acetate:** $40 each"
         ),
         inline=False,
