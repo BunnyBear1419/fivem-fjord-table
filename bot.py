@@ -1741,6 +1741,7 @@ def locations_embed():
         name="1000s Postal Codes — Hidden Locations",
         value=(
             "• **1012 — Propane:** Orange gas station next to the compound, near the garage. Buy propane for $1,000; sell empty container for $300.\n"
+            "• **1016–1018 & 9241 — Box Collection:** Collect boxes, then take them to the NPC to trade the boxes for materials.\\n"
             "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. No permission to view; access and details unconfirmed.\n"
             "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\n"
             "• **Drug Runs — Mysterious Person:** Drug runs are marked on the map as \"Mysterious Person\".\n"
