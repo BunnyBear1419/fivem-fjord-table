@@ -1792,6 +1792,30 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
+        name="Equipment Dealer — Postals 9275–9277",
+        value=(
+            "**Workstations (13 items)**\n"
+            "• **Meth table:** $5,000 each\n"
+            "• **Weed table:** $4,000 each\n"
+            "• **Coke table:** $5,000 each\n"
+            "• **Chemistry table:** $6,500 each\n"
+            "• **Pill Press:** $7,500 each\n"
+            "• **Reflux Rig:** $9,000 each\n"
+            "• **Extraction Bench:** $8,000 each\n"
+            "• **Glovebox:** $15,000 each\n"
+            "• **Brewing Kettle:** $2,500 each\n"
+            "• **Lab Freezer:** $4,000 each\n"
+            "• **Herb Drying Rack:** $2,000 each\n"
+            "• **Grinding Station:** $3,000 each\n"
+            "• **Capsule Filler:** $3,500 each\n\n"
+            "**Tools & Phones (3 items)**\n"
+            "• **Burner phone:** $500 each\n"
+            "• **Tablet Die Set:** $1,200 each\n"
+            "• **Hand Tablet Press:** $900 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="9000s Postal Codes — Hidden Locations",
         value=(
             "• **9035:** Guy near the Long Pig Mini Market — gang spray and removal.\n"
