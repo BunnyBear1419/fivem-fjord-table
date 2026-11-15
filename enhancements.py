@@ -176,14 +176,14 @@ def calculate_weed_growing_requirements(query: str):
         "grape": {
             "name": "System 2 — Grapeseed",
             "items": {
-                "Weed Seed": plants, "Spring Water": plants, "Watering Can": 1,
+                "Weed Seed": plants, "Spring Water": plants, "Watering Can": plants,
                 "Bloom Booster": plants, "Trowel": 1,
                 **({} if grass else {"Flower Pot": plants}),
             },
             "locations": {
                 "Grapeseed": ["Weed Seed", "Spring Water", "Watering Can", "Bloom Booster", "Trowel"] + ([] if grass else ["Flower Pot"]),
             },
-            "note": "The Watering Can and Trowel are counted once as reusable equipment.",
+            "note": "System 2 requires one Watering Can per plant; the Trowel is reusable."
         },
     }
     total_cost = lambda items: sum(prices[item] * quantity for item, quantity in items.items())
