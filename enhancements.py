@@ -436,7 +436,7 @@ def attach_location_recipe_warnings(data: dict[str, Any], location_sections: lis
     for _title, value in location_sections:
         for raw_line in str(value or "").splitlines():
             line = raw_line.strip()
-            match = re.match(r"• \*\*(.+?)\*\*:\s*(.+)$", line)
+            match = re.match(r"• \*\*(.+?):\*\*\s*(.+)$", line)
             if not match:
                 continue
             label, details = match.groups()
