@@ -38,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, parse_usable_item_sections,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -2197,34 +2197,8 @@ def include_usable_item_recipes(data: dict):
     """Combine the saved crafting tables with recipes listed in the Usable Items page."""
     combined = dict(data)
     tables = list(data.get("tables", []))
-    grouped = {}
-    for field in usable_embed().fields:
-        section = re.sub(r"^[^A-Za-z0-9]+", "", field.name).strip()
-        section = re.sub(r"\s+—\s+Pill Recipes \(\d+/\d+\)$", "", section).strip()
-        table_name = f"Usable Item — {section}"
-        recipes = grouped.setdefault(table_name, [])
-        current_recipe = None
-        for raw_line in field.value.splitlines():
-            line = raw_line.strip()
-            recipe_match = re.match(r"• \*\*(.+?)\*\* — (.+)$", line)
-            if recipe_match:
-                recipe_name, ingredient_text = recipe_match.groups()
-                ingredients = []
-                for part in re.split(r"\s+\+\s+", ingredient_text):
-                    ingredient_match = re.fullmatch(r"\s*(\d+)\s*x\s*(.+?)\s*", part)
-                    if ingredient_match:
-                        ingredients.append([ingredient_match.group(2).strip(), int(ingredient_match.group(1))])
-                if ingredients:
-                    current_recipe = {"name": recipe_name.strip(), "ingredients": ingredients, "tools": []}
-                    recipes.append(current_recipe)
-                else:
-                    current_recipe = None
-            elif current_recipe and "Tool (not consumed)" in line:
-                for quantity, tool_name in re.findall(r"(\d+)\s*x\s*([^,+]+)", line):
-                    current_recipe["tools"].append(tool_name.strip())
-    for table_name, recipes in grouped.items():
-        if recipes:
-            tables.append({"name": table_name, "recipes": recipes})
+    sections = [(field.name, field.value) for field in usable_embed().fields]
+    tables.extend(parse_usable_item_sections(sections))
     combined["tables"] = tables
     return combined
 
