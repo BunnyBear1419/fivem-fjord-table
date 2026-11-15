@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, parse_inventory, expanded_production_requirements,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1337,6 +1337,32 @@ async def on_message(message: discord.Message):
         return
     if bot.recipe_data is None:
         await message.reply("The crafting directory is still loading. Try again shortly.", mention_author=False)
+        return
+
+    related_prefixes = ("what tables", "which tables", "tables related", "related tables", "what table", "which table")
+    if query.casefold().startswith(related_prefixes) or ("table" in query.casefold() and any(term in query.casefold() for term in ("weed", "marijuana", "cannabis", "bud"))):
+        data = get_guild_recipe_data(message.guild.id if message.guild else None)
+        results = related_table_search(data, query, limit=8)
+        if not results:
+            await message.reply("I couldn't find related tables in the saved recipe directory. Try a different keyword or use /dashboard to browse.", mention_author=False)
+            return
+        embed = discord.Embed(
+            title=f"Related crafting tables: {query[:120]}",
+            description="Closest matches from the saved recipe directory. Only existing tables and recipes are shown.",
+            color=COLOR,
+        )
+        for result in results:
+            recipe_lines = []
+            for recipe in result["recipes"][:8]:
+                ingredients = ", ".join(recipe["ingredients"][:8]) or "No ingredients recorded"
+                recipe_lines.append(f"• **{recipe['recipe']}** — {ingredients}")
+            embed.add_field(
+                name=f"{result['table']} · {len(result['recipes'])} match(es)"[:256],
+                value="\n".join(recipe_lines)[:1024] or "No matching recipes recorded.",
+                inline=False,
+            )
+        embed.set_footer(text="FJORD CARTEL • Related matches are based on saved recipe names and ingredients")
+        await message.reply(embed=embed, mention_author=False)
         return
 
     if query.casefold().startswith(("what can i craft", "what can i make", "what can i produce")):
