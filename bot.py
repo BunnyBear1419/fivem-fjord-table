@@ -1528,11 +1528,12 @@ async def on_message(message: discord.Message):
         if ":" in query:
             raw_stock = query.split(":", 1)[1]
         else:
-            stock_match = re.search(r"\\bwith\\s+(.+)$", query, re.IGNORECASE)
+            stock_match = re.search(r"\bwith\s+(.+)$", query, re.IGNORECASE)
             raw_stock = stock_match.group(1) if stock_match else ""
         if not raw_stock:
             await message.reply("Use !what can I craft with Item x10, Item x5 (or use a colon before the inventory).", mention_author=False)
             return
+        raw_stock = raw_stock.strip().rstrip("?.!")
         try:
             stock = parse_inventory(raw_stock)
         except ValueError as exc:
