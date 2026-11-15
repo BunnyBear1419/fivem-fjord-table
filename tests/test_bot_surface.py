@@ -25,8 +25,11 @@ def _commands(path):
     return found
 
 
-def test_dashboard_and_explicit_utility_admin_commands_are_registered():
-    assert set(_commands("bot.py")) == {"dashboard", "crafting", "shops", "locations", "moonshine", "setrole", "removerole"}
+def test_dashboard_and_information_commands_are_registered_without_role_management_commands():
+    commands = set(_commands("bot.py"))
+    assert commands == {"dashboard", "crafting", "shops", "locations", "moonshine"}
+    assert "setrole" not in commands
+    assert "removerole" not in commands
 
 
 def test_all_features_are_in_private_dropdown_menus():
@@ -271,10 +274,17 @@ def test_weed_growing_calculator_omits_flower_pots_for_grass_planting():
 
 
 
-def test_multiple_access_roles_are_supported_for_slash_and_chat_lookups():
+def test_discord_integration_controls_slash_command_access_without_internal_role_gate():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert "def access_roles_for_guild(guild_id)" in source
-    assert "role.id in allowed_role_ids" in source
-    assert 'name="removerole"' in source
-    assert 'configured[guild_key] = sorted(role_ids)' in source
-    assert "already has access" in source
+    assert "Discord Server Settings > Integrations" in source
+    assert "access_roles_for_guild" not in source
+    assert "approved Fjord Cartel access role" not in source
+    assert 'name="setrole"' not in source
+    assert 'name="removerole"' not in source
+
+
+def test_prefix_lookups_are_not_mistaken_for_discord_integration_commands():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "Prefix lookups are message-based" in source
+    assert "if message.guild is None:" in source
+    assert "access_roles_for_guild" not in source
