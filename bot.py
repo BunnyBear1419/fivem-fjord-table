@@ -38,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, parse_usable_item_sections,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1407,16 +1407,16 @@ async def on_message(message: discord.Message):
         return
 
     # Questions about where an ingredient is used / what recipes use it.
-    usage_markers = ("what uses", "which recipes use", "where do i use", "used in", "used for")
+    usage_markers = ("what uses", "what recipes use", "which recipes use", "where do i use", "used in", "used for", "what does")
     asks_usage = any(marker in lowered for marker in usage_markers) or (
         any(marker in lowered for marker in ("where is", "where's"))
-        and any(word in lowered for word in ("used", "use", "made", "recipe"))
+        and any(word in lowered for word in ("used", "use", "made", "recipe", "does"))
     )
     if asks_usage:
         ingredient_query = query
-        for phrase in ("where is ", "where's ", "what uses ", "which recipes use ", "where do i use "):
+        for phrase in ("where is ", "where's ", "what uses ", "what recipes use ", "which recipes use ", "where do i use ", "what does "):
             ingredient_query = re.sub(r"^" + re.escape(phrase), "", ingredient_query, flags=re.IGNORECASE)
-        ingredient_query = re.sub(r"\b(used in|used|use|at|the)\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
+        ingredient_query = re.sub(r"\b(used in|used for|used|use|made|at|the|for|do)\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
         if ingredient_query:
             embed = ingredient_usage_embed(query_data, ingredient_query)
             if embed.description and "No exact ingredient match" not in embed.description:
@@ -1523,7 +1523,7 @@ async def on_message(message: discord.Message):
                     required[item] = required.get(item, 0) + int(amount)
                 if not required:
                     continue
-                batches = min((stock.get(item, 0) // amount for item, amount in required.items()), default=0)
+                batches = min((inventory_quantity(stock, item) // amount for item, amount in required.items()), default=0)
                 if batches:
                     possible.append((batches, recipe.get("name", "Unknown"), table.get("name", "Unknown")))
         possible.sort(key=lambda row: (-row[0], row[1].casefold()))
@@ -1582,7 +1582,7 @@ async def on_message(message: discord.Message):
                 needed = {}
                 for name, qty in recipe.get("ingredients", []):
                     needed[name] = needed.get(name, 0) + int(qty)
-                batches = min((stock.get(name, 0) // qty for name, qty in needed.items()), default=0)
+                batches = min((inventory_quantity(stock, name) // qty for name, qty in needed.items()), default=0)
                 if batches > 0:
                     craftable.append((batches, table.get("name", "Unknown"), recipe.get("name", "Unknown")))
         craftable.sort(key=lambda row: (-row[0], row[2].casefold()))
