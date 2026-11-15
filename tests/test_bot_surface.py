@@ -25,8 +25,8 @@ def _commands(path):
     return found
 
 
-def test_only_one_public_slash_command_is_registered():
-    assert _commands("bot.py") == ["crafting"]
+def test_only_dashboard_is_registered_as_the_public_slash_command():
+    assert _commands("bot.py") == ["dashboard"]
 
 
 def test_all_features_are_in_private_dropdown_menus():
