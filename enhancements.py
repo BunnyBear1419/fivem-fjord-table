@@ -114,7 +114,7 @@ SHOP_PRICE_CATALOG = [
     {"name": "NPP chemical", "shop": "Blackmarket Doctor — Postal 3009", "price": 300, "aliases": ("npp chemical", "npp")},
     {"name": "Aniline solution", "shop": "Blackmarket Doctor — Postal 3009", "price": 250, "aliases": ("aniline solution", "aniline")},
     {"name": "Anesthetic", "shop": "Blackmarket Doctor — Postal 3009", "price": 250, "aliases": ("anesthetic", "anaesthetic")},
-    {"name": "Dextromethorphan Cough Syrup", "shop": "Blackmarket Doctor — Postal 3009", "price": 60, "aliases": ("dextromethorphan cough syrup", "cough syrup", "dextromethorphan")},
+    {"name": "Dextromethorphan Cough Syrup", "shop": "Blackmarket Doctor — Postal 3009", "price": 60, "aliases": ("dextromethorphan cough syrup", "dextromethorphan")},
     {"name": "Syringe", "shop": "Blackmarket Doctor — Postal 3009", "price": 15, "aliases": ("syringe", "syringes")},
     {"name": "Bandage", "shop": "Pharmacy — Postal 9072", "price": 150, "aliases": ("bandage", "bandages",)},
     {"name": "Feminine Pad", "shop": "Pharmacy — Postal 9072", "price": 10, "aliases": ("feminine pad", "feminine pads",)},
