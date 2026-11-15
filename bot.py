@@ -2277,12 +2277,12 @@ def commands_embed():
         name="💬 Chat lookups (start with !)",
         value=(
             "`!how to make [item]` — find a recipe and its ingredients.\n"
-            "\`!where is [ingredient or tool] used\` — find ingredient uses and non-consumed tool requirements.\n"
-            "\`!how much [recipe] can I make with 500 [ingredient]\` — estimate batches from the stock you list.\n"
-            "\`!what does [usable item] do\` — search the saved Usable Items page.\n"
-            "\`!how do I do [activity]\` — search saved activity and location notes.\n"
-            "\`!what tables are related to [topic]\` — find matching crafting tables.\n"
-            "\`!what can I craft: Item x10, Item x5\` — check what your stock can make."
+            "`!where is [ingredient or tool] used` — find ingredient uses and non-consumed tool requirements.\n"
+            "`!how much [recipe] can I make with 500 [ingredient]` — estimate batches from the stock you list.\n"
+            "`!what does [usable item] do` — search the saved Usable Items page.\n"
+            "`!how do I do [activity]` — search saved activity and location notes.\n"
+            "`!what tables are related to [topic]` — find matching crafting tables.\n"
+            "`!what can I craft: Item x10, Item x5` — check what your stock can make."
         ),
         inline=False,
     )
