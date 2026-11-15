@@ -1680,6 +1680,14 @@ def locations_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="⛽ Propane Buy & Sell — Postals 1012 & 2006",
+        value=(
+            "• **Empty Propane Container:** Sell for $300\\n"
+            "• **Propane:** Buy for $1,000"
+        ),
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
