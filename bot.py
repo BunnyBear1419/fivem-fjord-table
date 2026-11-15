@@ -2229,11 +2229,11 @@ def include_usable_item_recipes(data: dict):
     for field in locations_embed().fields:
         for raw_line in field.value.splitlines():
             line = raw_line.strip()
-            match = re.match(r"• \\*\\*(.+?)\\*\\*:\\s*(.+)$", line)
+            match = re.match(r"• \*\*(.+?)\*\*:\s*(.+)$", line)
             if not match:
                 continue
             label, details = match.groups()
-            recipe_name = re.sub(r"\\s*\\(\\+\\d+ XP\\)$", "", label).strip()
+            recipe_name = re.sub(r"\s*\(\+\d+ XP\)$", "", label).strip()
             if "hidden material" not in details.casefold():
                 continue
             note = (
