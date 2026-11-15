@@ -1437,7 +1437,7 @@ async def on_message(message: discord.Message):
             return
 
     # Estimate a recipe's batch count from the inventory the member supplies.
-    inventory_query = re.search(r"\\bwith\\s*:?\\s*(.+)$", query, re.IGNORECASE)
+    inventory_query = re.search(r"\bwith\s*:?\s*(.+)$", query, re.IGNORECASE)
     if inventory_query and any(term in lowered for term in ("how many", "how much", "can i make", "can i craft", "can i produce")):
         target_query = query[:inventory_query.start()].strip()
         try:
@@ -1452,8 +1452,8 @@ async def on_message(message: discord.Message):
             embed = discord.Embed(
                 title="🧮 Inventory-Limited Recipe Calculator",
                 description=(
-                    f"**Recipe:** {limited_result['recipe']}\\n"
-                    f"**Table:** {limited_result['table']}\\n"
+                    f"**Recipe:** {limited_result['recipe']}\n"
+                    f"**Table:** {limited_result['table']}\n"
                     f"**Maximum batches from the stock you listed:** {limited_result['batches']:,}"
                 ),
                 color=COLOR,
@@ -1461,13 +1461,13 @@ async def on_message(message: discord.Message):
             if limited_result["stock_used"]:
                 embed.add_field(
                     name="Your listed stock",
-                    value="\\n".join(f"• **{name}:** {quantity:,}" for name, quantity in limited_result["stock_used"].items()),
+                    value="\n".join(f"• **{name}:** {quantity:,}" for name, quantity in limited_result["stock_used"].items()),
                     inline=False,
                 )
             if limited_result["missing"]:
                 embed.add_field(
                     name="Other ingredients still needed",
-                    value="\\n".join(f"• **{name}:** {quantity:,}" for name, quantity in limited_result["missing"].items())[:1024],
+                    value="\n".join(f"• **{name}:** {quantity:,}" for name, quantity in limited_result["missing"].items())[:1024],
                     inline=False,
                 )
             if limited_result["tools"]:
@@ -2196,18 +2196,18 @@ def include_usable_item_recipes(data: dict):
     grouped = {}
     for field in usable_embed().fields:
         section = re.sub(r"^[^A-Za-z0-9]+", "", field.name).strip()
-        section = re.sub(r"\\s+—\\s+Pill Recipes \\(\\d+/\\d+\\)$", "", section).strip()
+        section = re.sub(r"\s+—\s+Pill Recipes \(\d+/\d+\)$", "", section).strip()
         table_name = f"Usable Item — {section}"
         recipes = grouped.setdefault(table_name, [])
         current_recipe = None
         for raw_line in field.value.splitlines():
             line = raw_line.strip()
-            recipe_match = re.match(r"• \\*\\*(.+?)\\*\\* — (.+)$", line)
+            recipe_match = re.match(r"• \*\*(.+?)\*\* — (.+)$", line)
             if recipe_match:
                 recipe_name, ingredient_text = recipe_match.groups()
                 ingredients = []
-                for part in re.split(r"\\s+\\+\\s+", ingredient_text):
-                    ingredient_match = re.fullmatch(r"\\s*(\\d+)\\s*x\\s*(.+?)\\s*", part)
+                for part in re.split(r"\s+\+\s+", ingredient_text):
+                    ingredient_match = re.fullmatch(r"\s*(\d+)\s*x\s*(.+?)\s*", part)
                     if ingredient_match:
                         ingredients.append([ingredient_match.group(2).strip(), int(ingredient_match.group(1))])
                 if ingredients:
@@ -2216,7 +2216,7 @@ def include_usable_item_recipes(data: dict):
                 else:
                     current_recipe = None
             elif current_recipe and "Tool (not consumed)" in line:
-                for quantity, tool_name in re.findall(r"(\\d+)\\s*x\\s*([^,+]+)", line):
+                for quantity, tool_name in re.findall(r"(\d+)\s*x\s*([^,+]+)", line):
                     current_recipe["tools"].append(tool_name.strip())
     for table_name, recipes in grouped.items():
         if recipes:
@@ -2261,7 +2261,7 @@ def saved_information_matches(query: str):
                     line for line in value_lines
                     if any(term in re.sub(r"[^a-z0-9]+", " ", line.casefold()).split() for term in terms)
                 ]
-                selected_value = "\\n".join(selected_lines) if selected_lines else field.value
+                selected_value = "\n".join(selected_lines) if selected_lines else field.value
             matches.append({
                 "source": source_name,
                 "title": field.name,
