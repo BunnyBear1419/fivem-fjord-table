@@ -27,3 +27,22 @@ def test_price_calculator_ignores_non_price_recipe_searches():
 def test_price_calculator_explains_unknown_shop_item():
     result = calculate_shop_price_query("how much would 50 mystery widgets cost?")
     assert "error" in result
+
+
+def test_distilled_water_where_to_buy_and_unit_price_without_quantity():
+    result = calculate_shop_price_query("where do I buy Distilled Water & for how much?")
+    assert result == {
+        "quantity": None,
+        "item": "Distilled Water",
+        "shop": "Chemical Supplier — Postal 10105",
+        "unit_price": 20,
+        "total": None,
+    }
+
+
+def test_distilled_water_price_question_without_quantity():
+    result = calculate_shop_price_query("how much does distilled water cost?")
+    assert result["item"] == "Distilled Water"
+    assert result["unit_price"] == 20
+    assert result["quantity"] is None
+    assert result["total"] is None
