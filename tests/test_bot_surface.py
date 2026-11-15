@@ -310,13 +310,13 @@ def test_weed_growing_calculator_returns_both_systems_and_correct_shop_costs():
     assert result["systems"]["grape"]["total"] == 42100
 
 
-def test_weed_growing_calculator_omits_flower_pots_for_grass_planting():
+def test_weed_growing_calculator_applies_different_grass_rules_to_each_system():
     from enhancements import calculate_weed_growing_requirements
 
     result = calculate_weed_growing_requirements("How much to grow 100 weed plants in grass?")
-    assert "Flower Pot" not in result["systems"]["smoke"]["items"]
+    assert result["systems"]["smoke"]["items"]["Flower Pot"] == 100
+    assert result["systems"]["smoke"]["total"] == 37615
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
-    assert result["systems"]["smoke"]["total"] == 12615
     assert result["systems"]["grape"]["items"]["Watering Can"] == 100
     assert result["systems"]["grape"]["total"] == 17100
 
@@ -498,3 +498,47 @@ def test_location_directory_documents_unresolved_10060_hidden_materials():
     assert "exact item name is not recorded" in source
 
 
+
+
+
+def test_reflux_rig_has_all_14_exact_user_supplied_recipes():
+    data = json.loads(Path("recipes.json").read_text(encoding="utf-8"))
+    table = next(table for table in data["tables"] if table["name"] == "Reflux Rig")
+    recipes = {recipe["name"]: recipe["ingredients"] for recipe in table["recipes"]}
+    assert len(recipes) == 14
+    for number in range(1, 10):
+        assert recipes[f"Item Type {number}"] == [
+            [f"Crude Substance {number}", 1], ["Solvent A", 1], ["Filter Medium", 1]
+        ]
+    for number in range(10, 13):
+        assert recipes[f"Item Type {number}"] == [
+            [f"Crude Substance {number}", 1], ["Solvent B", 1], ["Filter Medium", 1]
+        ]
+    assert recipes["Item Type 13"] == [
+        ["Crude Substance 13", 1], ["Reagent C", 1], ["Filter Medium", 1]
+    ]
+    assert recipes["Item Type 14"] == [
+        ["Precursor D", 1], ["Reagent E", 1], ["Solvent B", 1]
+    ]
+
+
+def test_reflux_rig_recipes_are_available_to_shared_search_and_calculators():
+    from enhancements import calculate_recipe_ingredients, chat_recipe_search
+
+    data = json.loads(Path("recipes.json").read_text(encoding="utf-8"))
+    matches = chat_recipe_search(data, "How do I make Item Type 14 on the Reflux Rig?")
+    assert any(match["recipe"] == "Item Type 14" for match in matches)
+    result = calculate_recipe_ingredients(data, "Reflux Rig", "Item Type 14", 5)
+    assert result["ingredients"] == {
+        "Precursor D": 5, "Reagent E": 5, "Solvent B": 5
+    }
+
+
+def test_system_one_requires_flower_pot_even_when_planted_in_grass():
+    from enhancements import calculate_weed_growing_requirements
+
+    result = calculate_weed_growing_requirements("How much for 10 weed plants in grass?")
+    assert result["systems"]["smoke"]["items"]["Flower Pot"] == 10
+    assert result["systems"]["smoke"]["total"] == 4015
+    assert "Flower Pot" not in result["systems"]["grape"]["items"]
+    assert result["systems"]["grape"]["total"] == 1685
