@@ -2988,6 +2988,403 @@
           "id": "recipe_012_0013"
         }
       ]
+    },
+    {
+      "name": "Crafting Bench (Postal 10060)",
+      "recipes": [
+        {
+          "name": "Metal Pin",
+          "ingredients": [
+            [
+              "material_iron",
+              8
+            ],
+            [
+              "material_steel",
+              4
+            ]
+          ],
+          "tools": [],
+          "xp": 3,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0001"
+        },
+        {
+          "name": "Tension Spring",
+          "ingredients": [
+            [
+              "material_steel",
+              10
+            ],
+            [
+              "material_aluminum",
+              6
+            ]
+          ],
+          "tools": [],
+          "xp": 3,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0002"
+        },
+        {
+          "name": "Nylon Weave",
+          "ingredients": [
+            [
+              "material_plastic",
+              24
+            ],
+            [
+              "material_rubber",
+              10
+            ]
+          ],
+          "tools": [],
+          "xp": 3,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0003"
+        },
+        {
+          "name": "Optical Lens",
+          "ingredients": [
+            [
+              "material_glass",
+              20
+            ],
+            [
+              "material_plastic",
+              10
+            ]
+          ],
+          "tools": [],
+          "xp": 5,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0004"
+        },
+        {
+          "name": "Honed Blade",
+          "ingredients": [
+            [
+              "material_steel",
+              14
+            ],
+            [
+              "material_iron",
+              10
+            ]
+          ],
+          "tools": [],
+          "xp": 8,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0005"
+        },
+        {
+          "name": "Hardened Alloy",
+          "ingredients": [
+            [
+              "material_steel",
+              20
+            ],
+            [
+              "material_aluminum",
+              12
+            ],
+            [
+              "material_copper",
+              5
+            ]
+          ],
+          "tools": [],
+          "xp": 10,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0006"
+        },
+        {
+          "name": "Tungsten Drill Bit",
+          "ingredients": [
+            [
+              "hardened_alloy",
+              2
+            ],
+            [
+              "material_copper",
+              8
+            ],
+            [
+              "material_metalscrap",
+              40
+            ]
+          ],
+          "tools": [],
+          "xp": 12,
+          "review": "Screenshot shows 1 additional hidden material; its name is unknown, so it is not included in the ingredient list.",
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0007"
+        },
+        {
+          "name": "Lockpick",
+          "ingredients": [
+            [
+              "metal_pin",
+              2
+            ],
+            [
+              "tension_spring",
+              1
+            ],
+            [
+              "material_plastic",
+              6
+            ]
+          ],
+          "tools": [],
+          "xp": 12,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0008"
+        },
+        {
+          "name": "Rope",
+          "ingredients": [
+            [
+              "nylon_weave",
+              3
+            ],
+            [
+              "material_rubber",
+              10
+            ]
+          ],
+          "tools": [],
+          "xp": 12,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0009"
+        },
+        {
+          "name": "Crowbar",
+          "ingredients": [
+            [
+              "material_iron",
+              25
+            ],
+            [
+              "material_rubber",
+              8
+            ],
+            [
+              "hardened_alloy",
+              1
+            ]
+          ],
+          "tools": [],
+          "xp": 10,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0010"
+        },
+        {
+          "name": "Binoculars",
+          "ingredients": [
+            [
+              "optical_lens",
+              2
+            ],
+            [
+              "tension_spring",
+              1
+            ],
+            [
+              "material_plastic",
+              20
+            ]
+          ],
+          "tools": [],
+          "xp": 10,
+          "review": "Screenshot shows 1 additional hidden material; its name is unknown, so it is not included in the ingredient list.",
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0011"
+        },
+        {
+          "name": "Parachute",
+          "ingredients": [
+            [
+              "nylon_weave",
+              8
+            ],
+            [
+              "rope",
+              2
+            ],
+            [
+              "tension_spring",
+              2
+            ]
+          ],
+          "tools": [],
+          "xp": 10,
+          "review": "Screenshot shows 1 additional hidden material; its name is unknown, so it is not included in the ingredient list.",
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0012"
+        },
+        {
+          "name": "Advanced Lockpick",
+          "ingredients": [
+            [
+              "metal_pin",
+              4
+            ],
+            [
+              "tension_spring",
+              2
+            ],
+            [
+              "hardened_alloy",
+              1
+            ]
+          ],
+          "tools": [],
+          "xp": 15,
+          "review": "Screenshot shows 1 additional hidden material; its name is unknown, so it is not included in the ingredient list.",
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0013"
+        },
+        {
+          "name": "Brass Knuckles",
+          "ingredients": [
+            [
+              "hardened_alloy",
+              2
+            ],
+            [
+              "material_metalscrap",
+              20
+            ],
+            [
+              "material_rubber",
+              6
+            ]
+          ],
+          "tools": [],
+          "xp": 15,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0014"
+        },
+        {
+          "name": "Switchblade",
+          "ingredients": [
+            [
+              "honed_blade",
+              1
+            ],
+            [
+              "hardened_alloy",
+              1
+            ],
+            [
+              "tension_spring",
+              1
+            ]
+          ],
+          "tools": [],
+          "xp": 15,
+          "review": "Screenshot shows 1 additional hidden material; its name is unknown, so it is not included in the ingredient list.",
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0015"
+        },
+        {
+          "name": "Improvised Handcuffs",
+          "ingredients": [
+            [
+              "metal_pin",
+              4
+            ],
+            [
+              "tension_spring",
+              2
+            ],
+            [
+              "hardened_alloy",
+              1
+            ]
+          ],
+          "tools": [],
+          "xp": 20,
+          "review": "Screenshot shows 1 additional hidden material; its name is unknown, so it is not included in the ingredient list.",
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0016"
+        },
+        {
+          "name": "Heist Drill",
+          "ingredients": [
+            [
+              "drill_bit",
+              2
+            ],
+            [
+              "hardened_alloy",
+              3
+            ],
+            [
+              "tension_spring",
+              2
+            ]
+          ],
+          "tools": [],
+          "xp": 15,
+          "review": "Screenshot shows 1 additional hidden material; its name is unknown, so it is not included in the ingredient list.",
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0017"
+        },
+        {
+          "name": "Vector",
+          "ingredients": [
+            [
+              "material_metalscrap",
+              2000
+            ],
+            [
+              "material_iron",
+              2000
+            ]
+          ],
+          "tools": [],
+          "xp": 15,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0018"
+        },
+        {
+          "name": "NV Rifle",
+          "ingredients": [
+            [
+              "material_metalscrap",
+              2500
+            ],
+            [
+              "material_iron",
+              2500
+            ]
+          ],
+          "tools": [],
+          "xp": 15,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0019"
+        },
+        {
+          "name": "Thermite",
+          "ingredients": [
+            [
+              "material_metalscrap",
+              200
+            ],
+            [
+              "material_iron",
+              200
+            ]
+          ],
+          "tools": [],
+          "xp": 10,
+          "source": "User supplied crafting bench screenshot notes",
+          "id": "recipe_10060_0020"
+        }
+      ],
+      "id": "table_013"
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
