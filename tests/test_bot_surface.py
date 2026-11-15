@@ -192,7 +192,7 @@ def test_extended_player_and_server_tools_are_wired():
         "class ProfileCreateModal",
         "class ProfileSelectModal",
         "System health check",
-        "Staff activity audit log",
+        "Activity audit log",
         "Manage ingredient aliases",
         "Create server recipe profile",
         "Switch server recipe profile",
