@@ -1692,6 +1692,16 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
+        name="Other Hidden Island",
+        value="Another hidden island with nothing on it.",
+        inline=False,
+    )
+    embed.add_field(
+        name="Cayo Perico Island",
+        value="Cayo Perico Island.",
+        inline=False,
+    )
+    embed.add_field(
         name="Rotating NPC — Old Man",
         value="• **Moonshine:** Sell Moonshine to the Old Man. His location rotates and is marked on the map.",
         inline=False,
