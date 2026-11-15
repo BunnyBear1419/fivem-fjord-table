@@ -298,6 +298,36 @@ def test_prefix_lookups_are_not_mistaken_for_discord_integration_commands():
     assert "access_roles_for_guild" not in source
 
 
+def test_pharmacy_postal_9072_items_are_in_shop_directory_and_price_lookup():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "Pharmacy — Postal 9072" in source
+    assert "Medical & Wellness (9 items)" in source
+    assert "Party & Gender Reveal (5 items)" in source
+
+    from enhancements import calculate_shop_price_query
+
+    expected = {
+        "bandage": 150,
+        "feminine pad": 10,
+        "chill pills": 100,
+        "electrolyte drink": 20,
+        "cough syrup": 50,
+        "condoms": 10,
+        "pregnancy test box": 200,
+        "prenatal vitamins": 100,
+        "baby oil": 50,
+        "confetti cannon": 50,
+        "confetti popper": 50,
+        "gender reveal balloon": 50,
+        "gender reveal gift box": 50,
+        "gender reveal smoke": 50,
+    }
+    for item, price in expected.items():
+        result = calculate_shop_price_query(f"how much is {item}?")
+        assert result["unit_price"] == price, item
+        assert result["shop"] == "Pharmacy — Postal 9072", item
+
+
 def test_weed_growing_calculator_defaults_to_one_plant_when_quantity_is_omitted():
     from enhancements import calculate_weed_growing_requirements
 
