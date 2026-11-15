@@ -486,7 +486,7 @@ def related_table_search(data: dict[str, Any], query: str, limit: int = 8):
             hits = {term for term in expanded if term in normalized.split()}
             if hits:
                 matched_terms.update(hits)
-                matched_recipes.append({"recipe": recipe_name, "ingredients": ingredients, "matched_terms": sorted(hits)})
+                matched_recipes.append({"recipe": recipe_name, "ingredients": ingredients, "matched_terms": sorted(hits), "notes": list(recipe.get("notes") or [])})
         if matched_recipes:
             results.append({"table": str(table.get("name", "Unknown table")), "recipes": matched_recipes,
                             "matched_terms": sorted(matched_terms), "score": len(matched_terms) * 2 + len(matched_recipes)})
