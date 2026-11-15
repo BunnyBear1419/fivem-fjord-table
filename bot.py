@@ -45,7 +45,6 @@ BASE_DIR = Path(__file__).resolve().parent
 STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
 HISTORY_FILE = BASE_DIR / "history.json"
-PERMISSIONS_FILE = BASE_DIR / "permissions.json"
 INVENTORIES_FILE = BASE_DIR / "inventories.json"
 ALIASES_FILE = BASE_DIR / "aliases.json"
 AUDIT_FILE = BASE_DIR / "audit-log.json"
@@ -172,20 +171,6 @@ def save_guild_recipe_data(guild_id, data):
 def guild_aliases(guild_id):
     return read_json(ALIASES_FILE, {}).get(str(guild_id or "dm"), {})
 
-def is_guild_admin(interaction: discord.Interaction) -> bool:
-    return bool(interaction.guild and interaction.user.guild_permissions.manage_guild)
-
-
-def can_manage_crafting(interaction: discord.Interaction) -> bool:
-    if is_guild_admin(interaction):
-        return True
-    if not interaction.guild:
-        return False
-    config = read_json(PERMISSIONS_FILE, {"role_ids": []})
-    allowed = {int(value) for value in config.get("role_ids", []) if str(value).isdigit()}
-    return any(role.id in allowed for role in getattr(interaction.user, "roles", []))
-
-
 class KeepAliveHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         application = globals().get("bot")
@@ -235,7 +220,7 @@ def help_embed():
     embed.add_field(name="Item database", value="Open an item page showing where it is made and used.", inline=False)
     embed.add_field(name="Recipe comparison", value="Compare two recipes and their shared/exclusive ingredients.", inline=False)
     embed.add_field(name="Report an issue", value="Privately report a missing or incorrect entry with table and recipe details.", inline=False)
-    embed.add_field(name="Admin tools", value="Manage tables and recipes, exports, backups, reports, and statistics. Manage Server or approved staff role required.", inline=False)
+    embed.add_field(name="Admin tools", value="Manage tables and recipes, imports, exports, backups, reports, aliases, and server profiles. Available to all server members.", inline=False)
     embed.set_footer(text="FJORD CARTEL • PRIVATE MEMBER MENU")
     return embed
 
@@ -266,24 +251,11 @@ class SafeModal(discord.ui.Modal):
             logger.exception("Could not send modal error feedback to Discord.")
 
 
-class CartelCommandTree(app_commands.CommandTree):
-    async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        # Slash-command access is managed in Discord Server Settings > Integrations.
-        # Keep bot commands server-only; Discord enforces the configured role permissions.
-        if interaction.guild is None:
-            await interaction.response.send_message(
-                "Use Fjord Cartel Information commands inside your Discord server.",
-                ephemeral=True,
-            )
-            return False
-        return True
-
-
 class CraftingBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        super().__init__(command_prefix="!", intents=intents, tree_cls=CartelCommandTree)
+        super().__init__(command_prefix="!", intents=intents)
         self.recipe_data = None
         self.guild_commands_cleaned = False
 
@@ -416,10 +388,6 @@ class AdminActionModal(SafeModal):
             self.add_item(field)
 
     async def on_submit(self, interaction: discord.Interaction):
-        if not can_manage_crafting(interaction):
-            await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
-            return
-
         data = ensure_stable_ids(get_guild_recipe_data(interaction.guild_id))
         before_data = json.loads(json.dumps(data, ensure_ascii=False))
         if self.action == "add_table":
@@ -602,7 +570,6 @@ class AdminMenuView(SafeView):
         self.owner_id = owner_id
         options = [
             discord.SelectOption(label="Import / merge recipe JSON", value="import_json", emoji="📥"),
-            discord.SelectOption(label="Configure staff roles", value="set_roles", emoji="👥"),
             discord.SelectOption(label="View crafting analytics", value="analytics", emoji="📈"),
             discord.SelectOption(label="Add a crafting table", value="add_table", emoji="➕"),
             discord.SelectOption(label="Add a recipe", value="add_recipe", emoji="🧪"),
@@ -618,7 +585,7 @@ class AdminMenuView(SafeView):
             discord.SelectOption(label="Restore a previous version", value="restore_history", emoji="↩️"),
             discord.SelectOption(label="View directory statistics", value="stats", emoji="📊"),
             discord.SelectOption(label="System health check", value="health", emoji="🩺"),
-            discord.SelectOption(label="Staff activity audit log", value="audit", emoji="🧾"),
+            discord.SelectOption(label="Activity audit log", value="audit", emoji="🧾"),
             discord.SelectOption(label="Manage ingredient aliases", value="aliases", emoji="🏷️"),
             discord.SelectOption(label="Create server recipe profile", value="profile", emoji="🗂️"),
             discord.SelectOption(label="Switch server recipe profile", value="profile_switch", emoji="🔀"),
@@ -634,27 +601,16 @@ class AdminMenuView(SafeView):
         if interaction.user.id != self.owner_id:
             await interaction.response.send_message("This private menu belongs to someone else.", ephemeral=True)
             return False
-        if not can_manage_crafting(interaction):
-            await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
-            return False
         return True
 
     async def choose_action(self, interaction: discord.Interaction):
         action = interaction.data["values"][0]
         if action == "back":
-            await interaction.response.edit_message(embed=help_embed(), view=MainMenuView(self.owner_id, can_manage_crafting(interaction)))
+            await interaction.response.edit_message(embed=help_embed(), view=MainMenuView(self.owner_id))
         elif action in {"add_table", "add_recipe", "edit_recipe", "remove_recipe", "resolve_report", "restore_history"}:
             await interaction.response.send_modal(AdminActionModal(action))
         elif action == "import_json":
-            if not is_guild_admin(interaction):
-                await interaction.response.send_message("Only Manage Server members can import data.", ephemeral=True)
-                return
             await interaction.response.send_modal(ImportRecipeModal())
-        elif action == "set_roles":
-            if not is_guild_admin(interaction):
-                await interaction.response.send_message("Only Manage Server members can configure roles.", ephemeral=True)
-                return
-            await interaction.response.send_modal(StaffRolesModal())
         elif action == "analytics":
             await interaction.response.send_message(embed=analytics_embed(get_guild_recipe_data(interaction.guild_id), read_json(STATS_FILE, {})), ephemeral=True)
         elif action == "backup":
@@ -1048,7 +1004,7 @@ class ChatRecipeMatchView(SafeView):
 
 
 class MainMenuView(SafeView):
-    def __init__(self, owner_id: int, admin: bool):
+    def __init__(self, owner_id: int):
         super().__init__(timeout=300)
         self.owner_id = owner_id
         options = [
@@ -1069,8 +1025,7 @@ class MainMenuView(SafeView):
             discord.SelectOption(label="Help and instructions", value="help", description="How to use the crafting directory", emoji="📘"),
             discord.SelectOption(label="Report a recipe issue", value="report", description="Privately report missing or incorrect data", emoji="📨"),
         ]
-        if admin:
-            options.append(discord.SelectOption(label="Admin tools", value="admin", description="Manage recipes, backups, exports, and reports", emoji="⚙️"))
+        options.append(discord.SelectOption(label="Admin tools", value="admin", description="Manage recipes, backups, exports, and reports", emoji="⚙️"))
         select = discord.ui.Select(placeholder="What would you like to do?", options=options)
         select.callback = self.choose_action
         self.add_item(select)
@@ -1122,10 +1077,7 @@ class MainMenuView(SafeView):
         elif action == "report":
             await interaction.response.send_modal(ReportModal())
         elif action == "admin":
-            if not can_manage_crafting(interaction):
-                await interaction.response.send_message("You need Manage Server permission or an approved crafting staff role.", ephemeral=True)
-                return
-            embed = discord.Embed(title="⚙️ Fjord Cartel • Staff Tools", description="Choose an action below. Changes automatically create a backup before saving.", color=COLOR)
+            embed = discord.Embed(title="⚙️ Fjord Cartel • Management Tools", description="Choose an action below. Changes automatically create a backup before saving.", color=COLOR)
             await interaction.response.edit_message(embed=embed, view=AdminMenuView(self.owner_id))
 
 
@@ -1260,32 +1212,10 @@ class RecipeCompareModal(SafeModal, title="Compare two recipes"):
 
 
 
-class StaffRolesModal(SafeModal, title="Configure crafting staff roles"):
-    role_ids = discord.ui.TextInput(label="Allowed role IDs (comma-separated)", required=False, max_length=1000)
-    async def on_submit(self, interaction):
-        if not is_guild_admin(interaction):
-            await interaction.response.send_message("Only Manage Server members can configure staff roles.", ephemeral=True)
-            return
-        values = []
-        for raw in self.role_ids.value.split(","):
-            raw = raw.strip()
-            if raw and not raw.isdigit():
-                await interaction.response.send_message("Role IDs must be numeric and separated by commas.", ephemeral=True)
-                return
-            if raw:
-                values.append(int(raw))
-        write_json(PERMISSIONS_FILE, {"role_ids": sorted(set(values))})
-        record_audit_event(interaction.guild_id, interaction.user.id, "staff_roles_update", f"Configured {len(set(values))} staff role(s)")
-        await interaction.response.send_message("Saved " + str(len(set(values))) + " approved crafting staff role(s).", ephemeral=True)
-
-
 class ImportRecipeModal(SafeModal, title="Import / merge recipe JSON"):
     json_text = discord.ui.TextInput(label="Paste JSON with a top-level tables list", style=discord.TextStyle.paragraph, max_length=4000)
     mode = discord.ui.TextInput(label="Name conflicts: skip or replace", default="skip", max_length=10)
     async def on_submit(self, interaction):
-        if not is_guild_admin(interaction):
-            await interaction.response.send_message("Only Manage Server members can import recipe data.", ephemeral=True)
-            return
         try:
             incoming = json.loads(self.json_text.value)
             mode = self.mode.value.strip().casefold()
@@ -1308,8 +1238,8 @@ class ImportConfirmView(SafeView):
         self.owner_id, self.merged, self.summary = owner_id, merged, summary
         self.base_fingerprint = base_fingerprint
     async def interaction_check(self, interaction):
-        if interaction.user.id != self.owner_id or not is_guild_admin(interaction):
-            await interaction.response.send_message("Only the importing Manage Server member can confirm.", ephemeral=True)
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the member who started this import can confirm it.", ephemeral=True)
             return False
         return True
     @discord.ui.button(label="Confirm import", style=discord.ButtonStyle.success)
@@ -1833,7 +1763,7 @@ def locations_embed():
         value=(
             "• **1012 — Propane:** Orange gas station next to the compound, near the garage. Buy propane for $1,000; sell empty container for $300.\n"
             "• **1016–1018 & 9241 — Box Collection:** Collect boxes, then take them to the NPC to trade the boxes for materials.\\n"
-            "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. No permission to view; access and details unconfirmed.\n"
+            "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. Access and details unconfirmed.\n"
             "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\n"
             "• **Drug Runs — Mysterious Person:** Drug runs are marked on the map as \"Mysterious Person\".\n"
             "• **1056 — Empty Lab:** White side door, opposite the fishing guy. Possibly owned; ownership unconfirmed.\n"
@@ -2173,7 +2103,7 @@ class DashboardMenuView(discord.ui.View):
             record_usage("open")
             await interaction.response.edit_message(
                 embed=help_embed(),
-                view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
+                view=MainMenuView(interaction.user.id),
             )
             return
         embed_factories = {
@@ -2200,7 +2130,7 @@ async def crafting_command(interaction: discord.Interaction):
     record_usage("open")
     await interaction.response.send_message(
         embed=help_embed(),
-        view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
+        view=MainMenuView(interaction.user.id),
         ephemeral=True,
     )
 
