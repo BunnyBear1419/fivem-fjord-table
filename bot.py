@@ -266,11 +266,29 @@ class SafeModal(discord.ui.Modal):
             logger.exception("Could not send modal error feedback to Discord.")
 
 
+CARTEL_ACCESS_ROLE_ID = 1566189433827623043
+
+
+class CartelCommandTree(app_commands.CommandTree):
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if not interaction.guild or not any(
+            role.id == CARTEL_ACCESS_ROLE_ID
+            for role in getattr(interaction.user, "roles", [])
+        ):
+            message = "You need the **The Council** role to use Fjord Cartel Information."
+            if interaction.response.is_done():
+                await interaction.followup.send(message, ephemeral=True)
+            else:
+                await interaction.response.send_message(message, ephemeral=True)
+            return False
+        return True
+
+
 class CraftingBot(commands.Bot):
     def __init__(self):
         intents = discord.Intents.default()
         intents.message_content = True
-        super().__init__(command_prefix="!", intents=intents)
+        super().__init__(command_prefix="!", intents=intents, tree_cls=CartelCommandTree)
         self.recipe_data = None
         self.guild_commands_cleaned = False
 
@@ -1323,6 +1341,11 @@ class ImportConfirmView(SafeView):
 async def on_message(message: discord.Message):
     """Answer typo-tolerant chat lookups using only the saved FiveM recipe directory."""
     if message.author.bot:
+        return
+    if not message.guild or not any(
+        role.id == CARTEL_ACCESS_ROLE_ID
+        for role in getattr(message.author, "roles", [])
+    ):
         return
     content = (message.content or "").strip()
     if not content.startswith("!"):
