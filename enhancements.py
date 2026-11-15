@@ -62,7 +62,7 @@ def calculate_shop_price_query(query: str):
     if not (price_intent or location_intent):
         return None
 
-    quantity_match = re.search(r"(?<![a-z])([0-9][0-9,]*)\\b", raw, re.IGNORECASE)
+    quantity_match = re.search(r"(?<![a-z])([0-9][0-9,]*)\b", raw, re.IGNORECASE)
     quantity = int(quantity_match.group(1).replace(",", "")) if quantity_match else None
     if quantity is not None and (quantity < 1 or quantity > 1_000_000_000):
         return {"error": "Please enter a quantity between 1 and 1,000,000,000."}
