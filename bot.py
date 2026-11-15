@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1369,6 +1369,38 @@ async def on_message(message: discord.Message):
     if query.casefold() in {"help", "crafting"}:
         await bot.process_commands(message)
         return
+    raw_cocaine_result = calculate_raw_cocaine_requirements(query)
+    if raw_cocaine_result is not None:
+        if raw_cocaine_result.get("error"):
+            await message.reply(raw_cocaine_result["error"], mention_author=False)
+            return
+        result = raw_cocaine_result
+        embed = discord.Embed(
+            title="🧮 Raw Cocaine Production Calculator",
+            description=(
+                f"**Target:** {result['target']:,} Raw Cocaine\n"
+                f"**Picks required:** {result['picks']:,}\n"
+                f"**Estimated output:** ~{result['estimated_output']:,} Raw Cocaine"
+            ),
+            color=COLOR,
+        )
+        material_lines = [f"• **{name}:** {quantity:,}" for name, quantity in result["materials"].items()]
+        embed.add_field(name="Materials to collect", value="\n".join(material_lines), inline=False)
+        embed.add_field(
+            name="Cost",
+            value="**$0 total** — Cement, Hydrochloric Acid, and Gasoline are free pickups.",
+            inline=False,
+        )
+        if result["estimated_output"] > result["target"]:
+            embed.add_field(
+                name="Note",
+                value=f"Each pick produces approximately 800, so you'll have about {result['estimated_output'] - result['target']:,} extra.",
+                inline=False,
+            )
+        embed.set_footer(text="FJORD CARTEL • Raw Cocaine production estimate")
+        await message.reply(embed=embed, mention_author=False)
+        return
+
     price_result = calculate_shop_price_query(query)
     if price_result is not None:
         if price_result.get("error"):
