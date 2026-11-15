@@ -294,3 +294,16 @@ def test_prefix_lookups_are_not_mistaken_for_discord_integration_commands():
     assert "Prefix lookups are message-based" in source
     assert "if message.guild is None:" in source
     assert "access_roles_for_guild" not in source
+
+
+def test_weed_growing_calculator_defaults_to_one_plant_when_quantity_is_omitted():
+    from enhancements import calculate_weed_growing_requirements
+
+    result = calculate_weed_growing_requirements(
+        "What do I need to grow weed and how much will I spend?"
+    )
+    assert result["plants"] == 1
+    assert result["systems"]["smoke"]["total"] == 490
+    assert result["systems"]["grape"]["total"] == 520
+    assert result["systems"]["smoke"]["items"]["Weed Seed"] == 1
+    assert result["systems"]["grape"]["items"]["Bloom Booster"] == 1
