@@ -101,7 +101,7 @@ def test_inventory_limited_batch_calculator_uses_only_stock_items_that_match_rec
     result = calculate_inventory_limited_batches(
         data,
         "How much Meth can I make",
-        "pseudoephedrine x500",
+        "500 Pseudoephedrine",
     )
     assert result["batches"] == 125
     assert result["required"] == {
@@ -116,6 +116,15 @@ def test_inventory_limited_batch_calculator_uses_only_stock_items_that_match_rec
         "2L Water Bottle": 125,
     }
     assert result["tools"] == ["Gas Mask"]
+
+
+def test_inventory_parser_accepts_quantity_before_item_name():
+    from enhancements import parse_inventory
+
+    assert parse_inventory("500 Pseudoephedrine, 2L Water Bottle x3") == {
+        "Pseudoephedrine": 500,
+        "2L Water Bottle": 3,
+    }
 
 
 def test_inventory_limited_batch_calculator_reports_ambiguous_recipe_choices():
