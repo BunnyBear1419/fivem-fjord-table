@@ -98,6 +98,39 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
     return ingredient_matches[:limit]
 
 
+def related_table_search(data: dict[str, Any], query: str, limit: int = 8):
+    """Find tables related to broad topics, listing only saved recipes and ingredients."""
+    cleaned = _normalize_chat_search(query)
+    stop_words = {"what", "tables", "table", "have", "has", "anything", "to", "do", "with", "about", "related", "show", "me", "find", "which", "are", "the", "for", "and", "or", "any"}
+    terms = {word for word in cleaned.split() if word not in stop_words and len(word) > 1}
+    if not terms or not isinstance(limit, int) or limit < 1:
+        return []
+    synonym_groups = (
+        {"weed", "marijuana", "cannabis", "bud", "buds", "ganja", "pot"},
+        {"coke", "cocaine"},
+    )
+    expanded = set(terms)
+    for group in synonym_groups:
+        if terms & group:
+            expanded.update(group)
+    results = []
+    for table in data.get("tables", []):
+        matched_recipes, matched_terms = [], set()
+        for recipe in table.get("recipes", []):
+            recipe_name = str(recipe.get("name", "")).strip()
+            ingredients = [str(row[0]).strip() for row in recipe.get("ingredients") or [] if isinstance(row, (list, tuple)) and row]
+            normalized = _normalize_chat_search(" ".join([str(table.get("name", "")), recipe_name, *ingredients]))
+            hits = {term for term in expanded if term in normalized.split()}
+            if hits:
+                matched_terms.update(hits)
+                matched_recipes.append({"recipe": recipe_name, "ingredients": ingredients, "matched_terms": sorted(hits)})
+        if matched_recipes:
+            results.append({"table": str(table.get("name", "Unknown table")), "recipes": matched_recipes,
+                            "matched_terms": sorted(matched_terms), "score": len(matched_terms) * 2 + len(matched_recipes)})
+    results.sort(key=lambda item: (-item["score"], item["table"].casefold()))
+    return results[:limit]
+
+
 def calculate_recipe_ingredients(data: dict[str, Any], table_name: str, recipe_name: str, batches: int = 1):
     """Calculate a shopping list, summing repeated ingredient rows without altering source data."""
     if not isinstance(batches, int) or batches < 1 or batches > 999:
