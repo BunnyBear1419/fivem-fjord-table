@@ -46,6 +46,7 @@ STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
 HISTORY_FILE = BASE_DIR / "history.json"
 PERMISSIONS_FILE = BASE_DIR / "permissions.json"
+ACCESS_ROLES_FILE = BASE_DIR / "access-roles.json"
 INVENTORIES_FILE = BASE_DIR / "inventories.json"
 ALIASES_FILE = BASE_DIR / "aliases.json"
 AUDIT_FILE = BASE_DIR / "audit-log.json"
@@ -176,6 +177,14 @@ def is_guild_admin(interaction: discord.Interaction) -> bool:
     return bool(interaction.guild and interaction.user.guild_permissions.manage_guild)
 
 
+def access_role_for_guild(guild_id):
+    if guild_id is None:
+        return None
+    configured = read_json(ACCESS_ROLES_FILE, {})
+    value = configured.get(str(guild_id))
+    return int(value) if str(value or "").isdigit() else None
+
+
 def can_manage_crafting(interaction: discord.Interaction) -> bool:
     if is_guild_admin(interaction):
         return True
@@ -266,16 +275,17 @@ class SafeModal(discord.ui.Modal):
             logger.exception("Could not send modal error feedback to Discord.")
 
 
-CARTEL_ACCESS_ROLE_ID = 1566189433827623043
-
-
 class CartelCommandTree(app_commands.CommandTree):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        if not interaction.guild or not any(
-            role.id == CARTEL_ACCESS_ROLE_ID
+        # Server managers can always configure access with /setrole.
+        if interaction.command and interaction.command.name == "setrole" and is_guild_admin(interaction):
+            return True
+        allowed_role_id = access_role_for_guild(interaction.guild_id)
+        if not interaction.guild or allowed_role_id is None or not any(
+            role.id == allowed_role_id
             for role in getattr(interaction.user, "roles", [])
         ):
-            message = "You need the **The Council** role to use Fjord Cartel Information."
+            message = "You do not have the configured Fjord Cartel access role. Ask a server administrator for access."
             if interaction.response.is_done():
                 await interaction.followup.send(message, ephemeral=True)
             else:
@@ -1342,8 +1352,9 @@ async def on_message(message: discord.Message):
     """Answer typo-tolerant chat lookups using only the saved FiveM recipe directory."""
     if message.author.bot:
         return
-    if not message.guild or not any(
-        role.id == CARTEL_ACCESS_ROLE_ID
+    allowed_role_id = access_role_for_guild(message.guild.id) if message.guild else None
+    if not message.guild or allowed_role_id is None or not any(
+        role.id == allowed_role_id
         for role in getattr(message.author, "roles", [])
     ):
         return
@@ -2094,6 +2105,45 @@ class DashboardMenuView(discord.ui.View):
         source_embed = embed_factory()
         pager = InformationPagerView(interaction.user.id, source_embed, page_size)
         await interaction.response.edit_message(embed=pager.current_embed(), view=pager)
+
+
+@bot.tree.command(name="setrole", description="Set which Discord role can access Fjord Cartel Information.")
+@app_commands.describe(
+    role="Select the Discord role that should have access",
+    role_id="Or enter the role ID instead (do not use both options)",
+)
+async def setrole_command(
+    interaction: discord.Interaction,
+    role: discord.Role | None = None,
+    role_id: str | None = None,
+):
+    if not is_guild_admin(interaction):
+        await interaction.response.send_message("Only members with Manage Server permission can change the bot access role.", ephemeral=True)
+        return
+    if (role is None and not (role_id or "").strip()) or (role is not None and (role_id or "").strip()):
+        await interaction.response.send_message("Choose a role from the role picker OR enter its role ID. Use one option only.", ephemeral=True)
+        return
+    selected_role = role
+    if role_id and role_id.strip():
+        raw_id = role_id.strip().strip("<@&>")
+        if not raw_id.isdigit():
+            await interaction.response.send_message("That role ID is not valid. Enter the numeric Discord role ID.", ephemeral=True)
+            return
+        selected_role = interaction.guild.get_role(int(raw_id))
+        if selected_role is None:
+            await interaction.response.send_message("I could not find that role in this server. Check the ID and try again.", ephemeral=True)
+            return
+    if selected_role is None or selected_role.is_default or selected_role.managed:
+        await interaction.response.send_message("Choose a normal server role, not @everyone or an integration-managed role.", ephemeral=True)
+        return
+    configured = read_json(ACCESS_ROLES_FILE, {})
+    configured[str(interaction.guild_id)] = selected_role.id
+    write_json(ACCESS_ROLES_FILE, configured)
+    record_audit_event(interaction.guild_id, interaction.user.id, "access_role_update", f"Set bot access role to {selected_role.name} ({selected_role.id})")
+    await interaction.response.send_message(
+        f"Access role updated to {selected_role.mention}. Only members with this role can open the dashboard or use chat lookups. Server managers can still use /setrole to change it.",
+        ephemeral=True,
+    )
 
 
 @bot.tree.command(name="dashboard", description="Open the Fjord Cartel Information dashboard.")
