@@ -1495,6 +1495,14 @@ def shops_embed():
         inline=False,
     )
     embed.add_field(
+        name="🚗 PDM",
+        value=(
+            "• **Repair Kits:** $2,000\n"
+            "• **Contracts:** $1,000 *(Special Role Required)*"
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="🏪 Convenience Store",
         value=(
             "**Misc**\n"
