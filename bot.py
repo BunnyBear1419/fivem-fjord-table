@@ -1536,8 +1536,75 @@ def shops_embed():
 def locations_embed():
     embed = discord.Embed(
         title="📍 Fjord Cartel • Locations",
-        description="Saved location references for cartel members.",
+        description="Saved location references for cartel members. Farm Supplier: Postals 2002–2003.",
         color=COLOR,
+    )
+    embed.add_field(
+        name="Farm Supplier — Postals 2002–2003 • Seeds & Cuttings (5)",
+        value=(
+            "• **Weed seed:** $60 each\\n"
+            "• **Cocaine seed:** $150 each\\n"
+            "• **Poppy seeds:** $120 each\\n"
+            "• **Birch Sapling:** $200 each\\n"
+            "• **San Pedro Cuttings:** $90 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Farm Supplier • Water (5)",
+        value=(
+            "• **Watering can:** $15 each\\n"
+            "• **Rainwater Jug:** $20 each\\n"
+            "• **Spring Water:** $25 each\\n"
+            "• **Pond Water:** $15 each\\n"
+            "• **Misting Bottle:** $20 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Farm Supplier • Fertilizer & Soil (11)",
+        value=(
+            "• **Fertilizer:** $40 each\\n"
+            "• **Cactus Fertilizer:** $50 each\\n"
+            "• **Tropical Fertilizer:** $60 each\\n"
+            "• **Fish Emulsion:** $50 each\\n"
+            "• **Bone Meal:** $45 each\\n"
+            "• **Bloom Booster:** $70 each\\n"
+            "• **Organic Compost:** $55 each\\n"
+            "• **Birch Leaf Mulch:** $45 each\\n"
+            "• **Aquatic Fertilizer Tabs:** $50 each\\n"
+            "• **Cactus Soil Mix:** $40 each\\n"
+            "• **Peat Moss:** $40 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Farm Supplier • Grow Gear (7)",
+        value=(
+            "• **Trowel:** $100 each\\n"
+            "• **Flower Pot:** $250 each\\n"
+            "• **Portable Lamp (Standard):** $750 each\\n"
+            "• **Portable Lamp (Large):** $1,250 each\\n"
+            "• **Garden Trellis:** $150 each\\n"
+            "• **Shade Cloth:** $120 each\\n"
+            "• **Pond Tub:** $250 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Farm Supplier • Precursors (1)",
+        value="• **Piperazine:** $80 each",
+        inline=False,
+    )
+    embed.add_field(
+        name="Farm Supplier • Kitchen (1)",
+        value="• **Whole Nutmeg:** $10 each",
+        inline=False,
+    )
+    embed.add_field(
+        name="Farm Supplier • Tools & Phones (1)",
+        value="• **Mortar and Pestle:** $60 each",
+        inline=False,
     )
     embed.add_field(
         name="Chemical Supplier — Postal 10105",
