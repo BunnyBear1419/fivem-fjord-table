@@ -366,7 +366,7 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
             + (f" ({item['occurrences']} ingredient entries)" if item["occurrences"] > 1 else "")
             for item in group["recipes"][:8]
         ]
-        embed.add_field(name=f"Used as an ingredient: {group['table']}"[:256], value="\n".join(lines)[:700] or "No uses recorded.", inline=False)
+        embed.add_field(name=f"Used at: {group['table']}"[:256], value="\n".join(lines)[:700] or "No uses recorded.", inline=False)
 
     for group in tool_matches[:5]:
         lines = [
