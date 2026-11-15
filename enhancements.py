@@ -215,12 +215,11 @@ def calculate_weed_growing_requirements(query: str):
             "name": "System 1 — Smoke On The Water + Grapeseed",
             "items": {
                 "Weed Seed": plants, "Fertilizer": plants, "Spring Water": plants,
-                "Watering Can": 1, "Trowel": 1,
-                **({} if grass else {"Flower Pot": plants}),
+                "Watering Can": 1, "Trowel": 1, "Flower Pot": plants,
             },
             "locations": {
                 "Smoke On The Water": ["Weed Seed", "Spring Water", "Watering Can"],
-                "Grapeseed": ["Fertilizer", "Trowel"] + ([] if grass else ["Flower Pot"]),
+                "Grapeseed": ["Fertilizer", "Trowel", "Flower Pot"],
             },
             "note": "Fill the Watering Can by opening inventory and dragging Spring Water onto it until full. The Trowel is reusable.",
         },
