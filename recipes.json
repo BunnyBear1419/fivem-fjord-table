@@ -3436,7 +3436,8 @@
           "source": "User supplied text",
           "id": "table_014_0002"
         }
-      ]
+      ],
+      "description": "The Welding Machine is where you sell car parts and receive regular materials."
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
