@@ -848,6 +848,8 @@ class CheckSavedInventoryModal(SafeModal, title="Plan using my saved inventory")
         required_lines = [f"• **{name}** ×{quantity}" for name, quantity in result["required"].items()]
         embed.add_field(name="Still missing", value="\n".join(missing_lines)[:1000] or "Nothing missing.", inline=False)
         embed.add_field(name="Required total", value="\n".join(required_lines)[:1000] or "None", inline=False)
+        if result.get("notes"):
+            embed.add_field(name="Data review notes", value="\n".join(f"• {note}" for note in result["notes"])[:1024], inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -1162,6 +1164,8 @@ class MultiRecipeModal(SafeModal, title="Multi-recipe planner"):
         embed.add_field(name="Combined ingredient totals", value="\n".join(ingredient_lines[:12])[:900] or "None", inline=False)
         if result["tools"]:
             embed.add_field(name="Tools (not consumed)", value=", ".join(result["tools"])[:700], inline=False)
+        if result.get("notes"):
+            embed.add_field(name="Data review notes", value="\n".join(f"• {note}" for note in result["notes"])[:1024], inline=False)
         full_text = "COMBINED PRODUCTION PLAN\n\nRecipes:\n" + "\n".join(result["selected"]) + "\n\nIngredients:\n" + "\n".join(ingredient_lines) + "\n\nTools (not consumed):\n" + ", ".join(result["tools"])
         file = discord.File(io.BytesIO(full_text.encode("utf-8")), filename="fivem-combined-production-plan.txt")
         await interaction.response.send_message(content="The full combined plan is attached so no ingredient totals are cut off.", embed=embed, file=file, ephemeral=True)
@@ -1182,7 +1186,9 @@ class AdvancedSearchModal(SafeModal, title="Advanced search"):
         embed = discord.Embed(title="Advanced search results", description="Found " + str(len(results)) + " recipe(s).", color=COLOR)
         for table, recipe in results[:5]:
             summary = ", ".join(str(n) + " x" + str(q) for n,q in recipe.get("ingredients", []))
-            embed.add_field(name=(recipe.get("name", "Unnamed") + " - " + table)[:256], value=summary[:650] or "No ingredients", inline=False)
+            if recipe.get("notes"):
+                summary += "\nData review: " + " ".join(recipe["notes"])
+            embed.add_field(name=(recipe.get("name", "Unnamed") + " - " + table)[:256], value=summary[:900] or "No ingredients", inline=False)
         if len(results) > 5:
             embed.set_footer(text=f"Showing 5 of {len(results)} results. Narrow the filters to see fewer matches.")
         await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -1209,6 +1215,9 @@ class RecipeCompareModal(SafeModal, title="Compare two recipes"):
         embed.add_field(name="Shared ingredients", value=", ".join(result["shared"]) or "None", inline=False)
         embed.add_field(name="Only in A", value=", ".join(result["only_a"]) or "None", inline=False)
         embed.add_field(name="Only in B", value=", ".join(result["only_b"]) or "None", inline=False)
+        for label, recipe_result in (("A", result["a"]), ("B", result["b"])):
+            if recipe_result.get("notes"):
+                embed.add_field(name=f"Data review notes — {label}", value="\n".join(f"• {note}" for note in recipe_result["notes"])[:1024], inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -1476,6 +1485,8 @@ async def on_message(message: discord.Message):
                 )
             if limited_result["tools"]:
                 embed.add_field(name="Tools (not consumed)", value=", ".join(limited_result["tools"]), inline=False)
+            if limited_result.get("notes"):
+                embed.add_field(name="Data review notes", value="\n".join(f"• {note}" for note in limited_result["notes"])[:1024], inline=False)
             embed.set_footer(text="The batch limit uses only the stock you listed; missing ingredients are shown separately.")
             await message.reply(embed=embed, mention_author=False)
             return
@@ -1551,6 +1562,7 @@ async def on_message(message: discord.Message):
             for recipe in result["recipes"][:8]:
                 ingredients = ", ".join(recipe["ingredients"][:8]) or "No ingredients recorded"
                 recipe_lines.append(f"• **{recipe['recipe']}** — {ingredients}")
+                recipe_lines.extend(f"  ⚠️ {note}" for note in recipe.get("notes", []))
             embed.add_field(
                 name=f"{result['table']} · {len(result['recipes'])} match(es)"[:256],
                 value="\n".join(recipe_lines)[:1024] or "No matching recipes recorded.",
@@ -1611,6 +1623,8 @@ async def on_message(message: discord.Message):
         description = f"**Table:** {match['table']}\n**Recipe:** {match['recipe']}\n**Ingredients:**\n" + ("\n".join(ingredient_lines) if ingredient_lines else "None recorded")
         if match.get("tools"):
             description += "\n**Tools (not consumed):** " + ", ".join(match["tools"])
+        if match.get("notes"):
+            description += "\n\n**Data review notes:**\n" + "\n".join(f"• {note}" for note in match["notes"])
         embed = discord.Embed(title=f"Crafting match: {match['recipe'][:180]}", description=description[:4000], color=COLOR)
         embed.set_footer(text="Game reference only • Use /dashboard for the full directory")
         await message.reply(embed=embed, mention_author=False)
@@ -1624,7 +1638,7 @@ async def on_message(message: discord.Message):
     for match in matches:
         embed.add_field(
             name=f"{match['recipe']} • {match['table']}"[:256],
-            value=match.get("match_label", "Closest match"),
+            value=match.get("match_label", "Closest match") + (("\n⚠️ " + " ".join(match.get("notes", []))) if match.get("notes") else ""),
             inline=False,
         )
     embed.set_footer(text="Spelling suggestions only • Original recipe names are unchanged")
