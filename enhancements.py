@@ -782,7 +782,7 @@ def parse_simple_items(text: str):
 
 
 
-def _inventory_quantity(stock: dict[str, int], item_name: str) -> int:
+def inventory_quantity(stock: dict[str, int], item_name: str) -> int:
     """Read inventory quantities case-insensitively and with spaces/punctuation normalized."""
     target = _normalize_chat_search(item_name)
     return sum(
@@ -825,9 +825,9 @@ def calculate_inventory_limited_batches(
     for name, quantity in selected.get("ingredients", []):
         per_batch[name] = per_batch.get(name, 0) + int(quantity)
     limits = [
-        _inventory_quantity(stock, name) // quantity
+        inventory_quantity(stock, name) // quantity
         for name, quantity in per_batch.items()
-        if _inventory_quantity(stock, name) > 0 and quantity > 0
+        if inventory_quantity(stock, name) > 0 and quantity > 0
     ]
     if not limits:
         return None
@@ -835,9 +835,9 @@ def calculate_inventory_limited_batches(
     planned_batches = max(1, batches)
     required = {name: quantity * planned_batches for name, quantity in per_batch.items()}
     missing = {
-        name: max(0, quantity - _inventory_quantity(stock, name))
+        name: max(0, quantity - inventory_quantity(stock, name))
         for name, quantity in required.items()
-        if _inventory_quantity(stock, name) < quantity
+        if inventory_quantity(stock, name) < quantity
     }
     return {
         "recipe": selected.get("recipe", "Unknown"),
@@ -845,9 +845,9 @@ def calculate_inventory_limited_batches(
         "batches": batches,
         "planned_batches": planned_batches,
         "stock_used": {
-            name: min(_inventory_quantity(stock, name), quantity)
+            name: min(inventory_quantity(stock, name), quantity)
             for name, quantity in required.items()
-            if _inventory_quantity(stock, name) > 0
+            if inventory_quantity(stock, name) > 0
         },
         "required": required,
         "missing": missing,
@@ -863,10 +863,10 @@ def inventory_plan(data: dict[str, Any], table_name: str, recipe_name: str, targ
     available_batches = None
     for name, per_target in required.items():
         per_batch = per_target // target_batches
-        possible = stock.get(name, 0) // per_batch if per_batch else 999
+        possible = inventory_quantity(stock, name) // per_batch if per_batch else 999
         available_batches = possible if available_batches is None else min(available_batches, possible)
     available_batches = available_batches or 0
-    missing = {name: max(0, quantity-stock.get(name, 0)) for name, quantity in required.items() if quantity > stock.get(name, 0)}
+    missing = {name: max(0, quantity-inventory_quantity(stock, name)) for name, quantity in required.items() if inventory_quantity(stock, name) < quantity}
     return {"available_batches": min(available_batches, 999), "target_batches": target_batches, "required": required, "stock": stock, "missing": missing}
 
 
