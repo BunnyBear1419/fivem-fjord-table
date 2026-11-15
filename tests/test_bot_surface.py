@@ -341,7 +341,6 @@ def test_pharmacy_postal_9072_items_are_in_shop_directory_and_price_lookup():
         "chill pills": 100,
         "electrolyte drink": 20,
         "cough syrup": 50,
-        "dextromethorphan cough syrup": 60,
         "condoms": 10,
         "pregnancy test box": 200,
         "prenatal vitamins": 100,
@@ -356,6 +355,11 @@ def test_pharmacy_postal_9072_items_are_in_shop_directory_and_price_lookup():
         result = calculate_shop_price_query(f"how much is {item}?")
         assert result["unit_price"] == price, item
         assert result["shop"] == "Pharmacy — Postal 9072", item
+
+    # This similarly named product is sold by the Blackmarket Doctor, not the Pharmacy.
+    dextromethorphan = calculate_shop_price_query("how much is dextromethorphan cough syrup?")
+    assert dextromethorphan["unit_price"] == 60
+    assert dextromethorphan["shop"] == "Blackmarket Doctor — Postal 3009"
 
 
 def test_weed_growing_calculator_defaults_to_one_plant_when_quantity_is_omitted():
