@@ -2209,6 +2209,33 @@ class DashboardMenuView(discord.ui.View):
         await interaction.response.edit_message(embed=pager.current_embed(), view=pager)
 
 
+@bot.tree.command(name="crafting", description="Open crafting recipes and tools.")
+async def crafting_command(interaction: discord.Interaction):
+    if bot.recipe_data is None:
+        await interaction.response.send_message("The crafting directory is still loading. Try again shortly.", ephemeral=True)
+        return
+    record_usage("open")
+    await interaction.response.send_message(
+        embed=help_embed(),
+        view=MainMenuView(interaction.user.id, can_manage_crafting(interaction)),
+        ephemeral=True,
+    )
+
+
+@bot.tree.command(name="shops", description="Browse shop items and prices.")
+async def shops_command(interaction: discord.Interaction):
+    source_embed = shops_embed()
+    pager = InformationPagerView(interaction.user.id, source_embed, 2)
+    await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
+
+
+@bot.tree.command(name="locations", description="Browse postal codes and hidden locations.")
+async def locations_command(interaction: discord.Interaction):
+    source_embed = locations_embed()
+    pager = InformationPagerView(interaction.user.id, source_embed, 3)
+    await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
+
+
 @bot.tree.command(name="moonshine", description="Show where to sell Moonshine.")
 async def moonshine_command(interaction: discord.Interaction):
     embed = discord.Embed(
