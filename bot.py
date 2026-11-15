@@ -177,12 +177,20 @@ def is_guild_admin(interaction: discord.Interaction) -> bool:
     return bool(interaction.guild and interaction.user.guild_permissions.manage_guild)
 
 
-def access_role_for_guild(guild_id):
+def access_roles_for_guild(guild_id):
     if guild_id is None:
-        return None
+        return set()
     configured = read_json(ACCESS_ROLES_FILE, {})
-    value = configured.get(str(guild_id))
-    return int(value) if str(value or "").isdigit() else None
+    value = configured.get(str(guild_id), [])
+    # Backward compatibility: older deployments stored one role ID as an integer/string.
+    values = value if isinstance(value, list) else [value]
+    return {int(item) for item in values if str(item).isdigit()}
+
+
+def access_role_for_guild(guild_id):
+    """Legacy compatibility helper; returns one configured role, if any."""
+    roles = access_roles_for_guild(guild_id)
+    return next(iter(roles), None)
 
 
 def can_manage_crafting(interaction: discord.Interaction) -> bool:
@@ -277,15 +285,15 @@ class SafeModal(discord.ui.Modal):
 
 class CartelCommandTree(app_commands.CommandTree):
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
-        # Server managers can always configure access with /setrole.
-        if interaction.command and interaction.command.name == "setrole" and is_guild_admin(interaction):
+        # Server managers can always configure access roles.
+        if interaction.command and interaction.command.name in {"setrole", "removerole"} and is_guild_admin(interaction):
             return True
-        allowed_role_id = access_role_for_guild(interaction.guild_id)
-        if not interaction.guild or allowed_role_id is None or not any(
-            role.id == allowed_role_id
+        allowed_role_ids = access_roles_for_guild(interaction.guild_id)
+        if not interaction.guild or not allowed_role_ids or not any(
+            role.id in allowed_role_ids
             for role in getattr(interaction.user, "roles", [])
         ):
-            message = "You do not have the configured Fjord Cartel access role. Ask a server administrator for access."
+            message = "You do not have an approved Fjord Cartel access role. Ask a server administrator for access."
             if interaction.response.is_done():
                 await interaction.followup.send(message, ephemeral=True)
             else:
@@ -1352,9 +1360,9 @@ async def on_message(message: discord.Message):
     """Answer typo-tolerant chat lookups using only the saved FiveM recipe directory."""
     if message.author.bot:
         return
-    allowed_role_id = access_role_for_guild(message.guild.id) if message.guild else None
-    if not message.guild or allowed_role_id is None or not any(
-        role.id == allowed_role_id
+    allowed_role_ids = access_roles_for_guild(message.guild.id) if message.guild else set()
+    if not message.guild or not allowed_role_ids or not any(
+        role.id in allowed_role_ids
         for role in getattr(message.author, "roles", [])
     ):
         return
@@ -2252,9 +2260,9 @@ async def moonshine_command(interaction: discord.Interaction):
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
-@bot.tree.command(name="setrole", description="Set which Discord role can access Fjord Cartel Information.")
+@bot.tree.command(name="setrole", description="Add a Discord role that can access Fjord Cartel Information.")
 @app_commands.describe(
-    role="Select the Discord role that should have access",
+    role="Select the Discord role to add",
     role_id="Or enter the role ID instead (do not use both options)",
 )
 async def setrole_command(
@@ -2263,7 +2271,7 @@ async def setrole_command(
     role_id: str | None = None,
 ):
     if not is_guild_admin(interaction):
-        await interaction.response.send_message("Only members with Manage Server permission can change the bot access role.", ephemeral=True)
+        await interaction.response.send_message("Only members with Manage Server permission can change bot access roles.", ephemeral=True)
         return
     if (role is None and not (role_id or "").strip()) or (role is not None and (role_id or "").strip()):
         await interaction.response.send_message("Choose a role from the role picker OR enter its role ID. Use one option only.", ephemeral=True)
@@ -2282,11 +2290,66 @@ async def setrole_command(
         await interaction.response.send_message("Choose a normal server role, not @everyone or an integration-managed role.", ephemeral=True)
         return
     configured = read_json(ACCESS_ROLES_FILE, {})
-    configured[str(interaction.guild_id)] = selected_role.id
+    guild_key = str(interaction.guild_id)
+    existing = configured.get(guild_key, [])
+    role_ids = {int(value) for value in (existing if isinstance(existing, list) else [existing]) if str(value).isdigit()}
+    if selected_role.id in role_ids:
+        await interaction.response.send_message(f"{selected_role.mention} already has access.", ephemeral=True)
+        return
+    role_ids.add(selected_role.id)
+    configured[guild_key] = sorted(role_ids)
     write_json(ACCESS_ROLES_FILE, configured)
-    record_audit_event(interaction.guild_id, interaction.user.id, "access_role_update", f"Set bot access role to {selected_role.name} ({selected_role.id})")
+    record_audit_event(interaction.guild_id, interaction.user.id, "access_role_add", f"Added bot access role {selected_role.name} ({selected_role.id})")
+    mentions = ", ".join(f"<@&{value}>" for value in sorted(role_ids))
     await interaction.response.send_message(
-        f"Access role updated to {selected_role.mention}. Only members with this role can open the dashboard or use chat lookups. Server managers can still use /setrole to change it.",
+        f"Added {selected_role.mention}. Members with **any** of these roles can use Fjord Cartel Information.\n**Approved roles:** {mentions}",
+        ephemeral=True,
+    )
+
+
+@bot.tree.command(name="removerole", description="Remove a Discord role from Fjord Cartel Information access.")
+@app_commands.describe(
+    role="Select the Discord role to remove",
+    role_id="Or enter the role ID instead (do not use both options)",
+)
+async def removerole_command(
+    interaction: discord.Interaction,
+    role: discord.Role | None = None,
+    role_id: str | None = None,
+):
+    if not is_guild_admin(interaction):
+        await interaction.response.send_message("Only members with Manage Server permission can change bot access roles.", ephemeral=True)
+        return
+    if (role is None and not (role_id or "").strip()) or (role is not None and (role_id or "").strip()):
+        await interaction.response.send_message("Choose a role from the role picker OR enter its role ID. Use one option only.", ephemeral=True)
+        return
+    selected_role = role
+    if role_id and role_id.strip():
+        raw_id = role_id.strip().strip("<@&>")
+        if not raw_id.isdigit():
+            await interaction.response.send_message("That role ID is not valid. Enter the numeric Discord role ID.", ephemeral=True)
+            return
+        selected_role = interaction.guild.get_role(int(raw_id))
+        if selected_role is None:
+            await interaction.response.send_message("I could not find that role in this server. Check the ID and try again.", ephemeral=True)
+            return
+    if selected_role is None or selected_role.is_default or selected_role.managed:
+        await interaction.response.send_message("Choose a normal server role, not @everyone or an integration-managed role.", ephemeral=True)
+        return
+    configured = read_json(ACCESS_ROLES_FILE, {})
+    guild_key = str(interaction.guild_id)
+    existing = configured.get(guild_key, [])
+    role_ids = {int(value) for value in (existing if isinstance(existing, list) else [existing]) if str(value).isdigit()}
+    if selected_role.id not in role_ids:
+        await interaction.response.send_message(f"{selected_role.mention} is not currently an approved access role.", ephemeral=True)
+        return
+    role_ids.remove(selected_role.id)
+    configured[guild_key] = sorted(role_ids)
+    write_json(ACCESS_ROLES_FILE, configured)
+    record_audit_event(interaction.guild_id, interaction.user.id, "access_role_remove", f"Removed bot access role {selected_role.name} ({selected_role.id})")
+    remaining = ", ".join(f"<@&{value}>" for value in sorted(role_ids)) or "None — add a role with /setrole before members can use the bot."
+    await interaction.response.send_message(
+        f"Removed {selected_role.mention}.\n**Remaining approved roles:** {remaining}",
         ephemeral=True,
     )
 
