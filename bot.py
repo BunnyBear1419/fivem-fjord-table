@@ -2286,8 +2286,8 @@ async def setrole_command(
         if selected_role is None:
             await interaction.response.send_message("I could not find that role in this server. Check the ID and try again.", ephemeral=True)
             return
-    if selected_role is None or selected_role.is_default or selected_role.managed:
-        await interaction.response.send_message("Choose a normal server role, not @everyone or an integration-managed role.", ephemeral=True)
+    if selected_role is None or selected_role.is_default:
+        await interaction.response.send_message("Choose a server role other than @everyone.", ephemeral=True)
         return
     configured = read_json(ACCESS_ROLES_FILE, {})
     guild_key = str(interaction.guild_id)
@@ -2333,8 +2333,8 @@ async def removerole_command(
         if selected_role is None:
             await interaction.response.send_message("I could not find that role in this server. Check the ID and try again.", ephemeral=True)
             return
-    if selected_role is None or selected_role.is_default or selected_role.managed:
-        await interaction.response.send_message("Choose a normal server role, not @everyone or an integration-managed role.", ephemeral=True)
+    if selected_role is None or selected_role.is_default:
+        await interaction.response.send_message("Choose a server role other than @everyone.", ephemeral=True)
         return
     configured = read_json(ACCESS_ROLES_FILE, {})
     guild_key = str(interaction.guild_id)
