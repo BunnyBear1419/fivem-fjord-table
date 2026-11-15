@@ -4,13 +4,21 @@ A Discord bot that provides a private, interactive reference for crafting tables
 
 ## Chat lookup shortcut
 
-Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The bot searches the existing recipe data, tolerates common spelling mistakes, and offers a dropdown when several close matches are found. The person who asked can select the intended recipe. This is a local directory lookup, not an external AI service; it does not invent recipes or change ingredient names.
+Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The bot searches the saved crafting recipes plus the Shops, Locations, Usable Items, and Commands information shown in the slash-command pages. It includes ingredient and non-consumed tool lookups, inventory-limited batch estimates, shop prices, postal references, and activity information. It tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items.
 
 **Discord setup required:** In the Discord Developer Portal, open the bot application, go to **Bot → Privileged Gateway Intents**, enable **Message Content Intent**, and save. The bot requests this intent in code. Without the portal toggle, Discord will not provide ordinary message text to the shortcut.
 
-## One slash command
+## Slash commands
 
-Members use only **`/crafting`**. It opens a private dropdown menu with:
+The bot registers five global slash commands:
+
+- **`/dashboard`** — open the main information menu.
+- **`/crafting`** — open the private recipe directory and planning tools.
+- **`/shops`** — browse saved shop prices.
+- **`/locations`** — browse postal codes and hidden locations.
+- **`/moonshine`** — show the Old Man selling information.
+
+`/crafting` opens a private dropdown menu with:
 
 - **Browse recipes** — choose a crafting table, then a recipe to view ingredients and tools. Both table and recipe selectors paginate in groups of 25 to respect Discord's select-menu limits.
 - **Search recipes** — search by recipe name, ingredient, tool, or optional table filter.
@@ -28,7 +36,7 @@ Members use only **`/crafting`**. It opens a private dropdown menu with:
 - **Recipe comparison** — compare two recipes' shared and exclusive ingredients.
 - **Help and instructions** — see how to use the directory.
 - **Report a recipe issue** — submit an issue type, optional table/recipe, and details.
-- **Admin tools** — shown to members with Manage Server permission or an approved crafting staff role; sensitive role configuration and imports still require Manage Server.
+- **Admin tools** — available to members who can access the menu. Use Discord channel and Integration command permissions to control who can invoke slash commands; the bot does not add a separate staff-role gate.
 
 ## Admin menu
 
@@ -46,15 +54,15 @@ The Admin tools submenu includes:
 - Import/merge recipe JSON (up to the Discord modal's 4,000-character limit) with a preview, structural validation, skip/replace conflict handling, stale-preview protection, backup, and history snapshot.
 - Review structured issue reports and resolve a report by number.
 
-Admin actions re-check permissions when submitted. Recipe editing, backup, exports, reports, validation, and history can be granted to approved staff roles; changing staff roles and importing JSON require Manage Server. Every recipe-data change creates a timestamped backup and a history snapshot before saving. Automatic backups run at startup and every 24 hours; up to 25 timestamped backup files are retained. Admins can download the newest backup from the admin menu; keep a copy outside Discloud because host-side rebuilds or app replacement may not preserve local runtime files. The latest 30 reversible history snapshots are retained. Issue reports are capped at 500 and usage analytics retain at most 100 search terms and 50 table counters. Recipe tables and recipes receive stable IDs when data is loaded and saved.
+Admin tools are available to all members who can access the menu. Control slash-command access with Discord channel permissions and Integration command permissions; the bot does not enforce a separate staff-role gate. Every recipe-data change creates a timestamped backup and a history snapshot before saving. Automatic backups run at startup and every 24 hours; up to 25 timestamped backup files are retained. Admins can download the newest backup from the admin menu; keep a copy outside Discloud because host-side rebuilds or app replacement may not preserve local runtime files. The latest 30 reversible history snapshots are retained. Issue reports are capped at 500 and usage analytics retain at most 100 search terms and 50 table counters. Recipe tables and recipes receive stable IDs when data is loaded and saved.
 
 For ingredient input, use comma-separated entries such as `Plastic bag x2, Powder x1`. Repeated ingredient entries are intentionally preserved and never deduplicated.
 
-Admin edits are written to `crafting-data.json`, a runtime override separate from source `recipes.json`. Writes use a same-directory temporary file, flush to disk, and atomically replace the prior JSON file; concurrent in-process writes are serialized. Corrupt JSON is reported and preserved instead of silently replaced with empty defaults. Use the Export option after making changes and keep the exported file somewhere safe; runtime files, staff-role settings, and backups are stored on the Discloud app filesystem. That filesystem may not survive every host-side rebuild or app replacement, so download exports/backups and keep an external copy.
+Admin edits are written to `crafting-data.json`, a runtime override separate from source `recipes.json`. Writes use a same-directory temporary file, flush to disk, and atomically replace the prior JSON file; concurrent in-process writes are serialized. Corrupt JSON is reported and preserved instead of silently replaced with empty defaults. Use the Export option after making changes and keep the exported file somewhere safe; runtime files and backups are stored on the Discloud app filesystem. That filesystem may not survive every host-side rebuild or app replacement, so download exports/backups and keep an external copy.
 
-## Old slash commands
+## Command registration
 
-The bot now syncs only the single global `/crafting` command. On startup it also clears legacy guild-specific command registrations in servers the bot is connected to. Discord may take up to an hour to remove old global command suggestions from every client; restarting Discord or refreshing the client can help.
+The bot syncs the five current global slash commands listed above. On startup it also clears legacy guild-specific command registrations in servers the bot is connected to. Discord may take up to an hour to remove old global command suggestions from every client; restarting Discord or refreshing the client can help.
 
 Do not delete and reinvite the bot just to refresh commands.
 
@@ -77,7 +85,7 @@ Do not delete and reinvite the bot just to refresh commands.
 - `enhancements.py` — production chains, inventory and multi-recipe planning, advanced search, comparisons, imports, analytics, validation, typo-tolerant matching, and CSV/Excel exports.
 - `inventories.json` — private per-server/per-player saved stock (runtime data).
 - `history.json` — reversible administrator change snapshots, created when the first change is made.
-- `bot.py` — the one slash command, dropdown menus, admin controls, usage tracking, reports, and logging.
+- `bot.py` — slash commands, dropdown menus, chat lookups, information pages, admin tools, usage tracking, reports, and logging.
 
 Always verify recipes against the current server because resource configurations can change.
 
@@ -108,8 +116,8 @@ This is a FiveM roleplay game reference only, not real-world instructions.
 - **Saved inventory backup:** In `/crafting` → My saved inventory, use Export backup to download a JSON file. Restore backup accepts the JSON contents pasted into the restore modal. Keep exports outside Discloud.
 - **Inventory-aware crafting assistant:** In a server channel, use `!what can I craft: Item x10, Other Item x5`. It reports recipes that the supplied stock can craft, based only on the active server recipe directory.
 - **Shareable shopping lists:** The recipe shopping list result includes a button to post the calculated list into the current channel.
-- **Ingredient aliases:** Manage Server / approved crafting staff → Admin tools → Manage ingredient aliases. Enter one mapping per line, such as `weed => Clean Weed Bud`. Aliases only affect search; saved ingredient and recipe names are not renamed.
-- **Staff audit log:** Admin tools → Staff activity audit log shows recent tracked recipe, alias, inventory and profile actions. The log is bounded to the latest 1,000 entries.
+- **Ingredient aliases:** Admin tools → Manage ingredient aliases. Enter one mapping per line, such as `weed => Clean Weed Bud`. Aliases only affect search; saved ingredient and recipe names are not renamed.
+- **Activity audit log:** Admin tools → Activity audit log shows recent tracked recipe, alias, inventory and profile actions. The log is bounded to the latest 1,000 entries.
 - **Health check:** Admin tools → System health check shows bot readiness, directory counts, backup count and runtime file presence.
 - **Server recipe profiles:** Admin tools → Create server recipe profile copies the current directory into a profile for that Discord server and activates it. Switch server recipe profile activates another existing profile. Recipe edits and imports are saved to the active profile. Profiles are runtime data and are excluded from Git.
 - **Separate server data:** A server without an active profile continues using the shared base recipe directory. Create a profile before making server-specific recipe changes.
