@@ -1332,15 +1332,15 @@ async def on_message(message: discord.Message):
         embed = discord.Embed(
             title="🧪 Meth Production Calculator",
             description=(
-                f"**Pseudoephedrine available:** {meth_result['pseudoephedrine']:,}\\n"
-                f"**Meth batches possible:** {meth_result['batches']:,}\\n"
+                f"**Pseudoephedrine available:** {meth_result['pseudoephedrine']:,}\n"
+                f"**Meth batches possible:** {meth_result['batches']:,}\n"
                 f"**Unused Pseudoephedrine:** {meth_result['leftover_pseudoephedrine']:,}"
             ),
             color=COLOR,
         )
         if meth_result["ingredients"]:
             ingredient_lines = [f"• **{name}:** {quantity:,}" for name, quantity in meth_result["ingredients"].items()]
-            embed.add_field(name="Ingredients required", value="\\n".join(ingredient_lines), inline=False)
+            embed.add_field(name="Ingredients required", value="\n".join(ingredient_lines), inline=False)
         else:
             embed.add_field(name="Ingredients required", value="You need 4x Pseudoephedrine for each batch.", inline=False)
         embed.add_field(name="Reusable tool", value="• **Gas Mask:** 1 (not consumed)", inline=False)
