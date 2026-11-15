@@ -1698,6 +1698,14 @@ def usable_embed():
         value="• **Lean** — 1x Promethazine-Codeine Syrup + 1x Sprunk + 2x Styrofoam Cup",
         inline=False,
     )
+    embed.add_field(
+        name="🧴 2L Plastic Bottle",
+        value=(
+            "• **Meth** — 4x Pseudoephedrine + 1x Ammonia + 1x Sodium Hydroxide (Lye) + 1x 2L Plastic Bottle\n"
+            "  **Tool (not consumed):** 1x Gas Mask"
+        ),
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • USABLE ITEM DIRECTORY")
     return embed
 
