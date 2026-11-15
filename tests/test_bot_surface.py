@@ -25,8 +25,8 @@ def _commands(path):
     return found
 
 
-def test_only_dashboard_is_registered_as_the_public_slash_command():
-    assert _commands("bot.py") == ["dashboard"]
+def test_dashboard_and_explicit_utility_admin_commands_are_registered():
+    assert set(_commands("bot.py")) == {"dashboard", "moonshine", "setrole"}
 
 
 def test_all_features_are_in_private_dropdown_menus():
@@ -244,3 +244,27 @@ def test_chat_message_handler_exposes_related_table_search():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert "related_table_search" in source
     assert "Related crafting tables:" in source
+
+
+
+def test_weed_growing_calculator_returns_both_systems_and_correct_shop_costs():
+    from enhancements import calculate_weed_growing_requirements
+
+    result = calculate_weed_growing_requirements("How much to grow 100 weed plants?")
+    assert result["plants"] == 100
+    assert result["systems"]["smoke"]["items"]["Spring Water"] == 100
+    assert result["systems"]["smoke"]["items"]["Flower Pot"] == 100
+    assert result["systems"]["smoke"]["items"]["Trowel"] == 1
+    assert result["systems"]["smoke"]["total"] == 37615
+    assert result["systems"]["grape"]["items"]["Bloom Booster"] == 100
+    assert result["systems"]["grape"]["total"] == 40615
+
+
+def test_weed_growing_calculator_omits_flower_pots_for_grass_planting():
+    from enhancements import calculate_weed_growing_requirements
+
+    result = calculate_weed_growing_requirements("How much to grow 100 weed plants in grass?")
+    assert "Flower Pot" not in result["systems"]["smoke"]["items"]
+    assert "Flower Pot" not in result["systems"]["grape"]["items"]
+    assert result["systems"]["smoke"]["total"] == 12615
+    assert result["systems"]["grape"]["total"] == 15615
