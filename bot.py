@@ -1702,7 +1702,9 @@ def locations_embed():
     embed.add_field(
         name="2000s Postal Codes — Equipment & Locations",
         value=(
-            "• **2006 — Meth Equipment:** Meth cooking station, meth RV cooking kit, and Etanol Distiller. Purchase equipment here; original note was cut off.\n"
+            "• **2006 — Meth Cooking Station:** $15,000.\n"
+            "• **2006 — RV Meth Cooking Kit:** $10,000.\n"
+            "• **2006 — Ethanol Distiller:** $25,000.\n"
             "• **2006 — Propane:** Also listed as a propane buy/sell postal in the earlier location notes.\n"
             "• **Grapeseed Airport — Hangar:** Weed cleaning table."
         ),
