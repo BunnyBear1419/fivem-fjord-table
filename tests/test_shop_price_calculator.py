@@ -86,3 +86,29 @@ def test_rifle_ammo_display_names_match_the_saved_shop_catalog():
         assert result["item"] == item
         assert result["unit_price"] == price
         assert result["shop"] == "Weapon & Ammo Store"
+
+
+
+def test_head_shop_price_lookup_covers_all_fifteen_saved_items():
+    expected = {
+        "Cookie dough": 75,
+        "Chocolate chips": 50,
+        "Baking soda": 10,
+        "Grapeseed Oil": 25,
+        "Plastic bag": 5,
+        "Styrofoam Cup": 15,
+        "2L Plastic Bottle": 5,
+        "Aluminum Foil": 10,
+        "Art papers": 150,
+        "Nitrous Oxide Charger": 15,
+        "Balloon": 5,
+        "Cigarette": 5,
+        "Weed papers": 30,
+        "Pipe": 10,
+        "Cheesecloth": 5,
+    }
+    for item, price in expected.items():
+        result = calculate_shop_price_query(f"how much is {item}?")
+        assert result["item"] == item
+        assert result["unit_price"] == price
+        assert result["shop"] == "Head Shop — Postal 3057"
