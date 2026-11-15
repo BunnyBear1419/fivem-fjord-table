@@ -79,3 +79,24 @@ def test_all_ingredient_directory_groups_exact_names_and_preserves_occurrences()
     assert document.count("requires ×") == 3
     embed = ingredient_directory_embed(data)
     assert embed.fields
+
+
+
+def test_ingredient_lookup_includes_non_consumed_tool_requirements():
+    from crafting import find_tool_usage, ingredient_usage_embed
+
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Widget", "ingredients": [["Wire", 2]], "tools": ["Press"]},
+        {"name": "Other Widget", "ingredients": [["Bolt", 1]], "tools": ["Press"]},
+    ]}]}
+    matches = find_tool_usage(data, "press")
+    assert matches == [{
+        "table": "Bench",
+        "recipes": [
+            {"recipe": "Widget", "tool": "press", "occurrences": 1},
+            {"recipe": "Other Widget", "tool": "press", "occurrences": 1},
+        ],
+    }]
+    embed = ingredient_usage_embed(data, "Press")
+    assert any(field.name == "Required as a tool: Bench" for field in embed.fields)
+    assert "not consumed" in next(field.value for field in embed.fields if field.name == "Required as a tool: Bench")
