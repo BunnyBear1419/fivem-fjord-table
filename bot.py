@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import re
 import threading
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -37,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_meth_requirements, calculate_weed_growing_requirements,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1322,34 +1323,6 @@ async def on_message(message: discord.Message):
         await message.reply(embed=embed, mention_author=False)
         return
 
-    meth_result = calculate_meth_requirements(query)
-    if meth_result is not None:
-        if meth_result.get("error"):
-            await message.reply(meth_result["error"], mention_author=False)
-            return
-        embed = discord.Embed(
-            title="🧮 Meth Production Calculator",
-            description=(
-                f"**Pseudoephedrine available:** {meth_result['pseudoephedrine']:,}\n"
-                f"**Meth batches / estimated output:** {meth_result['batches']:,}"
-            ),
-            color=COLOR,
-        )
-        ingredient_lines = [
-            f"• **{name}:** {quantity:,}"
-            for name, quantity in meth_result["other_ingredients"].items()
-        ]
-        embed.add_field(name="Other ingredients required", value="\\n".join(ingredient_lines), inline=False)
-        embed.add_field(name="Tool (not consumed)", value=", ".join(meth_result["tools"]), inline=False)
-        if meth_result["leftover_pseudoephedrine"]:
-            embed.add_field(
-                name="Leftover",
-                value=f"{meth_result['leftover_pseudoephedrine']}x Pseudoephedrine — not enough for another batch.",
-                inline=False,
-            )
-        embed.set_footer(text="FJORD CARTEL • In-game recipe estimate")
-        await message.reply(embed=embed, mention_author=False)
-        return
 
     raw_cocaine_result = calculate_raw_cocaine_requirements(query)
     if raw_cocaine_result is not None:
@@ -1405,6 +1378,104 @@ async def on_message(message: discord.Message):
 
     if bot.recipe_data is None:
         await message.reply("The crafting directory is still loading. Try again shortly.", mention_author=False)
+        return
+
+    data = get_guild_recipe_data(message.guild.id)
+    lowered = query.casefold()
+
+    # Postal/location questions search the same saved directory shown by /locations.
+    postal_match = re.search(r"\\b(\\d{3,5})\\b", query)
+    asks_location = postal_match and any(word in lowered for word in ("where", "what", "postal", "location", "at "))
+    if asks_location:
+        postal = postal_match.group(1)
+        directory = locations_embed()
+        found = []
+        for field in directory.fields:
+            combined = f"{field.name}\\n{field.value}"
+            if re.search(r"(?<!\\d)" + re.escape(postal) + r"(?!\\d)", combined):
+                found.append(field)
+        if found:
+            embed = discord.Embed(title=f"📍 Saved location: Postal {postal}", color=COLOR)
+            for field in found[:8]:
+                embed.add_field(name=field.name[:256], value=field.value[:1024], inline=False)
+            embed.set_footer(text="FJORD CARTEL • Saved location directory")
+            await message.reply(embed=embed, mention_author=False)
+            return
+        record_usage("no_result", query)
+        await message.reply(f"I couldn't find Postal **{postal}** in the saved location directory. I won't guess its location.", mention_author=False)
+        return
+
+    # Questions about where an ingredient is used / what recipes use it.
+    usage_markers = ("where is", "where's", "what uses", "which recipes use", "where do i use", "used in")
+    if any(marker in lowered for marker in usage_markers):
+        ingredient_query = query
+        for phrase in ("where is ", "where's ", "what uses ", "which recipes use ", "where do i use "):
+            ingredient_query = re.sub(r"^" + re.escape(phrase), "", ingredient_query, flags=re.IGNORECASE)
+        ingredient_query = re.sub(r"\\b(used in|used|use|at|the)\\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
+        if ingredient_query:
+            embed = ingredient_usage_embed(data, ingredient_query)
+            if embed.description and "No exact ingredient match" not in embed.description:
+                await message.reply(embed=embed, mention_author=False)
+                return
+            # Try a typo-tolerant ingredient match, but label it as a suggestion.
+            suggestions = chat_recipe_search(data, ingredient_query, limit=3)
+            if suggestions and any(item.get("match_label","").startswith("Closest ingredient") for item in suggestions):
+                lines = [f"• **{item['ingredients'][0][0]}** — {item['recipe']} ({item['table']})" for item in suggestions]
+                await message.reply("I couldn't find that exact ingredient. Closest saved ingredient matches:\\n" + "\\n".join(lines), mention_author=False)
+                return
+
+    # Generic batch shopping list: !what do I need for 10 [recipe]?
+    batch_match = re.search(r"\\b(\\d[\\d,]*)\\s*(?:x\\s*)?(?:batches?\\s+(?:of\\s+)?)?(.+)$", query, re.IGNORECASE)
+    asks_requirements = any(word in lowered for word in ("what do i need", "ingredients for", "shopping list for", "materials for", "how many ingredients", "make "))
+    if batch_match and asks_requirements and any(word in lowered for word in ("need", "ingredients", "shopping", "materials", "make")):
+        batch_count = int(batch_match.group(1).replace(",", ""))
+        target_text = batch_match.group(2).strip(" ?.! ")
+        if 1 <= batch_count <= 100000 and target_text:
+            matches = chat_recipe_search(data, target_text, limit=4)
+            exact = [m for m in matches if m.get("score", 0) >= 0.90]
+            if len(exact) == 1:
+                match = exact[0]
+                totals = {}
+                for item, amount in match.get("ingredients", []):
+                    totals[item] = totals.get(item, 0) + int(amount) * batch_count
+                embed = discord.Embed(title=f"🧾 Shopping list: {batch_count:,} × {match['recipe']}", color=COLOR)
+                embed.add_field(name="Crafting table", value=match["table"], inline=False)
+                embed.add_field(name="Ingredients required", value="\\n".join(f"• **{name}:** {amount:,}" for name, amount in totals.items())[:1024] or "No ingredients recorded.", inline=False)
+                if match.get("tools"):
+                    embed.add_field(name="Tools (not consumed)", value=", ".join(match["tools"]), inline=False)
+                embed.set_footer(text="Calculated from the saved recipe directory • Tools are not multiplied")
+                await message.reply(embed=embed, mention_author=False)
+                return
+            if len(exact) > 1 or matches:
+                names = "\\n".join(f"• **{m['recipe']}** — {m['table']}" for m in matches[:4])
+                await message.reply("I found multiple possible recipes. Please use the exact recipe name:\\n" + names, mention_author=False)
+                return
+
+    # Inventory-based batch calculator works for every saved recipe, not one hard-coded item.
+    stock_match = re.search(r"\\bwith\\s*:?\\s*(.+)$", query, re.IGNORECASE)
+    if stock_match and any(word in lowered for word in ("how many", "how much", "can i make", "can i craft", "make from")):
+        try:
+            stock = parse_inventory(stock_match.group(1))
+        except ValueError as exc:
+            await message.reply(f"Inventory format error: {exc}", mention_author=False)
+            return
+        possible = []
+        for table in data.get("tables", []):
+            for recipe in table.get("recipes", []):
+                required = {}
+                for item, amount in recipe.get("ingredients", []):
+                    required[item] = required.get(item, 0) + int(amount)
+                if not required:
+                    continue
+                batches = min((stock.get(item, 0) // amount for item, amount in required.items()), default=0)
+                if batches:
+                    possible.append((batches, recipe.get("name", "Unknown"), table.get("name", "Unknown")))
+        possible.sort(key=lambda row: (-row[0], row[1].casefold()))
+        if possible:
+            lines = [f"• **{name}** — {count:,} batch(es) · {table}" for count, name, table in possible[:20]]
+            await message.reply("**Recipes you can make with that inventory:**\\n" + "\\n".join(lines), mention_author=False)
+        else:
+            await message.reply("Your listed stock does not cover a complete saved recipe. Try adding more inventory or check /crafting.", mention_author=False)
         return
 
     related_prefixes = ("what tables", "which tables", "tables related", "related tables", "what table", "which table")
