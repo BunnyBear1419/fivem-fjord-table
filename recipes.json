@@ -3382,14 +3382,7 @@
           "xp": 10,
           "source": "User supplied crafting bench screenshot notes",
           "id": "recipe_10060_0020"
-        }
-      ],
-      "id": "table_013"
-    },
-    {
-      "id": "table_014",
-      "name": "Chop Shop",
-      "recipes": [
+        },
         {
           "name": "Repair Kit",
           "ingredients": [
@@ -3409,8 +3402,15 @@
           "tools": [],
           "review": "User-provided FiveM recipe",
           "source": "User supplied text",
-          "id": "table_014_0001"
-        },
+          "id": "recipe_10060_repair_kit"
+        }
+      ],
+      "id": "table_013"
+    },
+    {
+      "id": "table_014",
+      "name": "Chop Shop",
+      "recipes": [
         {
           "name": "Bank Card",
           "ingredients": [
@@ -3437,7 +3437,7 @@
           "id": "table_014_0002"
         }
       ],
-      "description": "The Welding Machine is where you sell car parts and receive regular materials."
+      "description": "The Welding Machine is where you sell car parts and receive regular materials. The Printer is used to craft Bank Cards."
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
