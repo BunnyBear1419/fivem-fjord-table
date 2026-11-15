@@ -380,6 +380,43 @@ def chat_recipe_search(data: dict[str, Any], query: str, limit: int = 3):
     return ingredient_matches[:limit]
 
 
+
+def parse_usable_item_sections(sections: list[tuple[str, str]]):
+    """Convert the saved Usable Items display sections into searchable recipe tables."""
+    grouped = {}
+    for raw_title, raw_value in sections:
+        section = re.sub(r"^[^A-Za-z0-9]+", "", str(raw_title or "")).strip()
+        section = re.sub(r"\\s+—\\s+Pill Recipes \\(\\d+/\\d+\\)$", "", section).strip()
+        if not section:
+            continue
+        table_name = f"Usable Item — {section}"
+        recipes = grouped.setdefault(table_name, [])
+        current_recipe = None
+        for raw_line in str(raw_value or "").splitlines():
+            line = raw_line.strip()
+            recipe_match = re.match(r"• \\*\\*(.+?)\\*\\* — (.+)$", line)
+            if recipe_match:
+                recipe_name, ingredient_text = recipe_match.groups()
+                ingredients = []
+                for part in re.split(r"\\s+\\+\\s+", ingredient_text):
+                    ingredient_match = re.fullmatch(r"\\s*(\\d+)\\s*x\\s*(.+?)\\s*", part)
+                    if ingredient_match:
+                        ingredients.append([ingredient_match.group(2).strip(), int(ingredient_match.group(1))])
+                if ingredients:
+                    current_recipe = {"name": recipe_name.strip(), "ingredients": ingredients, "tools": []}
+                    recipes.append(current_recipe)
+                else:
+                    current_recipe = None
+            elif current_recipe and "Tool (not consumed)" in line:
+                for quantity, tool_name in re.findall(r"(\\d+)\\s*x\\s*([^,+]+)", line):
+                    current_recipe["tools"].append(tool_name.strip())
+    return [
+        {"name": table_name, "recipes": recipes}
+        for table_name, recipes in grouped.items()
+        if recipes
+    ]
+
+
 def related_table_search(data: dict[str, Any], query: str, limit: int = 8):
     """Find tables related to broad topics, listing only saved recipes and ingredients."""
     cleaned = _normalize_chat_search(query)
