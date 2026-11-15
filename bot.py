@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1335,6 +1335,21 @@ async def on_message(message: discord.Message):
     if query.casefold() in {"help", "crafting"}:
         await bot.process_commands(message)
         return
+    price_result = calculate_shop_price_query(query)
+    if price_result is not None:
+        if price_result.get("error"):
+            await message.reply(price_result["error"], mention_author=False)
+            return
+        embed = discord.Embed(title="🧮 Shop Price Calculator", color=COLOR)
+        embed.add_field(name="Item", value=price_result["item"], inline=True)
+        embed.add_field(name="Shop", value=price_result["shop"], inline=True)
+        embed.add_field(name="Quantity", value=f"{price_result['quantity']:,}", inline=True)
+        embed.add_field(name="Price per item", value=f"${price_result['unit_price']:,}", inline=True)
+        embed.add_field(name="Total cost", value=f"**${price_result['total']:,}**", inline=True)
+        embed.set_footer(text="FJORD CARTEL • Prices from the Shops directory")
+        await message.reply(embed=embed, mention_author=False)
+        return
+
     if bot.recipe_data is None:
         await message.reply("The crafting directory is still loading. Try again shortly.", mention_author=False)
         return
