@@ -3440,6 +3440,249 @@
         }
       ],
       "description": "The Chop Shop is a hidden interior business with three workstations: the Welding Machine is where you sell car parts and receive regular materials, the Printer is used to craft Bank Cards, and the Crafting Bench is used to craft Repair Kits."
+    },
+    {
+      "name": "Reflux Rig",
+      "recipes": [
+        {
+          "name": "Item Type 1",
+          "ingredients": [
+            [
+              "Crude Substance 1",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 2",
+          "ingredients": [
+            [
+              "Crude Substance 2",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 3",
+          "ingredients": [
+            [
+              "Crude Substance 3",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 4",
+          "ingredients": [
+            [
+              "Crude Substance 4",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 5",
+          "ingredients": [
+            [
+              "Crude Substance 5",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 6",
+          "ingredients": [
+            [
+              "Crude Substance 6",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 7",
+          "ingredients": [
+            [
+              "Crude Substance 7",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 8",
+          "ingredients": [
+            [
+              "Crude Substance 8",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 9",
+          "ingredients": [
+            [
+              "Crude Substance 9",
+              1
+            ],
+            [
+              "Solvent A",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 10",
+          "ingredients": [
+            [
+              "Crude Substance 10",
+              1
+            ],
+            [
+              "Solvent B",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 11",
+          "ingredients": [
+            [
+              "Crude Substance 11",
+              1
+            ],
+            [
+              "Solvent B",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 12",
+          "ingredients": [
+            [
+              "Crude Substance 12",
+              1
+            ],
+            [
+              "Solvent B",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 13",
+          "ingredients": [
+            [
+              "Crude Substance 13",
+              1
+            ],
+            [
+              "Reagent C",
+              1
+            ],
+            [
+              "Filter Medium",
+              1
+            ]
+          ]
+        },
+        {
+          "name": "Item Type 14",
+          "ingredients": [
+            [
+              "Precursor D",
+              1
+            ],
+            [
+              "Reagent E",
+              1
+            ],
+            [
+              "Solvent B",
+              1
+            ]
+          ]
+        }
+      ]
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
