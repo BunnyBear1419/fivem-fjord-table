@@ -190,7 +190,7 @@ class CraftingDirectoryView(SafeView):
             return discord.Embed(title="Fjord Cartel Information", description="No crafting tables have been added yet.", color=discord.Color.orange())
         table = self.tables[self.table_index]
         pages = max(1, (len(table.get("recipes", [])) + 24) // 25)
-        embed = discord.Embed(title="⚔️ Fjord Cartel Information", description=f"**Table:** {table['name']}\n**Recipes:** {len(table.get('recipes', []))}\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(24, 112, 66))
+        embed = discord.Embed(title="⚔️ Fjord Cartel Information", description=f"**Table:** {table['name']}\n" + (f"{table['description']}\n\n" if table.get("description") else "") + f"**Recipes:** {len(table.get('recipes', []))}\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(24, 112, 66))
         table_pages = max(1, (len(self.tables) + 24) // 25)
         embed.set_footer(text=f"Table page {self.table_page + 1}/{table_pages} • Recipe page {self.recipe_page + 1}/{pages} • Private menu")
         return embed
