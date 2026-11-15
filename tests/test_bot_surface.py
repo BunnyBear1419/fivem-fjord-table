@@ -38,7 +38,9 @@ def test_all_features_are_in_private_dropdown_menus():
         assert feature in source
     for action in ("add_table", "add_recipe", "edit_recipe", "remove_recipe", "backup", "export", "export_csv", "export_xlsx", "validate", "history", "restore_history", "stats", "reports", "resolve_report"):
         assert f'"{action}"' in source
-    assert "Manage Server permission or an approved crafting staff role" in source
+    assert "Manage Server permission or an approved crafting staff role" not in source
+    assert "Configure staff roles" not in source
+    assert "StaffRolesModal" not in source
 
 
 
@@ -274,13 +276,17 @@ def test_weed_growing_calculator_omits_flower_pots_for_grass_planting():
 
 
 
-def test_discord_integration_controls_slash_command_access_without_internal_role_gate():
+def test_bot_has_no_internal_role_or_guild_permission_gates():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert "Discord Server Settings > Integrations" in source
-    assert "access_roles_for_guild" not in source
-    assert "approved Fjord Cartel access role" not in source
+    for removed in ("access_roles_for_guild", "can_manage_crafting", "is_guild_admin",
+                    "PERMISSIONS_FILE", "StaffRolesModal", "Configure staff roles",
+                    "Manage Server permission", "approved crafting staff role",
+                    "guild_permissions", "role_ids"):
+        assert removed not in source
     assert 'name="setrole"' not in source
     assert 'name="removerole"' not in source
+    assert "Admin tools" in source
+    assert 'value="admin"' in source
 
 
 def test_prefix_lookups_are_not_mistaken_for_discord_integration_commands():
