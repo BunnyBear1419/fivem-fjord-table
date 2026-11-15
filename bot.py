@@ -1686,36 +1686,64 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
-        name="⛽ Propane Buy & Sell — Postals 1012 & 2006",
+        name="1000s Postal Codes — Hidden Locations",
         value=(
-            "• **Empty Propane Container:** Sell for $300\\n"
-            "• **Propane:** Buy for $1,000"
+            "• **1012 — Propane:** Orange gas station next to the compound, near the garage. Buy propane for $1,000; sell empty container for $300.\\n"
+            "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. No permission to view; access and details unconfirmed.\\n"
+            "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\\n"
+            "• **1044 — Coke Run.**\\n"
+            "• **1056 — Empty Lab:** White side door, opposite the fishing guy. Possibly owned; ownership unconfirmed.\\n"
+            "• **1058 — Empty Lab.**\\n"
+            "• **1082 — Pick Wild Amanita.**"
         ),
         inline=False,
     )
     embed.add_field(
-        name="NPC Pickup Supplies — Postals 1017–1019",
-        value="• **NPC Pickup Supplies:** Available at Postals 1017–1019. You do not have permission to access this location.",
+        name="2000s Postal Codes — Equipment & Locations",
+        value=(
+            "• **2006 — Meth Equipment:** Meth cooking station, meth RV cooking kit, and Etanol Distiller. Purchase equipment here; original note was cut off.\\n"
+            "• **2006 — Propane:** Also listed as a propane buy/sell postal in the earlier location notes.\\n"
+            "• **Grapeseed Airport — Hangar:** Weed cleaning table."
+        ),
         inline=False,
     )
     embed.add_field(
-        name="Random Locked Door — Postals 1026–1050",
-        value="• **Random Locked Door:** Location varies within Postals 1026–1050.",
+        name="3000s Postal Codes — Hidden Locations",
+        value=(
+            "• **3042 — Shed:** Meth cooking / rubbing alcohol distiller; turns rubbing alcohol into ethanol.\\n"
+            "• **3048 — Recycling Yard:** Battery acid. Third-eye batteries on the ground to get acid; junked cars can also give lithium batteries or corroded batteries. Landmark wording needs verification.\\n"
+            "• **3051 — Side of Gas Station:** Gang paint ($200,000) / cleaner ($40,000)."
+        ),
         inline=False,
     )
     embed.add_field(
-        name="Empty Lab — Postals 1056–1058",
-        value="• **Empty Lab:** Postals 1056–1058.",
+        name="4000s Postal Codes — Hidden Locations",
+        value=(
+            "• **4001 — Prison tunnel.**\\n"
+            "• **4019 — Empty Lab.**"
+        ),
         inline=False,
     )
     embed.add_field(
-        name="Coke Run — Postal 1044",
-        value="• **Coke Run:** Postal 1044.",
+        name="9000s Postal Codes — Hidden Locations",
+        value=(
+            "• **9035:** Guy near the Long Pig Mini Market — gang spray and removal.\\n"
+            "• **9050:** Under the bridge — Hobo King / scrap collector.\\n"
+            "• **9093:** Near Postal 9187, side entrance on blue trailer — Coke lab.\\n"
+            "• **9120:** Hobo bowling.\\n"
+            "• **9142:** Behind Cluckin' Bell — sell stolen phones.\\n"
+            "• **9275:** Press machine.\\n"
+            "• **9366:** Empty Lab.\\n"
+            "• **9379:** Weed lab; reported inactive, no activity found."
+        ),
         inline=False,
     )
     embed.add_field(
-        name="Wild Amanita Pickup — Postal 1082",
-        value="• **Pick Wild Amanita:** Postal 1082.",
+        name="10000s Postal Codes — Crafting & Suppliers",
+        value=(
+            "• **10060 — Second Floor:** Crafting bench / scrapyard bench for thermites, drills, advanced lockpicks, and other items. Two references combined.\\n"
+            "• **10105 — Train Side:** Single person under the concrete walkway — liquid ingredient supplier, including distilled water."
+        ),
         inline=False,
     )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
