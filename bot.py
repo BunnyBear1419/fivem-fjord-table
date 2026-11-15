@@ -1532,11 +1532,11 @@ def shops_embed():
     embed.add_field(
         name="🥕 Farmers Market",
         value=(
-            "• **Bag of Corn:** $10\\n"
-            "• **Bag of Sugar:** $10\\n"
-            "• **Bag of Yeast:** $10\\n"
-            "• **Gallon of Water:** $5\\n"
-            "• **Empty Barrel:** $100\\n"
+            "• **Bag of Corn:** $10\n"
+            "• **Bag of Sugar:** $10\n"
+            "• **Bag of Yeast:** $10\n"
+            "• **Gallon of Water:** $5\n"
+            "• **Empty Barrel:** $100\n"
             "• **Empty Jug:** $50"
         ),
         inline=False,
@@ -1626,18 +1626,19 @@ def locations_embed():
     embed.add_field(
         name="Hangar/Barn — Postals 2029–2030 • Greenhouse Tables (6)",
         value=(
-            "• **Greenhouse tables: dry salvia**\\n"
-            "• **Greenhouse tables: dry kava**\\n"
-            "• **Greenhouse tables: dry kratom**\\n"
-            "• **Greenhouse tables: dry weed**\\n"
-            "• **Greenhouse tables: dry iboga**\\n"
+            "• **Greenhouse tables: dry salvia**\n"
+            "• **Greenhouse tables: dry kava**\n"
+            "• **Greenhouse tables: dry kratom**\n"
+            "• **Greenhouse tables: dry weed**\n"
+            "• **Greenhouse tables: dry iboga**\n"
             "• **Greenhouse tables: dry blue lotus**"
         ),
         inline=False,
     )
     embed.add_field(
-        name="Chemical Supplier — Postal 10105",
+        name="Chemical Supplier — Postal 10105 • Train Side",
         value=(
+            "Single person under the concrete walkway on the train side; sells liquid ingredients such as distilled water.\n\n"
             "**Acids & Bases (5 items)**\n"
             "• **Sodium Hydroxide (Lye):** $80 each\n"
             "• **Citric Acid:** $20 each\n"
@@ -1680,7 +1681,7 @@ def locations_embed():
     embed.add_field(
         name="Hidden Location • RVs — Postal 4024",
         value=(
-            "• **Cook Meth:** Use the RV location at Postal 4024.\\n"
+            "• **Cook Meth:** Use the RV location at Postal 4024.\n"
             "• **Other RVs/Campers:** Meth can also be cooked in any RV or Camper you find or purchase."
         ),
         inline=False,
@@ -1688,12 +1689,12 @@ def locations_embed():
     embed.add_field(
         name="1000s Postal Codes — Hidden Locations",
         value=(
-            "• **1012 — Propane:** Orange gas station next to the compound, near the garage. Buy propane for $1,000; sell empty container for $300.\\n"
-            "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. No permission to view; access and details unconfirmed.\\n"
-            "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\\n"
-            "• **1044 — Coke Run.**\\n"
-            "• **1056 — Empty Lab:** White side door, opposite the fishing guy. Possibly owned; ownership unconfirmed.\\n"
-            "• **1058 — Empty Lab.**\\n"
+            "• **1012 — Propane:** Orange gas station next to the compound, near the garage. Buy propane for $1,000; sell empty container for $300.\n"
+            "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. No permission to view; access and details unconfirmed.\n"
+            "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\n"
+            "• **1044 — Coke Run.**\n"
+            "• **1056 — Empty Lab:** White side door, opposite the fishing guy. Possibly owned; ownership unconfirmed.\n"
+            "• **1058 — Empty Lab.**\n"
             "• **1082 — Pick Wild Amanita.**"
         ),
         inline=False,
@@ -1701,8 +1702,8 @@ def locations_embed():
     embed.add_field(
         name="2000s Postal Codes — Equipment & Locations",
         value=(
-            "• **2006 — Meth Equipment:** Meth cooking station, meth RV cooking kit, and Etanol Distiller. Purchase equipment here; original note was cut off.\\n"
-            "• **2006 — Propane:** Also listed as a propane buy/sell postal in the earlier location notes.\\n"
+            "• **2006 — Meth Equipment:** Meth cooking station, meth RV cooking kit, and Etanol Distiller. Purchase equipment here; original note was cut off.\n"
+            "• **2006 — Propane:** Also listed as a propane buy/sell postal in the earlier location notes.\n"
             "• **Grapeseed Airport — Hangar:** Weed cleaning table."
         ),
         inline=False,
@@ -1710,8 +1711,8 @@ def locations_embed():
     embed.add_field(
         name="3000s Postal Codes — Hidden Locations",
         value=(
-            "• **3042 — Shed:** Meth cooking / rubbing alcohol distiller; turns rubbing alcohol into ethanol.\\n"
-            "• **3048 — Recycling Yard:** Battery acid. Third-eye batteries on the ground to get acid; junked cars can also give lithium batteries or corroded batteries. Landmark wording needs verification.\\n"
+            "• **3042 — Shed:** Meth cooking / rubbing alcohol distiller; turns rubbing alcohol into ethanol.\n"
+            "• **3048 — Recycling Yard:** Battery acid. Third-eye batteries on the ground to get acid; junked cars can also give lithium batteries or corroded batteries. Landmark wording needs verification.\n"
             "• **3051 — Side of Gas Station:** Gang paint ($200,000) / cleaner ($40,000)."
         ),
         inline=False,
@@ -1719,7 +1720,7 @@ def locations_embed():
     embed.add_field(
         name="4000s Postal Codes — Hidden Locations",
         value=(
-            "• **4001 — Prison tunnel.**\\n"
+            "• **4001 — Prison tunnel.**\n"
             "• **4019 — Empty Lab.**"
         ),
         inline=False,
@@ -1727,13 +1728,13 @@ def locations_embed():
     embed.add_field(
         name="9000s Postal Codes — Hidden Locations",
         value=(
-            "• **9035:** Guy near the Long Pig Mini Market — gang spray and removal.\\n"
-            "• **9050:** Under the bridge — Hobo King / scrap collector.\\n"
-            "• **9093:** Near Postal 9187, side entrance on blue trailer — Coke lab.\\n"
-            "• **9120:** Hobo bowling.\\n"
-            "• **9142:** Behind Cluckin' Bell — sell stolen phones.\\n"
-            "• **9275:** Press machine.\\n"
-            "• **9366:** Empty Lab.\\n"
+            "• **9035:** Guy near the Long Pig Mini Market — gang spray and removal.\n"
+            "• **9050:** Under the bridge — Hobo King / scrap collector.\n"
+            "• **9093:** Near Postal 9187, side entrance on blue trailer — Coke lab.\n"
+            "• **9120:** Hobo bowling.\n"
+            "• **9142:** Behind Cluckin' Bell — sell stolen phones.\n"
+            "• **9275:** Press machine.\n"
+            "• **9366:** Empty Lab.\n"
             "• **9379:** Weed lab; reported inactive, no activity found."
         ),
         inline=False,
@@ -1741,8 +1742,7 @@ def locations_embed():
     embed.add_field(
         name="10000s Postal Codes — Crafting & Suppliers",
         value=(
-            "• **10060 — Second Floor:** Crafting bench / scrapyard bench for thermites, drills, advanced lockpicks, and other items. Two references combined.\\n"
-            "• **10105 — Train Side:** Single person under the concrete walkway — liquid ingredient supplier, including distilled water."
+            "• **10060 — Second Floor:** Crafting bench / scrapyard bench for thermites, drills, advanced lockpicks, and other items. Two references combined."
         ),
         inline=False,
     )
@@ -1795,10 +1795,10 @@ def usable_embed():
     embed.add_field(
         name="💉 Syringe",
         value=(
-            "• **Meth syringe** — 5x Meth + 1x Syringe\\n"
-            "• **Crack syringe** — 5x Crack + 1x Syringe\\n"
-            "• **Heroin syringe** — 5x Heroin + 1x Syringe\\n"
-            "• **Krokodil Shot** — 1x Krokodil + 1x Syringe\\n"
+            "• **Meth syringe** — 5x Meth + 1x Syringe\n"
+            "• **Crack syringe** — 5x Crack + 1x Syringe\n"
+            "• **Heroin syringe** — 5x Heroin + 1x Syringe\n"
+            "• **Krokodil Shot** — 1x Krokodil + 1x Syringe\n"
             "• **Speedball** — 3x Heroin + 3x Raw Cocaine + 1x Syringe"
         ),
         inline=False,
