@@ -1698,6 +1698,11 @@ def locations_embed():
         value="• **Random Locked Door:** Location varies within Postals 1026–1050.",
         inline=False,
     )
+    embed.add_field(
+        name="Empty Lab — Postal 1056",
+        value="• **Empty Lab:** Postal 1056.",
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
