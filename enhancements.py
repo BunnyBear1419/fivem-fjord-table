@@ -88,6 +88,22 @@ SHOP_PRICE_CATALOG = [
     {"name": "Meth Cooking Station", "shop": "Hidden Location — Postal 2006", "price": 15000, "aliases": ("meth cooking station", "meth station")},
     {"name": "RV Meth Cooking Kit", "shop": "Hidden Location — Postal 2006", "price": 10000, "aliases": ("rv meth cooking kit", "meth rv cooking kit", "rv cooking kit")},
     {"name": "Ethanol Distiller", "shop": "Hidden Location — Postal 2006", "price": 25000, "aliases": ("ethanol distiller", "etanol distiller")},
+    {"name": "Meth Table", "shop": "Equipment Dealer — Postals 9275–9277", "price": 5000, "aliases": ("meth table",)},
+    {"name": "Weed Table", "shop": "Equipment Dealer — Postals 9275–9277", "price": 4000, "aliases": ("weed table",)},
+    {"name": "Coke Table", "shop": "Equipment Dealer — Postals 9275–9277", "price": 5000, "aliases": ("coke table", "cocaine table")},
+    {"name": "Chemistry Table", "shop": "Equipment Dealer — Postals 9275–9277", "price": 6500, "aliases": ("chemistry table",)},
+    {"name": "Pill Press", "shop": "Equipment Dealer — Postals 9275–9277", "price": 7500, "aliases": ("pill press",)},
+    {"name": "Reflux Rig", "shop": "Equipment Dealer — Postals 9275–9277", "price": 9000, "aliases": ("reflux rig",)},
+    {"name": "Extraction Bench", "shop": "Equipment Dealer — Postals 9275–9277", "price": 8000, "aliases": ("extraction bench",)},
+    {"name": "Glovebox", "shop": "Equipment Dealer — Postals 9275–9277", "price": 15000, "aliases": ("glovebox", "glove box")},
+    {"name": "Brewing Kettle", "shop": "Equipment Dealer — Postals 9275–9277", "price": 2500, "aliases": ("brewing kettle",)},
+    {"name": "Lab Freezer", "shop": "Equipment Dealer — Postals 9275–9277", "price": 4000, "aliases": ("lab freezer",)},
+    {"name": "Herb Drying Rack", "shop": "Equipment Dealer — Postals 9275–9277", "price": 2000, "aliases": ("herb drying rack",)},
+    {"name": "Grinding Station", "shop": "Equipment Dealer — Postals 9275–9277", "price": 3000, "aliases": ("grinding station",)},
+    {"name": "Capsule Filler", "shop": "Equipment Dealer — Postals 9275–9277", "price": 3500, "aliases": ("capsule filler",)},
+    {"name": "Burner Phone", "shop": "Equipment Dealer — Postals 9275–9277", "price": 500, "aliases": ("burner phone", "burner phones")},
+    {"name": "Tablet Die Set", "shop": "Equipment Dealer — Postals 9275–9277", "price": 1200, "aliases": ("tablet die set", "tablet die")},
+    {"name": "Hand Tablet Press", "shop": "Equipment Dealer — Postals 9275–9277", "price": 900, "aliases": ("hand tablet press", "tablet press")},
     {"name": "Cookie dough", "shop": "Head Shop — Postal 3057", "price": 75, "aliases": ("cookie dough", "cookie doughs")},
     {"name": "Chocolate chips", "shop": "Head Shop — Postal 3057", "price": 50, "aliases": ("chocolate chips", "chocolate chip")},
     {"name": "Baking soda", "shop": "Head Shop — Postal 3057", "price": 10, "aliases": ("baking soda",)},
@@ -842,7 +858,7 @@ def expanded_production_requirements(
         for recipe in table.get("recipes", []):
             key = str(recipe.get("name", "")).casefold().strip()
             if key:
-                producers[key].append((table, recipe))
+                producers[_normalize_chat_search(str(recipe.get("name", "")))].append((table, recipe))
 
     base_totals = defaultdict(int)
     expanded = []
