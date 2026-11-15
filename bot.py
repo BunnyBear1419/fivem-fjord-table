@@ -1667,8 +1667,31 @@ def locations_embed():
 def usable_embed():
     embed = discord.Embed(
         title="🎒 Fjord Cartel • Usable Items",
-        description="This directory is ready for items that can be used directly from a player's FiveM inventory. No items have been added yet.",
+        description="Items that can be used from a player's FiveM inventory, with the required materials.",
         color=COLOR,
+    )
+    embed.add_field(
+        name="🛍️ Plastic Bag",
+        value=(
+            "• **Meth bag** — 10x Meth + 1x Plastic bag\n"
+            "• **Cocaine bag** — 10x Raw Cocaine + 1x Plastic bag\n"
+            "• **Crack bag** — 10x Crack + 1x Plastic bag\n"
+            "• **Weed bag** — 10x Clean weed bud + 1x Plastic bag\n"
+            "• **Heroin bag** — 10x Heroin + 1x Plastic bag\n"
+            "• **Ketamine bag** — 10x Ketamine + 1x Plastic bag\n"
+            "• **Fentanyl bag** — 10x Fentanyl + 1x Plastic bag\n"
+            "• **Bag of Blue Crystal** — 10x Blue Crystal + 1x Plastic bag"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="🎨 Art Papers",
+        value=(
+            "• **LSD Tab** — 1x LSD Liquid + 1x Art papers\n"
+            "• **25I-NBOMe** — 1x NBOMe Solution + 1x Art papers\n"
+            "• **1P-LSD** — 1x 1P-LSD Solution + 1x Art papers"
+        ),
+        inline=False,
     )
     embed.set_footer(text="FJORD CARTEL • USABLE ITEM DIRECTORY")
     return embed
