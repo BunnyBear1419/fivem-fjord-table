@@ -1536,7 +1536,7 @@ def shops_embed():
 def locations_embed():
     embed = discord.Embed(
         title="📍 Fjord Cartel • Locations/Shops (Hidden)",
-        description="Saved location references for cartel members. Farm Supplier: Postals 2002–2003.",
+        description="Saved location references for cartel members. Farm Supplier: Postals 2002–2003 • Hangar/Barn: Postals 2029–2030.",
         color=COLOR,
     )
     embed.add_field(
@@ -1607,6 +1607,18 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
+        name="Hangar/Barn — Postals 2029–2030 • Greenhouse Tables (6)",
+        value=(
+            "• **Greenhouse tables: dry salvia**\\n"
+            "• **Greenhouse tables: dry kava**\\n"
+            "• **Greenhouse tables: dry kratom**\\n"
+            "• **Greenhouse tables: dry weed**\\n"
+            "• **Greenhouse tables: dry iboga**\\n"
+            "• **Greenhouse tables: dry blue lotus**"
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="Chemical Supplier — Postal 10105",
         value=(
             "**Acids & Bases (5 items)**\n"
@@ -1648,7 +1660,7 @@ def locations_embed():
         value="• **Filter Paper:** $10 each",
         inline=False,
     )
-    embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATION • POSTAL 10105")
+    embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
 
