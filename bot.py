@@ -1419,7 +1419,7 @@ async def on_message(message: discord.Message):
         ingredient_query = re.sub(r"\b(used in|used for|used|use|made|at|the|for|do)\b", " ", ingredient_query, flags=re.IGNORECASE).strip(" ?.! ")
         if ingredient_query:
             embed = ingredient_usage_embed(query_data, ingredient_query)
-            if embed.description and "No exact ingredient match" not in embed.description:
+            if embed.description and "No exact ingredient or tool-name matches" not in embed.description:
                 await message.reply(embed=embed, mention_author=False)
                 return
             # Try a typo-tolerant ingredient match, but label it as a suggestion.
@@ -2227,7 +2227,7 @@ def saved_information_matches(query: str):
         "where", "what", "whats", "how", "do", "does", "i", "you", "is", "are",
         "the", "a", "an", "to", "for", "me", "please", "can", "could", "tell",
         "about", "find", "get", "buy", "use", "used", "sell", "at", "in", "on",
-        "my", "your", "and", "of", "it", "this", "that", "item",
+        "my", "your", "and", "of", "it", "this", "that", "item", "located", "location", "postal", "postals", "code",
     }
     terms = [word for word in normalized.split() if len(word) > 1 and word not in ignored]
     if not terms:
