@@ -1699,8 +1699,8 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
-        name="Empty Lab — Postal 1056",
-        value="• **Empty Lab:** Postal 1056.",
+        name="Empty Lab — Postals 1056–1058",
+        value="• **Empty Lab:** Postals 1056–1058.",
         inline=False,
     )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
