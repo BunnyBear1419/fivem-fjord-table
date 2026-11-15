@@ -26,7 +26,7 @@ def _commands(path):
 
 
 def test_dashboard_and_explicit_utility_admin_commands_are_registered():
-    assert set(_commands("bot.py")) == {"dashboard", "crafting", "shops", "locations", "moonshine", "setrole"}
+    assert set(_commands("bot.py")) == {"dashboard", "crafting", "shops", "locations", "moonshine", "setrole", "removerole"}
 
 
 def test_all_features_are_in_private_dropdown_menus():
@@ -268,3 +268,13 @@ def test_weed_growing_calculator_omits_flower_pots_for_grass_planting():
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
     assert result["systems"]["smoke"]["total"] == 12615
     assert result["systems"]["grape"]["total"] == 15615
+
+
+
+def test_multiple_access_roles_are_supported_for_slash_and_chat_lookups():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "def access_roles_for_guild(guild_id)" in source
+    assert "role.id in allowed_role_ids" in source
+    assert 'name="removerole"' in source
+    assert 'configured[guild_key] = sorted(role_ids)' in source
+    assert "already has access" in source
