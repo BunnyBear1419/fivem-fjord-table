@@ -445,7 +445,7 @@ def test_usable_item_recipe_parser_keeps_tools_and_combines_hand_tablet_press_pa
     tables = parse_usable_item_sections([
         (
             "🧴 2L Water Bottle",
-            "• **Meth** — 4x Pseudoephedrine + 1x Ammonia + 1x 2L Water Bottle\\n"
+            "• **Meth** — 4x Pseudoephedrine + 1x Ammonia + 1x 2L Water Bottle\n"
             "  **Tool (not consumed):** 1x Gas Mask",
         ),
         (
