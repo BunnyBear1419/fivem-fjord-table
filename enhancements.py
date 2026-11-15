@@ -26,6 +26,7 @@ SHOP_PRICE_CATALOG = [
     {"name": "Snowball", "shop": "Weapon & Ammo Store", "price": 100, "aliases": ("snowball",)},
     {"name": "Bat", "shop": "Weapon & Ammo Store", "price": 250, "aliases": ("bat",)},
     {"name": "Knife", "shop": "Weapon & Ammo Store", "price": 250, "aliases": ("knife",)},
+    {"name": "Distilled Water", "shop": "Chemical Supplier — Postal 10105", "price": 20, "aliases": ("distilled water",)},
     {"name": "Lockpick", "shop": "Convenience Store", "price": 20, "aliases": ("lockpick", "lock picks")},
     {"name": "Jerry Can", "shop": "Convenience Store", "price": 200, "aliases": ("jerry can", "gas can")},
     {"name": "Outfit Bag", "shop": "Convenience Store", "price": 5000, "aliases": ("outfit bag",)},
@@ -68,7 +69,7 @@ def calculate_shop_price_query(query: str):
     if not quantity_match:
         return {"error": "Tell me how many you want, for example: !If I want 2000 45 ammo how much will I spend?"}
     quantity = int(quantity_match.group(1).replace(",", ""))
-    if quantity < 1 or quantity > 1_000_000_000:
+    if quantity is not None and (quantity < 1 or quantity > 1_000_000_000):
         return {"error": "Please enter a quantity between 1 and 1,000,000,000."}
 
     matches = []
@@ -93,7 +94,7 @@ def calculate_shop_price_query(query: str):
         "item": item["name"],
         "shop": item["shop"],
         "unit_price": item["price"],
-        "total": quantity * item["price"],
+        "total": quantity * item["price"] if quantity is not None else None,
     }
 
 def _normalize_chat_search(value: str) -> str:
