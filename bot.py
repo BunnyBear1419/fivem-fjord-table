@@ -1751,6 +1751,11 @@ def locations_embed():
         value="• **5000 — Morning Glory:** Pick Morning Glory Seed Pods.",
         inline=False,
     )
+    embed.add_field(
+        name="8000s Postal Codes — Street Pickups",
+        value="• **8040 — Vials & Syringes:** Search black trash bags on the street.",
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
