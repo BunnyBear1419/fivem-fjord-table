@@ -157,9 +157,9 @@ SHOP_PRICE_CATALOG = [
 def calculate_meth_requirements(query: str):
     """Calculate Meth batches from the saved Usable Items recipe."""
     raw = str(query or "").strip()
-    if not re.search(r"\\bmeth\\b", raw, re.IGNORECASE) or not re.search(r"\\bpseudoephedrine\\b", raw, re.IGNORECASE):
+    if not re.search(r"\bmeth\b", raw, re.IGNORECASE) or not re.search(r"\bpseudoephedrine\b", raw, re.IGNORECASE):
         return None
-    match = re.search(r"([0-9][0-9,]*)\\s*(?:x\\s*)?pseudoephedrine\\b", raw, re.IGNORECASE)
+    match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?pseudoephedrine\b", raw, re.IGNORECASE)
     if not match:
         return None
     pseudoephedrine = int(match.group(1).replace(",", ""))
