@@ -1705,7 +1705,7 @@ def locations_embed():
             "• **1012 — Propane:** Orange gas station next to the compound, near the garage. Buy propane for $1,000; sell empty container for $300.\n"
             "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. No permission to view; access and details unconfirmed.\n"
             "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\n"
-            "• **1044 — Coke Run.**\n"
+            "• **Drug Runs — Mysterious Person:** Drug runs are marked on the map as \"Mysterious Person\".\n"
             "• **1056 — Empty Lab:** White side door, opposite the fishing guy. Possibly owned; ownership unconfirmed.\n"
             "• **1058 — Empty Lab.**\n"
             "• **1082 — Pick Wild Amanita.**"
