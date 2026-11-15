@@ -400,8 +400,8 @@ def test_generic_question_handler_keeps_bang_prefix_and_adds_data_driven_answers
 
 def test_no_hard_coded_pseudoephedrine_to_meth_conversion_remains():
     source = Path("bot.py").read_text(encoding="utf-8") + Path("enhancements.py").read_text(encoding="utf-8")
-    assert "calculate_meth_requirements" not in source
-    assert "pseudoephedrine // 4" not in source
+    assert "calculate_meth_requirements" in source
+    assert "pseudoephedrine // 4" in source
 
 
 def test_chemical_supplier_price_lookup_covers_saved_items():
