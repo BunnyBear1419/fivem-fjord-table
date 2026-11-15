@@ -37,7 +37,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1369,6 +1369,46 @@ async def on_message(message: discord.Message):
     if query.casefold() in {"help", "crafting"}:
         await bot.process_commands(message)
         return
+    weed_result = calculate_weed_growing_requirements(query)
+    if weed_result is not None:
+        if weed_result.get("error"):
+            await message.reply(weed_result["error"], mention_author=False)
+            return
+        lowered = query.casefold()
+        if any(term in lowered for term in ("system 1", "system one", "smoke on the water", "smoke on water")):
+            selected = [("smoke", weed_result["systems"]["smoke"])]
+        elif any(term in lowered for term in ("system 2", "system two", "grapeseed", "grape seed")):
+            selected = [("grape", weed_result["systems"]["grape"])]
+        else:
+            selected = [("smoke", weed_result["systems"]["smoke"]), ("grape", weed_result["systems"]["grape"])]
+        embed = discord.Embed(
+            title="🌱 Weed Growing Calculator",
+            description=(
+                f"**Plants:** {weed_result['plants']:,}\n"
+                f"**Planting in grass:** {'Yes — no Flower Pots needed' if weed_result['grass'] else 'No — Flower Pots included'}"
+            ),
+            color=COLOR,
+        )
+        for key, system in selected:
+            lines = []
+            for item, quantity in system["items"].items():
+                lines.append(f"• **{item}:** {quantity:,} — $" + f"{system['costs'][item]:,}")
+            location_lines = []
+            for location, items in system["locations"].items():
+                location_lines.append(f"**{location}:** {', '.join(items)}")
+            embed.add_field(
+                name=system["name"] + " — $" + f"{system['total']:,}",
+                value="\n".join(lines) + "\n\n**Where to buy**\n" + "\n".join(location_lines),
+                inline=False,
+            )
+            embed.add_field(name=system["name"] + " instructions", value=system["note"], inline=False)
+        if len(selected) == 2:
+            embed.set_footer(text="Mention System 1 / Smoke On The Water or System 2 / Grapeseed to show just one.")
+        else:
+            embed.set_footer(text="Water and reusable tools are counted as one purchase each; Flower Pots are omitted for grass planting.")
+        await message.reply(embed=embed, mention_author=False)
+        return
+
     raw_cocaine_result = calculate_raw_cocaine_requirements(query)
     if raw_cocaine_result is not None:
         if raw_cocaine_result.get("error"):
