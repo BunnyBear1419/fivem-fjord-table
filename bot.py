@@ -2083,6 +2083,15 @@ def locations_embed():
         inline=False,
     )
     embed.add_field(
+        name="10060 Crafting Bench — Data Review",
+        value=(
+            "Some items in the location notes include an additional '1 hidden material', but the exact item name is not recorded in the saved Crafting Bench recipes. "
+            "The Heist Drill recipe also uses the item name 'drill_bit', while the saved output is named 'Tungsten Drill Bit'. "
+            "These details are flagged for review rather than guessed."
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="5000s Postal Codes — Pickups",
         value="• **5000 — Morning Glory:** Pick Morning Glory Seed Pods.",
         inline=False,
@@ -2186,6 +2195,14 @@ def usable_embed():
             "• **BZP** — 1x BZP HCl + 1x Pill Binder\n"
             "• **Ecstasy pill** — 1x Ecstasy crystals + 1x Pill Binder\n"
             "• **Hydrocodone** — 1x Hydrocodone Bitartrate + 2x Acetaminophen + 1x Pill Binder"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="📝 Item Name Check",
+        value=(
+            "The Usable Items entry is named **2L Water Bottle**. The Head Shop price list is named **2L Plastic Bottle**. "
+            "The saved information does not confirm these are the same item, so their names and prices are kept separate."
         ),
         inline=False,
     )
