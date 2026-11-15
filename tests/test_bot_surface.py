@@ -92,8 +92,23 @@ def test_ingredient_lookup_is_available_from_main_menu():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert 'value="ingredient_lookup"' in source
     assert "IngredientLookupModal" in source
-    assert "ingredient_usage_embed(get_guild_recipe_data(interaction.guild_id), ingredient)" in source
+    assert "ingredient_usage_embed(include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)), ingredient)" in source
 
+
+
+def test_slash_command_recipe_tools_include_usable_item_recipes():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    for call in (
+        "search_embed(include_usable_item_recipes(",
+        "calculate_recipe_ingredients(include_usable_item_recipes(",
+        "inventory_plan(include_usable_item_recipes(",
+        "dependency_chain(include_usable_item_recipes(",
+        "expanded_production_requirements(",
+        "multi_recipe_plan(include_usable_item_recipes(",
+        "advanced_search(include_usable_item_recipes(",
+        "recipe_comparison(include_usable_item_recipes(",
+    ):
+        assert call in source
 
 
 def test_recipe_data_has_no_exact_duplicate_recipe_records():
