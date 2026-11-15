@@ -285,6 +285,31 @@ def find_ingredient_usage(data: dict[str, Any], ingredient_name: str):
     return matches
 
 
+def find_tool_usage(data: dict[str, Any], tool_name: str):
+    """Return exact-name non-consumed tool requirements, grouped by table and recipe."""
+    needle = tool_name.casefold().strip()
+    matches = []
+    if not needle:
+        return matches
+    for table in data.get("tables", []):
+        table_matches = []
+        for recipe in table.get("recipes", []):
+            tools = [
+                str(tool).strip()
+                for tool in (recipe.get("tools") or [])
+                if str(tool).casefold().strip() == needle
+            ]
+            if tools:
+                table_matches.append({
+                    "recipe": recipe.get("name", "Unnamed recipe"),
+                    "tool": tool_name.strip(),
+                    "occurrences": len(tools),
+                })
+        if table_matches:
+            matches.append({"table": table.get("name", "Unnamed table"), "recipes": table_matches})
+    return matches
+
+
 def find_exact_recipe_outputs(data: dict[str, Any], item_name: str):
     """Find recipes that produce an item with this exact name."""
     needle = item_name.casefold().strip()
@@ -303,16 +328,24 @@ def find_exact_recipe_outputs(data: dict[str, Any], item_name: str):
 
 
 def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discord.Embed:
-    """Build a cross-table report for one exact ingredient name."""
+    """Build a cross-table report for ingredient uses, tools, and recipe outputs."""
     matches = find_ingredient_usage(data, ingredient_name)
+    tool_matches = find_tool_usage(data, ingredient_name)
     total_recipes = sum(len(group["recipes"]) for group in matches)
     total_tables = len(matches)
+    total_tool_uses = sum(len(group["recipes"]) for group in tool_matches)
+    has_any_match = bool(matches or tool_matches)
+    summary = []
+    if matches:
+        summary.append(f"**{total_recipes} ingredient use(s)** across **{total_tables} table(s)**")
+    if tool_matches:
+        summary.append(f"**{total_tool_uses} non-consumed tool use(s)** across **{len(tool_matches)} table(s)**")
     embed = discord.Embed(
-        title=f"🧩 Ingredient lookup: {ingredient_name.strip()[:180]}",
+        title=f"🧩 Ingredient / Tool lookup: {ingredient_name.strip()[:180]}",
         description=(
-            f"Found **{total_recipes} recipe(s)** across **{total_tables} table(s)**."
-            if matches else
-            f"No exact ingredient-name matches were found for **{ingredient_name.strip()}**."
+            " · ".join(summary) + "."
+            if has_any_match else
+            f"No exact ingredient or tool-name matches were found for **{ingredient_name.strip()}**."
         ),
         color=discord.Color.from_rgb(24, 112, 66),
     )
@@ -333,11 +366,19 @@ def ingredient_usage_embed(data: dict[str, Any], ingredient_name: str) -> discor
             + (f" ({item['occurrences']} ingredient entries)" if item["occurrences"] > 1 else "")
             for item in group["recipes"][:8]
         ]
-        embed.add_field(name=f"Used at: {group['table']}"[:256], value="\n".join(lines)[:700] or "No uses recorded.", inline=False)
-    if len(matches) > 5:
-        embed.set_footer(text=f"Showing 5 of {len(matches)} tables. Download the ingredient directory for the complete listing.")
+        embed.add_field(name=f"Used as an ingredient: {group['table']}"[:256], value="\n".join(lines)[:700] or "No uses recorded.", inline=False)
+
+    for group in tool_matches[:5]:
+        lines = [
+            f"• **{item['recipe']}** requires **{ingredient_name.strip()}** (not consumed)"
+            for item in group["recipes"][:8]
+        ]
+        embed.add_field(name=f"Required as a tool: {group['table']}"[:256], value="\n".join(lines)[:700] or "No tool uses recorded.", inline=False)
+
+    if len(matches) > 5 or len(tool_matches) > 5:
+        embed.set_footer(text="Showing up to 5 tables per category. Browse the full directory for complete results.")
     else:
-        embed.set_footer(text="Exact ingredient match only • duplicate ingredient entries are preserved • Coca Leaf and Coca Leaves are treated separately")
+        embed.set_footer(text="Exact name match only • tools are not consumed • similar spellings remain separate")
     return embed
 
 
