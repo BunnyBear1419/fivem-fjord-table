@@ -2261,33 +2261,17 @@ async def moonshine_command(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="setrole", description="Add a Discord role that can access Fjord Cartel Information.")
-@app_commands.describe(
-    role="Select the Discord role to add",
-    role_id="Or enter the role ID instead (do not use both options)",
-)
-async def setrole_command(
-    interaction: discord.Interaction,
-    role: discord.Role | None = None,
-    role_id: str | None = None,
-):
+@app_commands.describe(role="Select the server role to add")
+async def setrole_command(interaction: discord.Interaction, role: discord.Role):
     if not is_guild_admin(interaction):
         await interaction.response.send_message("Only members with Manage Server permission can change bot access roles.", ephemeral=True)
         return
-    if (role is None and not (role_id or "").strip()) or (role is not None and (role_id or "").strip()):
-        await interaction.response.send_message("Choose a role from the role picker OR enter its role ID. Use one option only.", ephemeral=True)
+    if interaction.guild is None:
+        await interaction.response.send_message("This command must be used inside your Discord server.", ephemeral=True)
         return
     selected_role = role
-    if role_id and role_id.strip():
-        raw_id = role_id.strip().strip("<@&>")
-        if not raw_id.isdigit():
-            await interaction.response.send_message("That role ID is not valid. Enter the numeric Discord role ID.", ephemeral=True)
-            return
-        selected_role = interaction.guild.get_role(int(raw_id))
-        if selected_role is None:
-            await interaction.response.send_message("I could not find that role in this server. Check the ID and try again.", ephemeral=True)
-            return
-    if selected_role is None or selected_role.is_default:
-        await interaction.response.send_message("Choose a server role other than @everyone.", ephemeral=True)
+    if selected_role.is_default:
+        await interaction.response.send_message("The @everyone role cannot be used. Select a different server role.", ephemeral=True)
         return
     configured = read_json(ACCESS_ROLES_FILE, {})
     guild_key = str(interaction.guild_id)
@@ -2308,33 +2292,17 @@ async def setrole_command(
 
 
 @bot.tree.command(name="removerole", description="Remove a Discord role from Fjord Cartel Information access.")
-@app_commands.describe(
-    role="Select the Discord role to remove",
-    role_id="Or enter the role ID instead (do not use both options)",
-)
-async def removerole_command(
-    interaction: discord.Interaction,
-    role: discord.Role | None = None,
-    role_id: str | None = None,
-):
+@app_commands.describe(role="Select the server role to remove")
+async def removerole_command(interaction: discord.Interaction, role: discord.Role):
     if not is_guild_admin(interaction):
         await interaction.response.send_message("Only members with Manage Server permission can change bot access roles.", ephemeral=True)
         return
-    if (role is None and not (role_id or "").strip()) or (role is not None and (role_id or "").strip()):
-        await interaction.response.send_message("Choose a role from the role picker OR enter its role ID. Use one option only.", ephemeral=True)
+    if interaction.guild is None:
+        await interaction.response.send_message("This command must be used inside your Discord server.", ephemeral=True)
         return
     selected_role = role
-    if role_id and role_id.strip():
-        raw_id = role_id.strip().strip("<@&>")
-        if not raw_id.isdigit():
-            await interaction.response.send_message("That role ID is not valid. Enter the numeric Discord role ID.", ephemeral=True)
-            return
-        selected_role = interaction.guild.get_role(int(raw_id))
-        if selected_role is None:
-            await interaction.response.send_message("I could not find that role in this server. Check the ID and try again.", ephemeral=True)
-            return
-    if selected_role is None or selected_role.is_default:
-        await interaction.response.send_message("Choose a server role other than @everyone.", ephemeral=True)
+    if selected_role.is_default:
+        await interaction.response.send_message("The @everyone role cannot be used. Select a different server role.", ephemeral=True)
         return
     configured = read_json(ACCESS_ROLES_FILE, {})
     guild_key = str(interaction.guild_id)
