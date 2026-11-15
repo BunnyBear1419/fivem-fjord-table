@@ -1541,6 +1541,11 @@ def shops_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="🪵 Log Market — Postal 1082",
+        value="• **Firewood:** $10",
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • SHOP DIRECTORY")
     return embed
 
