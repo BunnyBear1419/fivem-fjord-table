@@ -444,7 +444,7 @@ def test_meth_calculator_uses_usable_items_recipe_for_pseudoephedrine():
         "Pseudoephedrine": 500,
         "Ammonia": 125,
         "Sodium Hydroxide (Lye)": 125,
-        "2L Plastic Bottle": 125,
+        "2L Water Bottle": 125,
     }
     assert result["tools"] == {"Gas Mask": 1}
 
