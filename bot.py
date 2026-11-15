@@ -1802,6 +1802,7 @@ def locations_embed():
     embed.add_field(
         name="8000s Postal Codes — Street Pickups",
         value=(
+            "• **5024 — Urea Fertilizer:** Pick Urea Fertilizer.\n"
             "• **8040 — Vials & Syringes:** Search black trash bags on the street.\n"
             "• **8254 — Gasoline:** Collect gasoline."
         ),
