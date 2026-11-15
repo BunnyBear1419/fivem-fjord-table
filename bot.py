@@ -1572,6 +1572,31 @@ def shops_embed():
         inline=False,
     )
     embed.add_field(
+        name="🎉 Head Shop — Postal 3057",
+        value=(
+            "**Kitchen (4 items)**\n"
+            "• **Cookie dough:** $75 each\n"
+            "• **Chocolate chips:** $50 each\n"
+            "• **Baking soda:** $10 each\n"
+            "• **Grapeseed Oil:** $25 each\n\n"
+            "**Packaging (4 items)**\n"
+            "• **Plastic bag:** $5 each\n"
+            "• **Styrofoam Cup:** $15 each\n"
+            "• **2L Plastic Bottle:** $5 each\n"
+            "• **Aluminum Foil:** $10 each\n\n"
+            "**Smoking & Party (6 items)**\n"
+            "• **Art papers:** $150 each\n"
+            "• **Nitrous Oxide Charger:** $15 each\n"
+            "• **Balloon:** $5 each\n"
+            "• **Cigarette:** $5 each\n"
+            "• **Weed papers:** $30 each\n"
+            "• **Pipe:** $10 each\n\n"
+            "**Lab Gear & Safety (1 item)**\n"
+            "• **Cheesecloth:** $5 each"
+        ),
+        inline=False,
+    )
+    embed.add_field(
         name="🥕 Farmers Market",
         value=(
             "• **Bag of Corn:** $10\n"
@@ -1790,6 +1815,11 @@ def locations_embed():
             "• **3028 — Empty Lab.**\n"
             "• **3051 — Side of Gas Station:** Gang paint ($200,000) / cleaner ($40,000)."
         ),
+        inline=False,
+    )
+    embed.add_field(
+        name="Head Shop — Postal 3057",
+        value="Head Shop supplier. See the Shops & Prices section for its 15 listed items and prices.",
         inline=False,
     )
     embed.add_field(
