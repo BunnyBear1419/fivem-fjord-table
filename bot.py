@@ -1746,6 +1746,11 @@ def locations_embed():
         ),
         inline=False,
     )
+    embed.add_field(
+        name="5000s Postal Codes — Pickups",
+        value="• **5000 — Morning Glory:** Pick Morning Glory Seed Pods.",
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • HIDDEN LOCATIONS • SEE POSTAL REFERENCES ABOVE")
     return embed
 
