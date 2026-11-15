@@ -402,3 +402,33 @@ def test_no_hard_coded_pseudoephedrine_to_meth_conversion_remains():
     source = Path("bot.py").read_text(encoding="utf-8") + Path("enhancements.py").read_text(encoding="utf-8")
     assert "calculate_meth_requirements" not in source
     assert "pseudoephedrine // 4" not in source
+
+
+def test_chemical_supplier_price_lookup_covers_saved_items():
+    from enhancements import calculate_shop_price_query
+
+    expected = {
+        "Sodium Hydroxide (Lye)": 80,
+        "Citric Acid": 20,
+        "Sulfuric Acid": 50,
+        "Slaked Lime": 15,
+        "Succinic Acid": 40,
+        "Acetone": 60,
+        "Isopropyl Alcohol": 50,
+        "Distilled Water": 20,
+        "Naphtha": 70,
+        "Grain Alcohol": 45,
+        "Butane Canister": 30,
+        "Sodium Benzoate": 150,
+        "Ammonia": 175,
+        "Hydrogen Peroxide": 40,
+        "Urea": 25,
+        "Formaldehyde": 60,
+        "Potassium Permanganate": 60,
+        "Sodium Acetate": 40,
+        "Filter Paper": 10,
+    }
+    for item, price in expected.items():
+        result = calculate_shop_price_query(f"where can I buy {item}?")
+        assert result["unit_price"] == price, item
+        assert result["shop"] == "Chemical Supplier — Postal 10105", item
