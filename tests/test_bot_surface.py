@@ -477,7 +477,7 @@ def test_saved_information_lookup_is_connected_to_shop_location_usable_and_help_
 
 def test_location_directory_documents_unresolved_10060_hidden_materials():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert "additional hidden material" in source
-    assert "exact item is not recorded" in source
+    assert "1 hidden material" in source
+    assert "exact item name is not recorded" in source
 
 
