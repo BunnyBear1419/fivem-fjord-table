@@ -841,7 +841,7 @@ class CheckSavedInventoryModal(SafeModal, title="Plan using my saved inventory")
             return
         embed = discord.Embed(
             title="🧮 Saved inventory plan: " + result["recipe"][:180],
-            description=f"**Craftable batches:** {result['available_batches']} / {result['target_batches']}\nCalculated from your saved stock.",
+            description=f"**Batches covered by recorded ingredients:** {result['available_batches']} / {result['target_batches']}\nCalculated from your saved stock; review any data notes below.",
             color=COLOR,
         )
         missing_lines = [f"• **{name}** ×{quantity}" for name, quantity in result["missing"].items()]
@@ -1120,7 +1120,7 @@ class ProductionCostModal(SafeModal, title="Full production requirements"):
         if result["tools"]:
             embed.add_field(name="Tools (not consumed)", value=", ".join(result["tools"])[:1000], inline=False)
         if result["notes"]:
-            embed.add_field(name="Needs a manual choice / cycle notes", value="\n".join(result["notes"][:4])[:1000], inline=False)
+            embed.add_field(name="Data review / manual choice notes", value="\n".join(result["notes"][:4])[:1000], inline=False)
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
@@ -1168,7 +1168,7 @@ class MultiRecipeModal(SafeModal, title="Multi-recipe planner"):
             embed.add_field(name="Tools (not consumed)", value=", ".join(result["tools"])[:700], inline=False)
         if result.get("notes"):
             embed.add_field(name="Data review notes", value="\n".join(f"• {note}" for note in result["notes"])[:1024], inline=False)
-        full_text = "COMBINED PRODUCTION PLAN\n\nRecipes:\n" + "\n".join(result["selected"]) + "\n\nIngredients:\n" + "\n".join(ingredient_lines) + "\n\nTools (not consumed):\n" + ", ".join(result["tools"])
+        full_text = "COMBINED PRODUCTION PLAN\n\nRecipes:\n" + "\n".join(result["selected"]) + "\n\nIngredients:\n" + "\n".join(ingredient_lines) + "\n\nTools (not consumed):\n" + ", ".join(result["tools"]) + "\n\nData review notes:\n" + "\n".join(result.get("notes", []))
         file = discord.File(io.BytesIO(full_text.encode("utf-8")), filename="fivem-combined-production-plan.txt")
         await interaction.response.send_message(content="The full combined plan is attached so no ingredient totals are cut off.", embed=embed, file=file, ephemeral=True)
 
@@ -1538,11 +1538,15 @@ async def on_message(message: discord.Message):
                     continue
                 batches = min((inventory_quantity(stock, item) // amount for item, amount in required.items()), default=0)
                 if batches:
-                    possible.append((batches, recipe.get("name", "Unknown"), table.get("name", "Unknown")))
+                    possible.append((batches, recipe.get("name", "Unknown"), table.get("name", "Unknown"), list(recipe.get("notes") or [])))
         possible.sort(key=lambda row: (-row[0], row[1].casefold()))
         if possible:
-            lines = [f"• **{name}** — {count:,} batch(es) · {table}" for count, name, table in possible[:20]]
-            await message.reply("**Recipes you can make with that inventory:**\n" + "\n".join(lines), mention_author=False)
+            lines = [
+                f"• **{name}** — {count:,} batch(es) · {table}"
+                + (("\n  ⚠️ " + " ".join(notes)) if notes else "")
+                for count, name, table, notes in possible[:20]
+            ]
+            await message.reply("**Recipes covered by your listed stock (recorded ingredients):**\n" + "\n".join(lines), mention_author=False)
         else:
             await message.reply("Your listed stock does not cover a complete saved recipe. Try adding more inventory or check /crafting.", mention_author=False)
         return
@@ -1598,13 +1602,17 @@ async def on_message(message: discord.Message):
                     needed[name] = needed.get(name, 0) + int(qty)
                 batches = min((inventory_quantity(stock, name) // qty for name, qty in needed.items()), default=0)
                 if batches > 0:
-                    craftable.append((batches, table.get("name", "Unknown"), recipe.get("name", "Unknown")))
+                    craftable.append((batches, table.get("name", "Unknown"), recipe.get("name", "Unknown"), list(recipe.get("notes") or [])))
         craftable.sort(key=lambda row: (-row[0], row[2].casefold()))
         if not craftable:
-            await message.reply("Your stock does not cover a complete recipe yet. Try /dashboard to browse the directory.", mention_author=False)
+            await message.reply("Your stock does not cover a complete recorded recipe yet. Try /dashboard to browse the directory.", mention_author=False)
         else:
-            lines = [f"• **{name}** — {batches} batch(es) · {table}" for batches, table, name in craftable[:20]]
-            await message.reply("**Recipes you can make from that stock:**\n" + "\n".join(lines), mention_author=False)
+            lines = [
+                f"• **{name}** — {batches} batch(es) · {table}"
+                + (("\n  ⚠️ " + " ".join(notes)) if notes else "")
+                for batches, table, name, notes in craftable[:20]
+            ]
+            await message.reply("**Recipes covered by your listed stock (recorded ingredients):**\n" + "\n".join(lines), mention_author=False)
         return
 
     record_usage("search", query)
