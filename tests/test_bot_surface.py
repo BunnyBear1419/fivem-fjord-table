@@ -623,3 +623,28 @@ def test_private_runtime_shopping_and_activity_files_are_gitignored():
     ignore = Path(".gitignore").read_text(encoding="utf-8")
     assert "shopping-lists.json" in ignore
     assert "player-activity.json" in ignore
+
+
+def test_information_pagers_snapshot_fields_and_use_distinct_page_slices():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    pager = source.split("class InformationPagerView", 1)[1].split("class DashboardMenuView", 1)[0]
+    assert "self.fields = tuple(" in pager
+    assert "self.fields[start:stop]" in pager
+    assert 'custom_id="information_previous"' in pager
+    assert 'custom_id="information_next"' in pager
+    search_pager = source.split("class RecipeSearchResultsView", 1)[1].split('@bot.tree.command(name="search"', 1)[0]
+    assert "self.results[start:start + self.page_size]" in search_pager
+    assert "self.total_pages" in search_pager
+
+
+def test_all_new_member_tools_and_shared_backups_are_wired_into_menus():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    for token in (
+        "CombinedShoppingModal", 'value="combined_shopping"',
+        "LocationSearchModal", 'value="location_search"',
+        "ShopBasketModal", 'value="shop_basket"',
+        "create_runtime_backup", 'value="backup_runtime"',
+        'value="download_runtime_backup"',
+    ):
+        assert token in source
+    assert "Member-private data" not in source
