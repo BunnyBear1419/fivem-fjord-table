@@ -3683,6 +3683,188 @@
           ]
         }
       ]
+    },
+    {
+      "name": "Postal 9195 — Table #1",
+      "description": "Located at Postal 9195 — Lab. Recipe names are catalogued here; ingredient and tool details are not included.",
+      "recipes": [
+        {
+          "name": "Lime",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_1_001"
+        },
+        {
+          "name": "Solvent",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_1_002"
+        },
+        {
+          "name": "Codeine",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_1_003"
+        },
+        {
+          "name": "Heroin",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_1_004"
+        }
+      ],
+      "id": "table_9195_1"
+    },
+    {
+      "name": "Postal 9195 — Table #2",
+      "description": "Located at Postal 9195 — Lab. Recipe names are catalogued here; ingredient and tool details are not included.",
+      "recipes": [
+        {
+          "name": "Hydrocodone",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_2_001"
+        },
+        {
+          "name": "Methadone",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_2_002"
+        },
+        {
+          "name": "Oxymorphone",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_2_003"
+        },
+        {
+          "name": "Pethidine",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_2_004"
+        }
+      ],
+      "id": "table_9195_2"
+    },
+    {
+      "name": "Postal 9195 — Table #3",
+      "description": "Located at Postal 9195 — Lab. Recipe names are catalogued here; ingredient and tool details are not included.",
+      "recipes": [
+        {
+          "name": "Fentanyl",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_3_001"
+        },
+        {
+          "name": "Cartentanil",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_3_002"
+        },
+        {
+          "name": "ANPP",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_3_003"
+        },
+        {
+          "name": "Isotonitazine",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_3_004"
+        }
+      ],
+      "id": "table_9195_3"
+    },
+    {
+      "name": "Postal 9195 — Table #4",
+      "description": "Located at Postal 9195 — Lab. Recipe names are catalogued here; ingredient and tool details are not included.",
+      "recipes": [
+        {
+          "name": "Krakadil",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_4_001"
+        },
+        {
+          "name": "Xylazine",
+          "ingredients": [],
+          "tools": [],
+          "notes": [
+            "Postal 9195 — Lab",
+            "Recipe name recorded; ingredient and tool details are not included."
+          ],
+          "source": "User supplied FiveM roleplay table list",
+          "id": "recipe_9195_4_002"
+        }
+      ],
+      "id": "table_9195_4"
     }
   ],
   "notes": "FiveM roleplay game reference only. Entries were transcribed from user-supplied game recipe text; verify against the live server."
