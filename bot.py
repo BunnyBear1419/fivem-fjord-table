@@ -1805,6 +1805,51 @@ def shops_embed():
         value="• **Firewood:** $10",
         inline=False,
     )
+    embed.add_field(
+        name="🤿 Scuba Diving Shop",
+        value=(
+            "**Salvage & Finds**\n"
+            "• **Old Boot:** $15\n"
+            "• **Wood Plank:** $15\n"
+            "• **Rusted Padlock:** $15\n"
+            "• **Rusted Key:** $15\n"
+            "• **Rusted Gear:** $15\n"
+            "• **Seashell:** $43\n"
+            "• **Seaweed:** $43\n"
+            "• **Rusted Muffler:** $43\n"
+            "• **Broken CD:** $43\n"
+            "• **Diving Goggles:** $43\n"
+            "• **Fishing Net:** $70\n"
+            "• **Old Camera:** $70\n"
+            "• **Military Helmet:** $70\n"
+            "• **Old Compass:** $93\n"
+            "• **Old Watch:** $93\n"
+            "• **Conch Shell:** $93\n"
+            "• **Bottle of Rum:** $26 *(or $28; price varies)*\n"
+            "• **Treasure Map:** $40\n"
+            "• **Silver Bracelet:** $55\n"
+            "• **Ancient Artifact:** $78"
+        ),
+        inline=False,
+    )
+    embed.add_field(
+        name="⚓ The Gear Shop",
+        value=(
+            "**Items to Purchase**\n"
+            "• **Oxygen Tank:** $100\n"
+            "• **Scuba Gear | Level 1:** $250\n"
+            "• **Scuba Gear | Level 2:** $500\n"
+            "• **Scuba Gear | Level 3:** $1,000\n"
+            "• **Scuba Gear | Level 4:** $2,000\n"
+            "• **Scuba Gear | Level 5:** $5,000\n"
+            "• **Burger:** $5\n"
+            "• **Water:** $5\n\n"
+            "**Boat Rental**\n"
+            "• **24-hour rental:** $500 deposit\n"
+            "• Deposit is refunded when the boat is returned."
+        ),
+        inline=False,
+    )
     embed.set_footer(text="FJORD CARTEL • SHOP DIRECTORY")
     return embed
 
