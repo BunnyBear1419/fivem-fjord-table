@@ -13,15 +13,15 @@ import urllib.request
 
 logger = logging.getLogger("crafting-bot.hybrid-ai")
 
-API_URL = "https://api.openai.com/v1/chat/completions"
-DEFAULT_MODEL = "gpt-4.1-mini"
+API_URL = "https://api.groq.com/openai/v1/chat/completions"
+DEFAULT_MODEL = "openai/gpt-oss-20b"
 MAX_HISTORY_MESSAGES = 8
 SESSION_TTL_SECONDS = 30 * 60
 _sessions = {}
 
 
 def is_configured():
-    return bool(os.environ.get("OPENAI_API_KEY", "").strip())
+    return bool(os.environ.get("GROQ_API_KEY", "").strip())
 
 
 def _prune_sessions(now):
@@ -42,7 +42,7 @@ def _request_completion(messages):
     if not api_key:
         return None
     payload = {
-        "model": os.environ.get("OPENAI_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL,
+        "model": os.environ.get("GROQ_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL,
         "messages": messages,
         "temperature": 0.2,
         "max_tokens": 650,
