@@ -95,6 +95,27 @@ def save_recipe_data(data: dict[str, Any]) -> Path:
     return OVERRIDE_FILE
 
 
+def verify_recipe_backup(path: Path) -> dict[str, Any]:
+    """Validate a saved recipe backup before it is trusted for recovery."""
+    path = Path(path)
+    result: dict[str, Any] = {"path": path.name, "valid": False, "tables": 0, "recipes": 0, "errors": [], "warnings": []}
+    try:
+        with path.open("r", encoding="utf-8") as handle:
+            data = json.load(handle)
+        if not isinstance(data, dict) or not isinstance(data.get("tables"), list):
+            raise ValueError("Backup must contain a top-level tables list.")
+        from enhancements import validate_recipe_data
+        findings = validate_recipe_data(data)
+        result["errors"] = [item["message"] for item in findings if item.get("severity") == "error"]
+        result["warnings"] = [item["message"] for item in findings if item.get("severity") != "error"]
+        result["tables"] = len(data["tables"])
+        result["recipes"] = sum(len(table.get("recipes", [])) for table in data["tables"] if isinstance(table, dict))
+        result["valid"] = not result["errors"]
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError, TypeError) as exc:
+        result["errors"] = [str(exc)[:300]]
+    return result
+
+
 def parse_ingredients(value: str) -> list[list[Any]]:
     """Parse comma-separated Item x2 values; repeated ingredients are never deduplicated."""
     parsed = []
