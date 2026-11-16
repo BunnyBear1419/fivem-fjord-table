@@ -38,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings, item_cross_reference, validate_city_reference_data,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -639,7 +639,8 @@ class AdminMenuView(SafeView):
             payload = recipes_xlsx_bytes(get_guild_recipe_data(interaction.guild_id))
             await interaction.response.send_message("Excel workbook with all ingredient occurrences:", file=discord.File(io.BytesIO(payload), filename="fivem-crafting-directory.xlsx"), ephemeral=True)
         elif action == "validate":
-            findings = validate_recipe_data(get_guild_recipe_data(interaction.guild_id))
+            active_data = include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id))
+            findings = validate_recipe_data(active_data) + validate_city_reference_data(active_data)
             await interaction.response.send_message(embed=validation_embed(findings), ephemeral=True)
         elif action == "history":
             history = [item for item in read_json(HISTORY_FILE, []) if item.get("guild_id") == interaction.guild_id]
@@ -1394,6 +1395,40 @@ async def on_message(message: discord.Message):
     data = get_guild_recipe_data(message.guild.id)
     query_data = include_usable_item_recipes(data)
     lowered = query.casefold()
+
+    # Unified item lookup joins crafting, tools, usable-item recipes and shop prices.
+    if lowered.startswith(("item ", "lookup item ", "item info ")):
+        item_query = re.sub(r"^(?:lookup item|item info|item)\s+", "", query, flags=re.IGNORECASE).strip(" ?.! ")
+        result = item_cross_reference(query_data, item_query)
+        if result.get("suggestions"):
+            await message.reply("I found several possible items. Please try one of these exact names:\n" + "\n".join(f"• {name}" for name in result["suggestions"]), mention_author=False)
+            return
+        if result.get("error"):
+            await message.reply(result["error"], mention_author=False)
+            return
+        embed = discord.Embed(title=f"🔎 Item Lookup · {result['item']}", color=COLOR)
+        if result["shops"]:
+            shop_lines = []
+            for shop in result["shops"][:8]:
+                price = shop["price"]
+                price_text = f"\${price:,}" if isinstance(price, int) else "Price not recorded"
+                shop_lines.append(f"• **{shop['shop']}** — {price_text}")
+            embed.add_field(name="Where to buy", value="\n".join(shop_lines), inline=False)
+        if result["produced_by"]:
+            lines = [f"• **{item['recipe']}** — {item['table']}" for item in result["produced_by"][:12]]
+            embed.add_field(name="Crafted at", value="\n".join(lines), inline=False)
+        if result["used_in"]:
+            lines = [f"• **{item['recipe']}** — {item['table']} (×{item['quantity']})" for item in result["used_in"][:15]]
+            embed.add_field(name="Used as an ingredient", value="\n".join(lines), inline=False)
+        if result["required_as_tool"]:
+            lines = [f"• **{item['recipe']}** — {item['table']}" for item in result["required_as_tool"][:12]]
+            embed.add_field(name="Required equipment (not consumed)", value="\n".join(lines), inline=False)
+        if not any(result[key] for key in ("shops", "produced_by", "used_in", "required_as_tool")):
+            embed.description = "The item name exists in the saved directory, but no shop, recipe, or tool relationships are recorded yet."
+        embed.set_footer(text="Unified lookup uses saved in-city data only • Try !item [item name]")
+        await message.reply(embed=embed, mention_author=False)
+        record_usage("search", f"item:{item_query}")
+        return
 
     # Explicit directory search: recipe name, table, ingredient, or tool.
     search_text = None
