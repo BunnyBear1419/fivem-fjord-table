@@ -1421,9 +1421,9 @@ async def on_message(message: discord.Message):
             ingredients = ", ".join(f"{name} ×{amount}" for name, amount in recipe.get("ingredients", [])) or "No ingredients recorded"
             value = f"**Ingredients:** {ingredients}"
             if recipe.get("tools"):
-                value += "\\n**Tools (not consumed):** " + ", ".join(recipe["tools"])
+                value += "\n**Tools (not consumed):** " + ", ".join(recipe["tools"])
             if recipe.get("notes"):
-                value += "\\n⚠️ " + " ".join(recipe["notes"])
+                value += "\n⚠️ " + " ".join(recipe["notes"])
             embed.add_field(name=f"{recipe.get('name', 'Unknown recipe')} · {table_name}"[:256], value=value[:1024], inline=False)
         embed.set_footer(text="Search uses saved recipe data only • Try !search recipes for [term] or !find recipes using [ingredient]")
         await message.reply(embed=embed, mention_author=False)
