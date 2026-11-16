@@ -559,3 +559,22 @@ def test_item_is_not_registered_as_a_slash_command():
     assert '@bot.tree.command(name="search"' in source
     assert "class ItemPageModal" in source
     assert "validate_city_reference_data(active_data)" in source
+
+
+
+def test_crafting_directory_pages_show_recipe_names_and_home_button():
+    source = Path("crafting.py").read_text(encoding="utf-8")
+    assert "on_home=None" in source
+    assert 'label="Home", emoji="🏠"' in source
+    assert "recipe_lines = [" in source
+    assert "recipes[start:start + 25]" in source
+    assert "Choose a recipe from the dropdown to view its saved details." in source
+
+
+def test_bot_views_include_dashboard_home_navigation():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'label="Home", emoji="🏠"' in source
+    assert "view=DashboardMenuView(owner_id)" in source
+    assert "class InformationPagerView(SafeView):" in source
+    assert "class DashboardMenuView(SafeView):" in source
+    assert "on_home=return_to_dashboard" in source
