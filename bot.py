@@ -1396,74 +1396,6 @@ async def on_message(message: discord.Message):
     query_data = include_usable_item_recipes(data)
     lowered = query.casefold()
 
-    # Unified item lookup joins crafting, tools, usable-item recipes and shop prices.
-    if lowered.startswith(("item ", "lookup item ", "item info ")):
-        item_query = re.sub(r"^(?:lookup item|item info|item)\s+", "", query, flags=re.IGNORECASE).strip(" ?.! ")
-        result = item_cross_reference(query_data, item_query)
-        if result.get("suggestions"):
-            await message.reply("I found several possible items. Please try one of these exact names:\n" + "\n".join(f"• {name}" for name in result["suggestions"]), mention_author=False)
-            return
-        if result.get("error"):
-            await message.reply(result["error"], mention_author=False)
-            return
-        embed = discord.Embed(title=f"🔎 Item Lookup · {result['item']}", color=COLOR)
-        if result["shops"]:
-            shop_lines = []
-            for shop in result["shops"][:8]:
-                price = shop["price"]
-                price_text = f"{chr(36)}{price:,}" if isinstance(price, int) else "Price not recorded"
-                shop_lines.append(f"• **{shop['shop']}** — {price_text}")
-            embed.add_field(name="Where to buy", value="\n".join(shop_lines), inline=False)
-        if result["produced_by"]:
-            lines = [f"• **{item['recipe']}** — {item['table']}" for item in result["produced_by"][:12]]
-            embed.add_field(name="Crafted at", value="\n".join(lines), inline=False)
-        if result["used_in"]:
-            lines = [f"• **{item['recipe']}** — {item['table']} (×{item['quantity']})" for item in result["used_in"][:15]]
-            embed.add_field(name="Used as an ingredient", value="\n".join(lines), inline=False)
-        if result["required_as_tool"]:
-            lines = [f"• **{item['recipe']}** — {item['table']}" for item in result["required_as_tool"][:12]]
-            embed.add_field(name="Required equipment (not consumed)", value="\n".join(lines), inline=False)
-        if not any(result[key] for key in ("shops", "produced_by", "used_in", "required_as_tool")):
-            embed.description = "The item name exists in the saved directory, but no shop, recipe, or tool relationships are recorded yet."
-        embed.set_footer(text="Unified lookup uses saved in-city data only • Try !item [item name]")
-        await message.reply(embed=embed, mention_author=False)
-        record_usage("search", f"item:{item_query}")
-        return
-
-    # Explicit directory search: recipe name, table, ingredient, or tool.
-    search_text = None
-    ingredient_filter = ""
-    for prefix in ("search recipes for ", "search crafting for ", "find recipes matching ", "show recipes matching ", "search for "):
-        if lowered.startswith(prefix):
-            search_text = query[len(prefix):].strip(" ?.! ")
-            break
-    for prefix in ("find recipes using ", "show recipes using ", "which recipes use ", "recipes using "):
-        if lowered.startswith(prefix):
-            ingredient_filter = query[len(prefix):].strip(" ?.! ")
-            search_text = ""
-            break
-    if search_text is not None or ingredient_filter:
-        results = advanced_search(query_data, query=search_text or "", ingredient_filter=ingredient_filter)
-        if not results:
-            await message.reply("I couldn't find matching saved recipes. Try an ingredient, tool, recipe name, or crafting table name.", mention_author=False)
-            return
-        embed = discord.Embed(
-            title="🔎 Crafting Directory Search",
-            description=f"Found **{len(results)}** matching recipe(s). Showing up to 15.",
-            color=COLOR,
-        )
-        for table_name, recipe in results[:15]:
-            ingredients = ", ".join(f"{name} ×{amount}" for name, amount in recipe.get("ingredients", [])) or "No ingredients recorded"
-            value = f"**Ingredients:** {ingredients}"
-            if recipe.get("tools"):
-                value += "\n**Tools (not consumed):** " + ", ".join(recipe["tools"])
-            if recipe.get("notes"):
-                value += "\n⚠️ " + " ".join(recipe["notes"])
-            embed.add_field(name=f"{recipe.get('name', 'Unknown recipe')} · {table_name}"[:256], value=value[:1024], inline=False)
-        embed.set_footer(text="Search uses saved recipe data only • Try !search recipes for [term] or !find recipes using [ingredient]")
-        await message.reply(embed=embed, mention_author=False)
-        return
-
     # Postal/location questions search the same saved directory shown by /locations.
     postal_match = re.search(r"\b(\d{3,5})\b", query)
     asks_location = postal_match and any(word in lowered for word in ("where", "what", "postal", "location", "at "))
@@ -2382,15 +2314,15 @@ def commands_embed():
         name="💬 Chat lookups (start with !)",
         value=(
             "`!how to make [item]` — find a recipe and its ingredients.\n"
-            "`!item [item name]` — connect shop prices, crafting outputs, ingredient uses, and required tools.\n"
+
             "`!where is [ingredient or tool] used` — find ingredient uses and non-consumed tool requirements.\n"
             "`!how much [recipe] can I make with 500 [ingredient]` — estimate batches from the stock you list.\n"
             "`!what does [usable item] do` — search the saved Usable Items page.\n"
             "`!how do I do [activity]` — search saved activity and location notes.\n"
             "`!what tables are related to [topic]` — find matching crafting tables.\n"
             "`!what can I craft: Item x10, Item x5` — check what your stock can make.\n"
-            "`!search recipes for [term]` — search recipe, table, ingredient, and tool names.\n"
-            "`!find recipes using [ingredient]` — list every saved recipe that consumes an ingredient."
+            "`/item [item name]` — connect shop prices, crafting outputs, ingredient uses, and required tools.\n"
+            "`/search [term]` — search recipes, tables, ingredients, and tools."
         ),
         inline=False,
     )
@@ -2532,6 +2464,73 @@ async def crafting_command(interaction: discord.Interaction):
         view=MainMenuView(interaction.user.id),
         ephemeral=True,
     )
+
+
+@bot.tree.command(name="item", description="Look up an item across shops, recipes, ingredients, and equipment.")
+@app_commands.describe(item_name="The in-city item name to look up")
+async def item_command(interaction: discord.Interaction, item_name: str):
+    data = include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id))
+    result = item_cross_reference(data, item_name)
+    if result.get("suggestions"):
+        await interaction.response.send_message(
+            "Several items match. Try one of these exact names: " + ", ".join(result["suggestions"]),
+            ephemeral=True,
+        )
+        return
+    if result.get("error"):
+        await interaction.response.send_message(result["error"], ephemeral=True)
+        return
+    embed = discord.Embed(title=f"🔎 Item Lookup · {result['item']}", color=COLOR)
+    if result["shops"]:
+        lines = []
+        for shop in result["shops"][:8]:
+            price = shop["price"]
+            price_text = f"{chr(36)}{price:,}" if isinstance(price, int) else "Price not recorded"
+            lines.append(f"• **{shop['shop']}** — {price_text}")
+        embed.add_field(name="Where to buy", value="\n".join(lines), inline=False)
+    if result["produced_by"]:
+        lines = [f"• **{row['recipe']}** — {row['table']}" for row in result["produced_by"][:12]]
+        embed.add_field(name="Crafted at", value="\n".join(lines), inline=False)
+    if result["used_in"]:
+        lines = [f"• **{row['recipe']}** — {row['table']} (×{row['quantity']})" for row in result["used_in"][:15]]
+        embed.add_field(name="Used as an ingredient", value="\n".join(lines), inline=False)
+    if result["required_as_tool"]:
+        lines = [f"• **{row['recipe']}** — {row['table']}" for row in result["required_as_tool"][:12]]
+        embed.add_field(name="Required equipment (not consumed)", value="\n".join(lines), inline=False)
+    if not any(result[key] for key in ("shops", "produced_by", "used_in", "required_as_tool")):
+        embed.description = "The item is saved, but no shop, recipe, or equipment relationships are recorded yet."
+    embed.set_footer(text="Unified lookup uses saved in-city data only.")
+    record_usage("search", f"item:{item_name}")
+    await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
+@bot.tree.command(name="search", description="Search saved recipes, tables, ingredients, and tools.")
+@app_commands.describe(query="A recipe, table, ingredient, or tool name")
+async def search_command(interaction: discord.Interaction, query: str):
+    data = include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id))
+    results = advanced_search(data, query=query)
+    if not results:
+        await interaction.response.send_message(
+            "I couldn't find matching saved recipes. Try an ingredient, tool, recipe, or crafting table name.",
+            ephemeral=True,
+        )
+        return
+    embed = discord.Embed(
+        title="🔎 Crafting Directory Search",
+        description=f"Found **{len(results)}** matching recipe(s). Showing up to 15.",
+        color=COLOR,
+    )
+    for table_name, recipe in results[:15]:
+        ingredients = ", ".join(f"{name} ×{amount}" for name, amount in recipe.get("ingredients", [])) or "No ingredients recorded"
+        value = f"**Ingredients:** {ingredients}"
+        if recipe.get("tools"):
+            value += "\n**Tools (not consumed):** " + ", ".join(recipe["tools"])
+        if recipe.get("notes"):
+            value += "\n⚠️ " + " ".join(recipe["notes"])
+        embed.add_field(name=f"{recipe.get('name', 'Unknown recipe')} · {table_name}"[:256], value=value[:1024], inline=False)
+    embed.set_footer(text="Search uses saved in-city recipe data only.")
+    record_usage("search", query)
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @bot.tree.command(name="shops", description="Browse shop items and prices.")
