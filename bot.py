@@ -1375,6 +1375,7 @@ class MainMenuView(SafeView):
                 include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)),
                 on_table_selected=record_table_usage,
                 on_home=return_to_dashboard,
+                refresh_data=lambda: include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)),
             )
             await interaction.response.edit_message(embed=view.current_embed(), view=view)
         elif action == "search":
