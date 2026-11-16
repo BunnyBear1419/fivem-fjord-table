@@ -1280,20 +1280,19 @@ async def on_message(message: discord.Message):
     """Answer typo-tolerant chat lookups using only the saved FiveM recipe directory."""
     if message.author.bot:
         return
-    # Prefix lookups are message-based; Discord Integration command permissions
-    # apply to slash commands, not ordinary messages.
+    # The bang prefix is reserved exclusively for natural-language questions.
+    # All bot features and utilities are registered as Discord slash commands.
     if message.guild is None:
         return
     content = (message.content or "").strip()
     if not content.startswith("!"):
-        await bot.process_commands(message)
         return
     query = content[1:].strip()
     if not query:
-        await message.reply("Try !how to make [item] or !where is [ingredient] used.", mention_author=False)
+        await message.reply("Use ! only when asking a question, for example: !where can I buy ammonia?", mention_author=False)
         return
     if query.casefold() in {"help", "crafting"}:
-        await bot.process_commands(message)
+        await message.reply("Use /crafting or /dashboard to open the bot menus. The ! prefix is reserved for questions.", mention_author=False)
         return
     weed_result = calculate_weed_growing_requirements(query)
     if weed_result is not None:
