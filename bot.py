@@ -33,6 +33,7 @@ from crafting import (
     build_ingredient_directory, ingredient_directory_embed, ingredient_directory_document,
 )
 from storage import atomic_write_json, read_json as storage_read_json, file_lock
+from hybrid_ai import answer_question as hybrid_ai_answer, is_configured as hybrid_ai_is_configured
 from enhancements import (
     calculate_recipe_ingredients, recipe_shopping_embed, table_comparison_embed,
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
@@ -1618,7 +1619,44 @@ async def on_message(message: discord.Message):
     record_usage("search", query)
     aliases = guild_aliases(message.guild.id if message.guild else None)
     alias_target = next((target for alias, target in aliases.items() if alias.casefold() == query.casefold()), None)
-    matches = chat_recipe_search(query_data, alias_target or query, limit=3)
+    matches = chat_recipe_search(query_data, alias_target or query, limit=5)
+
+    # Hybrid mode: deterministic lookups remain authoritative; the AI only
+    # interprets the question and explains relevant saved facts.
+    if hybrid_ai_is_configured():
+        context_parts = []
+        for item in matches[:5]:
+            recipe_name = str(item.get("recipe", "Unknown"))
+            table_name = str(item.get("table", "Unknown"))
+            context_parts.append(f"Recipe: {recipe_name} | Table: {table_name}")
+            restricted = any(term in (recipe_name + " " + table_name).casefold() for term in (
+                "heroin", "fentanyl", "carfentanil", "cartentanil", "methadone",
+                "hydrocodone", "oxymorphone", "pethidine", "xylazine", "krakadil",
+                "isotonitazine", "anpp", "codeine", "opioid", "pill press",
+            ))
+            if not restricted:
+                context_parts.append("Recorded ingredients: " + ", ".join(
+                    f"{name} x{quantity}" for name, quantity in item.get("ingredients", [])
+                ))
+                context_parts.append("Recorded tools: " + ", ".join(item.get("tools", [])))
+            if item.get("notes"):
+                context_parts.append("Data notes: " + "; ".join(str(note) for note in item["notes"]))
+        info_matches = saved_information_matches(query)
+        for item in info_matches[:8]:
+            context_parts.append(
+                f"{item['source']} — {item['title']}: {item['value']}"
+            )
+        try:
+            ai_answer = await hybrid_ai_answer(
+                message.guild.id, message.author.id, query, "\\n".join(context_parts)
+            )
+        except Exception:
+            logger.exception("Hybrid AI answer handler failed")
+            ai_answer = None
+        if ai_answer:
+            await message.reply(ai_answer, mention_author=False)
+            return
+
     if not matches:
         record_usage("no_result", query)
         await message.reply(
