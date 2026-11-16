@@ -337,7 +337,8 @@ def test_bot_has_no_internal_role_or_guild_permission_gates():
 
 def test_prefix_lookups_are_not_mistaken_for_discord_integration_commands():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert "Prefix lookups are message-based" in source
+    assert "The bang prefix is reserved exclusively for natural-language questions." in source
+    assert "await bot.process_commands(message)" not in source
     assert "if message.guild is None:" in source
     assert "access_roles_for_guild" not in source
 
