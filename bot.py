@@ -2106,6 +2106,7 @@ def locations_embed():
             "• **9093:** Near Postal 9187, side entrance on blue trailer — Coke lab.\n"
             "• **9120:** Hobo bowling.\n"
             "• **9142:** Behind Cluckin' Bell — sell stolen phones.\n"
+            "• **9195 — Crafting Tables #1–#4:** Table location for the four-table crafting area.\n"
             "• **9275:** Press machine.\n"
             "• **9366:** Empty Lab.\n"
             "• **9379:** Weed lab; reported inactive, no activity found."
