@@ -833,6 +833,190 @@ def _delete_saved_inventory(guild_id: int | None, user_id: int):
         write_json(INVENTORIES_FILE, all_data)
 
 
+def _shopping_lists_for(guild_id, user_id):
+    all_data = read_json(SHOPPING_LISTS_FILE, {})
+    return all_data.get(str(guild_id or "dm"), {}).get(str(user_id), [])
+
+
+def _save_shopping_list(guild_id, user_id, name: str, items: dict[str, int]):
+    with file_lock():
+        all_data = read_json(SHOPPING_LISTS_FILE, {})
+        guild_data = all_data.setdefault(str(guild_id or "dm"), {})
+        lists = guild_data.setdefault(str(user_id), [])
+        if len(lists) >= 20:
+            raise ValueError("You can save up to 20 shopping lists. Delete an old list first.")
+        saved = {
+            "id": __import__("uuid").uuid4().hex[:10],
+            "name": name[:60],
+            "items": [{"name": item, "required": int(quantity), "collected": 0}
+                      for item, quantity in sorted(items.items(), key=lambda pair: pair[0].casefold())],
+            "created_at": discord.utils.utcnow().isoformat(),
+            "updated_at": discord.utils.utcnow().isoformat(),
+        }
+        lists.append(saved)
+        write_json(SHOPPING_LISTS_FILE, all_data)
+        return saved
+
+
+def _update_shopping_lists(guild_id, user_id, lists):
+    with file_lock():
+        all_data = read_json(SHOPPING_LISTS_FILE, {})
+        guild_data = all_data.setdefault(str(guild_id or "dm"), {})
+        guild_data[str(user_id)] = lists
+        write_json(SHOPPING_LISTS_FILE, all_data)
+
+
+def _shopping_list_embed(lists, selected_index):
+    embed = discord.Embed(title="🛒 My Saved Shopping Lists", color=COLOR)
+    if not lists:
+        embed.description = "You have no saved shopping lists yet. Choose Create list to save ingredients and quantities."
+        return embed
+    selected_index = max(0, min(selected_index, len(lists) - 1))
+    shopping_list = lists[selected_index]
+    items = shopping_list.get("items", [])
+    total = sum(int(item.get("required", 0)) for item in items)
+    collected = sum(min(int(item.get("collected", 0)), int(item.get("required", 0))) for item in items)
+    remaining = total - collected
+    lines = []
+    for item in items:
+        required = int(item.get("required", 0))
+        have = min(int(item.get("collected", 0)), required)
+        marker = "☑️" if have >= required else "⬜"
+        lines.append(f"{marker} **{item.get('name', 'Item')}** — {have:,}/{required:,} collected · {required-have:,} remaining")
+    embed.description = (
+        f"**List:** {shopping_list.get('name', 'Shopping list')} ({selected_index + 1}/{len(lists)})\n"
+        f"**Progress:** {collected:,}/{total:,} collected · **{remaining:,} remaining**\n\n"
+        + ("\n".join(lines) or "This list has no items.")
+    )[:4000]
+    embed.set_footer(text="Select an item, then use Mark collected / Undo to update its checklist.")
+    return embed
+
+
+class SavedShoppingListModal(SafeModal, title="Create a shopping list"):
+    name = discord.ui.TextInput(label="List name", placeholder="Weekend supplies", max_length=60)
+    items = discord.ui.TextInput(
+        label="Required items and quantities",
+        style=discord.TextStyle.paragraph,
+        placeholder="Steel x20, Plastic x10, Rubber x5",
+        max_length=1800,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            items = parse_inventory(self.items.value)
+            if not items or len(items) > 25:
+                raise ValueError("Enter between 1 and 25 different item names.")
+            saved = _save_shopping_list(interaction.guild_id, interaction.user.id, self.name.value.strip(), items)
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        record_player_activity(interaction.guild_id, interaction.user.id, "Created shopping list", saved["name"])
+        record_audit_event(interaction.guild_id, interaction.user.id, "shopping_list_create", saved["name"])
+        view = SavedShoppingListsView(interaction.user.id, interaction.guild_id, selected_id=saved["id"])
+        await interaction.response.send_message(embed=view.current_embed(), view=view, ephemeral=True)
+
+
+class SavedShoppingListsView(SafeView):
+    def __init__(self, owner_id: int, guild_id: int | None, selected_id: str | None = None):
+        super().__init__(timeout=300)
+        self.owner_id, self.guild_id = owner_id, guild_id
+        self.lists = _shopping_lists_for(guild_id, owner_id)
+        self.selected_index = next((i for i, item in enumerate(self.lists) if item.get("id") == selected_id), 0)
+        self.selected_item = 0
+        self.list_select = discord.ui.Select(
+            placeholder="Choose a saved shopping list",
+            options=[discord.SelectOption(label=item.get("name", "Shopping list")[:100], value=str(i), default=i == self.selected_index)
+                     for i, item in enumerate(self.lists[:25])] or
+                    [discord.SelectOption(label="No saved lists yet", value="none")],
+            disabled=not bool(self.lists),
+            row=0,
+        )
+        self.list_select.callback = self.choose_list
+        self.add_item(self.list_select)
+        self.item_select = discord.ui.Select(
+            placeholder="Choose an item to update",
+            options=self._item_options(),
+            disabled=not bool(self.lists and self.lists[self.selected_index].get("items")),
+            row=1,
+        )
+        self.item_select.callback = self.choose_item
+        self.add_item(self.item_select)
+
+    def _item_options(self):
+        if not self.lists:
+            return [discord.SelectOption(label="No items available", value="none")]
+        items = self.lists[self.selected_index].get("items", [])
+        return [
+            discord.SelectOption(
+                label=f"{item.get('name', 'Item')} · {int(item.get('collected', 0))}/{int(item.get('required', 0))}"[:100],
+                value=str(i),
+                default=i == self.selected_item,
+            )
+            for i, item in enumerate(items[:25])
+        ] or [discord.SelectOption(label="No items in this list", value="none")]
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id or interaction.guild_id != self.guild_id:
+            await interaction.response.send_message("This private shopping list belongs to someone else. Open your own from /crafting.", ephemeral=True)
+            return False
+        return True
+
+    def current_embed(self):
+        self.lists = _shopping_lists_for(self.guild_id, self.owner_id)
+        return _shopping_list_embed(self.lists, self.selected_index)
+
+    async def choose_list(self, interaction: discord.Interaction):
+        self.selected_index = int(interaction.data["values"][0])
+        self.selected_item = 0
+        self.lists = _shopping_lists_for(self.guild_id, self.owner_id)
+        self.item_select.options = self._item_options()
+        self.item_select.disabled = not bool(self.lists and self.lists[self.selected_index].get("items"))
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    async def choose_item(self, interaction: discord.Interaction):
+        self.selected_item = int(interaction.data["values"][0])
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    @discord.ui.button(label="Create list", emoji="➕", style=discord.ButtonStyle.success, row=2)
+    async def create_list(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.send_modal(SavedShoppingListModal())
+
+    @discord.ui.button(label="Mark collected / Undo", emoji="☑️", style=discord.ButtonStyle.primary, row=2)
+    async def toggle_collected(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.lists = _shopping_lists_for(self.guild_id, self.owner_id)
+        if not self.lists or not self.lists[self.selected_index].get("items"):
+            await interaction.response.send_message("Create a list with at least one item first.", ephemeral=True)
+            return
+        item = self.lists[self.selected_index]["items"][self.selected_item]
+        required = int(item.get("required", 0))
+        item["collected"] = 0 if int(item.get("collected", 0)) >= required else required
+        self.lists[self.selected_index]["updated_at"] = discord.utils.utcnow().isoformat()
+        _update_shopping_lists(self.guild_id, self.owner_id, self.lists)
+        record_player_activity(self.guild_id, self.owner_id, "Updated shopping checklist", item.get("name", "Item"))
+        self.item_select.options = self._item_options()
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    @discord.ui.button(label="Delete list", emoji="🗑️", style=discord.ButtonStyle.danger, row=2)
+    async def delete_list(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.lists = _shopping_lists_for(self.guild_id, self.owner_id)
+        if not self.lists:
+            await interaction.response.send_message("There is no saved list to delete.", ephemeral=True)
+            return
+        removed = self.lists.pop(self.selected_index)
+        _update_shopping_lists(self.guild_id, self.owner_id, self.lists)
+        self.selected_index = min(self.selected_index, max(0, len(self.lists) - 1))
+        self.selected_item = 0
+        self.list_select.options = [
+            discord.SelectOption(label=item.get("name", "Shopping list")[:100], value=str(i), default=i == self.selected_index)
+            for i, item in enumerate(self.lists[:25])
+        ] or [discord.SelectOption(label="No saved lists yet", value="none")]
+        self.list_select.disabled = not bool(self.lists)
+        self.item_select.options = self._item_options()
+        self.item_select.disabled = not bool(self.lists and self.lists[self.selected_index].get("items"))
+        record_player_activity(self.guild_id, self.owner_id, "Deleted shopping list", removed.get("name", "Shopping list"))
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+
 def _saved_inventory_embed(items: dict[str, int], updated_at: str | None = None):
     embed = discord.Embed(
         title="🧺 My Saved Inventory",
