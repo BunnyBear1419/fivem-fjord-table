@@ -38,7 +38,7 @@ def _prune_sessions(now):
 
 
 def _request_completion(messages):
-    api_key = os.environ.get("OPENAI_API_KEY", "").strip()
+    api_key = os.environ.get("GROQ_API_KEY", "").strip()
     if not api_key:
         return None
     payload = {
