@@ -656,3 +656,22 @@ def test_refresh_button_is_available_and_reloads_dynamic_menu_content():
     assert "self.source_embed = shops_embed()" in source
     assert "self.data = include_usable_item_recipes(get_guild_recipe_data(self.guild_id))" in source
     assert "self.lists = _shopping_lists_for(self.guild_id, self.owner_id)" in source
+
+
+
+def test_admin_menu_includes_backup_verification_and_health_diagnostics():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'value="verify_backups"' in source
+    assert 'elif action == "verify_backups":' in source
+    assert "verify_recipe_backup(path)" in source
+    assert "Data last modified" in source
+    assert "Storage writable" in source
+
+
+def test_all_guild_recipe_profile_saves_are_validated_before_write():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    start = source.index("def save_guild_recipe_data(")
+    end = source.index("\n\ndef guild_recipe_source_path", start)
+    body = source[start:end]
+    assert "validate_recipe_data(data)" in body
+    assert "if errors:" in body
