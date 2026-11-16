@@ -647,3 +647,12 @@ def test_all_new_member_tools_and_shared_backups_are_wired_into_menus():
         'value="download_runtime_backup"',
     ):
         assert token in source
+
+
+def test_refresh_button_is_available_and_reloads_dynamic_menu_content():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert '@discord.ui.button(label="Refresh", emoji="🔄"' in source
+    assert "self.results = advanced_search(data, query=self.query)" in source
+    assert "self.source_embed = shops_embed()" in source
+    assert "self.data = include_usable_item_recipes(get_guild_recipe_data(self.guild_id))" in source
+    assert "self.lists = _shopping_lists_for(self.guild_id, self.owner_id)" in source
