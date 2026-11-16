@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pytest
 
 from crafting import (
@@ -56,10 +58,11 @@ def test_ingredient_parser_rejects_zero_quantity():
 async def test_private_menu_view_builds_dropdown_controls():
     data = load_recipe_data()
     view = CraftingDirectoryView(123456789, data)
-    assert len(view.children) == 7
+    assert len(view.children) == 8
     assert view.children[4].label == '◀ Tables'
     assert view.children[5].label == 'More tables ▶'
     assert view.children[6].label == 'Home'
+    assert view.children[7].label == 'Refresh'
     assert view.children[0].placeholder == "Choose a crafting table"
     assert view.children[1].placeholder == "Choose a recipe"
     view.stop()
@@ -117,3 +120,10 @@ def test_recipe_search_and_recipe_embed_surface_location_data_warnings():
     assert any(field.name == "Data review notes" for field in embed.fields)
     search = search_embed(data, "Heist Drill")
     assert "Postal 10060 notes list an unnamed hidden material." in search.fields[0].value
+
+
+def test_crafting_directory_has_refresh_callback_and_preserves_current_table():
+    source = Path("crafting.py").read_text(encoding="utf-8")
+    assert "refresh.callback = self._refresh" in source
+    assert "latest = self.refresh_data()" in source
+    assert "self.table_index = min(self.table_index, max(0, len(self.tables) - 1))" in source
