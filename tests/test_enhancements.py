@@ -528,3 +528,14 @@ def test_city_reference_validation_flags_alias_collisions_and_unpriced_inputs():
     assert "multiple items" in messages
     assert "no matching shop-price entry" in messages
     assert not any(item["severity"] == "error" for item in findings)
+
+
+def test_shop_basket_calculator_totals_known_items_and_reports_unknown_names():
+    from enhancements import calculate_shop_basket
+
+    result = calculate_shop_basket("Spring Water x4, Flower Pot x2, Cheesecloth x10, Mystery Item x3")
+    assert result["total"] == 650
+    assert result["by_shop"]["Farm Supplier — Postals 2002–2003"] == 600
+    assert result["by_shop"]["Head Shop — Postal 3057"] == 50
+    assert result["unknown"] == ["Mystery Item"]
+    assert sum(item["total"] for item in result["items"]) == result["total"]
