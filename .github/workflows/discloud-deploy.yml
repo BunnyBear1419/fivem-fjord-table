@@ -1,9 +1,7 @@
 name: FiveM Crafting Bot — Discloud Deploy
 
 on:
-  workflow_run:
-    workflows: ["FiveM Crafting Bot Tests"]
-    types: [completed]
+  push:
     branches: [main]
   workflow_dispatch:
 
@@ -17,14 +15,28 @@ concurrency:
 jobs:
   deploy:
     name: Deploy FiveM crafting bot to Discloud
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Checkout repository source
         uses: actions/checkout@v4.2.2
         with:
-          ref: ${{ github.event_name == 'workflow_run' && github.event.workflow_run.head_sha || github.sha }}
+          ref: ${{ github.sha }}
+
+      - name: Setup Python and verify source before deployment
+        uses: actions/setup-python@v5.6.0
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --disable-pip-version-check -r requirements.txt
+          python -m pip install pytest pytest-asyncio
+
+      - name: Compile and run tests before deployment
+        run: |
+          python -m compileall -q bot.py crafting.py enhancements.py storage.py
+          python -m pytest -q tests
 
       - name: Create Discloud bot bundle
         env:
