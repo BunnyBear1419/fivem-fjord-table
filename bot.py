@@ -273,6 +273,19 @@ class SafeView(discord.ui.View):
             view=DashboardMenuView(owner_id),
         )
 
+    async def refresh_content(self, interaction: discord.Interaction):
+        renderer = getattr(self, "current_embed", None)
+        if callable(renderer):
+            embed = renderer()
+        else:
+            embeds = getattr(interaction.message, "embeds", [])
+            embed = embeds[0] if embeds else None
+        await interaction.response.edit_message(embed=embed, view=self)
+
+    @discord.ui.button(label="Refresh", emoji="🔄", style=discord.ButtonStyle.secondary, row=4)
+    async def refresh_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.refresh_content(interaction)
+
     async def on_timeout(self):
         for child in self.children:
             child.disabled = True
@@ -813,9 +826,10 @@ class RecipeCalculatorModal(SafeModal, title="Calculate recipe shopping list"):
 
 
 class IngredientDirectoryView(SafeView):
-    def __init__(self, owner_id: int, data: dict):
+    def __init__(self, owner_id: int, data: dict, guild_id: int | None = None):
         super().__init__(timeout=300)
         self.owner_id = owner_id
+        self.guild_id = guild_id
         self.data = data
         self.page = 0
         self.page_size = 5
@@ -834,6 +848,14 @@ class IngredientDirectoryView(SafeView):
             await interaction.response.send_message("This private ingredient directory belongs to someone else.", ephemeral=True)
             return False
         return True
+
+    async def refresh_content(self, interaction: discord.Interaction):
+        if self.guild_id is not None:
+            self.data = include_usable_item_recipes(get_guild_recipe_data(self.guild_id))
+            self.page_count = max(1, (len(build_ingredient_directory(self.data)) + self.page_size - 1) // self.page_size)
+            self.page = min(self.page, self.page_count - 1)
+            self.refresh_buttons()
+        await interaction.response.edit_message(embed=ingredient_directory_embed(self.data, self.page, self.page_size), view=self)
 
     @discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary, custom_id="ingredient_previous", row=0)
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -1021,7 +1043,19 @@ class SavedShoppingListsView(SafeView):
 
     def current_embed(self):
         self.lists = _shopping_lists_for(self.guild_id, self.owner_id)
+        self.selected_index = min(self.selected_index, max(0, len(self.lists) - 1))
         return _shopping_list_embed(self.lists, self.selected_index)
+
+    async def refresh_content(self, interaction: discord.Interaction):
+        selected_id = self.lists[self.selected_index].get("id") if self.lists else None
+        self.lists = _shopping_lists_for(self.guild_id, self.owner_id)
+        self.selected_index = next((i for i, item in enumerate(self.lists) if item.get("id") == selected_id), min(self.selected_index, max(0, len(self.lists) - 1)))
+        self.selected_item = min(self.selected_item, max(0, len(self.lists[self.selected_index].get("items", [])) - 1)) if self.lists else 0
+        self.list_select.options = [discord.SelectOption(label=item.get("name", "Shopping list")[:100], value=str(i), default=i == self.selected_index) for i, item in enumerate(self.lists[:25])] or [discord.SelectOption(label="No saved lists yet", value="none")]
+        self.list_select.disabled = not bool(self.lists)
+        self.item_select.options = self._item_options()
+        self.item_select.disabled = not bool(self.lists and self.lists[self.selected_index].get("items"))
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
     async def choose_list(self, interaction: discord.Interaction):
         self.selected_index = int(interaction.data["values"][0])
@@ -1348,7 +1382,7 @@ class MainMenuView(SafeView):
         elif action == "ingredient_lookup":
             await interaction.response.send_modal(IngredientLookupModal())
         elif action == "all_ingredients":
-            view = IngredientDirectoryView(self.owner_id, include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)))
+            view = IngredientDirectoryView(self.owner_id, include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)), interaction.guild_id)
             await interaction.response.edit_message(
                 embed=ingredient_directory_embed(include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)), 0, view.page_size),
                 view=view,
@@ -2868,6 +2902,24 @@ class InformationPagerView(SafeView):
         self._sync_navigation_buttons()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
+    async def refresh_content(self, interaction: discord.Interaction):
+        title = (self.source_embed.title or "").casefold()
+        if "shops" in title:
+            self.source_embed = shops_embed()
+        elif "locations" in title:
+            self.source_embed = locations_embed()
+        elif "usable items" in title:
+            self.source_embed = usable_embed()
+        elif "commands" in title:
+            self.source_embed = commands_embed()
+        elif "recent activity" in title:
+            self.source_embed = recent_activity_embed(interaction.guild_id, self.owner_id)
+        self.fields = tuple((field.name, field.value, field.inline) for field in self.source_embed.fields)
+        self.total_pages = max(1, (len(self.fields) + self.page_size - 1) // self.page_size)
+        self.page = min(self.page, self.total_pages - 1)
+        self._sync_navigation_buttons()
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
     @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary, custom_id="information_previous", row=0)
     async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.page = max(0, self.page - 1)
@@ -3049,6 +3101,14 @@ class RecipeSearchResultsView(SafeView):
 
     async def refresh(self, interaction):
         self.page = max(0, min(self.page, self.total_pages - 1))
+        self._sync_navigation_buttons()
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    async def refresh_content(self, interaction: discord.Interaction):
+        data = include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id))
+        self.results = advanced_search(data, query=self.query)
+        self.total_pages = max(1, (len(self.results) + self.page_size - 1) // self.page_size)
+        self.page = min(self.page, self.total_pages - 1)
         self._sync_navigation_buttons()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
