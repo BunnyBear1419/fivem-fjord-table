@@ -143,12 +143,13 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
 
 
 class CraftingDirectoryView(SafeView):
-    def __init__(self, owner_id: int, data: dict[str, Any], on_table_selected=None, on_home=None):
+    def __init__(self, owner_id: int, data: dict[str, Any], on_table_selected=None, on_home=None, refresh_data=None):
         super().__init__(timeout=300)
         self.owner_id = owner_id
         self.tables = data["tables"]
         self.on_table_selected = on_table_selected
         self.on_home = on_home
+        self.refresh_data = refresh_data
         self.table_index = 0
         self.table_page = 0
         self.recipe_page = 0
@@ -192,6 +193,18 @@ class CraftingDirectoryView(SafeView):
         home = discord.ui.Button(label="Home", emoji="🏠", style=discord.ButtonStyle.success, row=4)
         home.callback = self._home
         self.add_item(home)
+        refresh = discord.ui.Button(label="Refresh", emoji="🔄", style=discord.ButtonStyle.secondary, row=4)
+        refresh.callback = self._refresh
+        self.add_item(refresh)
+
+    async def _refresh(self, interaction):
+        if self.refresh_data:
+            latest = self.refresh_data()
+            self.tables = latest.get("tables", [])
+            self.table_index = min(self.table_index, max(0, len(self.tables) - 1))
+            self.table_page = self.table_index // 25
+            self._refresh_selects()
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
     def current_embed(self):
         if not self.tables:
