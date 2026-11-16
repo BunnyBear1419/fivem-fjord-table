@@ -479,3 +479,52 @@ def test_recipe_validator_flags_repeated_ingredient_rows_without_changing_data()
     findings = validate_recipe_data(data)
     assert any(item["severity"] == "warning" and "appears more than once" in item["message"] for item in findings)
     assert data["tables"][0]["recipes"][0]["ingredients"] == [["Iron", 2], ["iron", 3]]
+
+
+def test_item_cross_reference_connects_shop_recipe_output_ingredient_and_tool():
+    from enhancements import item_cross_reference
+
+    data = {"tables": [
+        {"name": "Refinery", "recipes": [
+            {"name": "Copper Wire", "ingredients": [["Copper Ore", 2]], "tools": []}
+        ]},
+        {"name": "Assembly Bench", "recipes": [
+            {"name": "Widget", "ingredients": [["Copper Wire", 3]], "tools": ["Press"]}
+        ]},
+    ]}
+    catalog = [
+        {"name": "Copper Wire", "aliases": ["wire"], "shop": "Hardware Shop", "price": 20}
+    ]
+    result = item_cross_reference(data, "wire", catalog)
+    assert result["item"] == "Copper Wire"
+    assert result["shops"] == [{"shop": "Hardware Shop", "price": 20}]
+    assert result["produced_by"] == [{"table": "Refinery", "recipe": "Copper Wire"}]
+    assert result["used_in"] == [{"table": "Assembly Bench", "recipe": "Widget", "quantity": 3}]
+
+
+def test_item_cross_reference_marks_tools_as_non_consumed_equipment():
+    from enhancements import item_cross_reference
+
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Widget", "ingredients": [["Wire", 1]], "tools": ["Press"]}
+    ]}]}
+    result = item_cross_reference(data, "Press", [])
+    assert result["required_as_tool"] == [{"table": "Bench", "recipe": "Widget"}]
+    assert result["used_in"] == []
+
+
+def test_city_reference_validation_flags_alias_collisions_and_unpriced_inputs():
+    from enhancements import validate_city_reference_data
+
+    data = {"tables": [{"name": "Bench", "recipes": [
+        {"name": "Widget", "ingredients": [["Unpriced Ore", 2], ["Cable", 1]], "tools": []}
+    ]}]}
+    catalog = [
+        {"name": "Wire", "aliases": ["wire", "cable"], "shop": "Shop A", "price": 5},
+        {"name": "Cable", "aliases": ["cable"], "shop": "Shop B", "price": 6},
+    ]
+    findings = validate_city_reference_data(data, catalog)
+    messages = " ".join(item["message"] for item in findings)
+    assert "multiple items" in messages
+    assert "no matching shop-price entry" in messages
+    assert not any(item["severity"] == "error" for item in findings)
