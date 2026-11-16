@@ -228,6 +228,14 @@ def help_embed():
 
 
 class SafeView(discord.ui.View):
+    @discord.ui.button(label="Home", emoji="🏠", style=discord.ButtonStyle.success, row=4)
+    async def home_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        owner_id = getattr(self, "owner_id", interaction.user.id)
+        await interaction.response.edit_message(
+            embed=dashboard_embed(),
+            view=DashboardMenuView(owner_id),
+        )
+
     async def on_error(self, interaction, error, item):
         logger.error("Discord view interaction failed (%s): %s", type(item).__name__, error, exc_info=(type(error), error, error.__traceback__))
         message = "That action could not be completed. The error was logged for troubleshooting."
@@ -1046,7 +1054,12 @@ class MainMenuView(SafeView):
     async def choose_action(self, interaction: discord.Interaction):
         action = interaction.data["values"][0]
         if action == "browse":
-            view = CraftingDirectoryView(self.owner_id, include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)), on_table_selected=record_table_usage)
+            view = CraftingDirectoryView(
+                self.owner_id,
+                include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id)),
+                on_table_selected=record_table_usage,
+                on_home=return_to_dashboard,
+            )
             await interaction.response.edit_message(embed=view.current_embed(), view=view)
         elif action == "search":
             await interaction.response.send_modal(SearchModal())
@@ -1700,6 +1713,13 @@ def dashboard_embed():
     )
     embed.set_footer(text="FJORD CARTEL • BLOOD IN THE WATER, STEEL IN THE VEINS")
     return embed
+
+
+async def return_to_dashboard(interaction: discord.Interaction, owner_id: int):
+    await interaction.response.edit_message(
+        embed=dashboard_embed(),
+        view=DashboardMenuView(owner_id),
+    )
 
 
 def shops_embed():
@@ -2441,7 +2461,7 @@ def commands_embed():
     return embed
 
 
-class InformationPagerView(discord.ui.View):
+class InformationPagerView(SafeView):
     def __init__(self, owner_id: int, source_embed: discord.Embed, page_size: int = 3):
         super().__init__(timeout=300)
         self.owner_id = owner_id
@@ -2482,12 +2502,7 @@ class InformationPagerView(discord.ui.View):
         self.page = min(self.total_pages - 1, self.page + 1)
         await self.refresh(interaction)
 
-    @discord.ui.button(label="Dashboard", emoji="🏠", style=discord.ButtonStyle.success)
-    async def dashboard_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        await interaction.response.edit_message(embed=dashboard_embed(), view=DashboardMenuView(self.owner_id))
-
-
-class DashboardMenuView(discord.ui.View):
+class DashboardMenuView(SafeView):
     def __init__(self, owner_id: int):
         super().__init__(timeout=300)
         self.owner_id = owner_id
