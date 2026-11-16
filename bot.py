@@ -1253,6 +1253,8 @@ class MainMenuView(SafeView):
             discord.SelectOption(label="Full production cost planner", value="production_cost", description="Multiply nested crafting steps into total base ingredients", emoji="🧮"),
             discord.SelectOption(label="Inventory calculator", value="inventory", description="Calculate batches from stock entered once", emoji="🎒"),
             discord.SelectOption(label="My saved inventory", value="inventory_tracker", description="Save your personal stock and reuse it for recipe plans", emoji="🧺"),
+            discord.SelectOption(label="My saved shopping lists", value="shopping_lists", description="Save ingredient checklists and track what you have collected", emoji="🛒"),
+            discord.SelectOption(label="My recent activity", value="recent_activity", description="Review your latest searches and planning actions", emoji="🕘"),
             discord.SelectOption(label="Multi-recipe planner", value="multi_plan", description="Combine several recipes into one list", emoji="🧾"),
             discord.SelectOption(label="Advanced search", value="advanced_search", description="Filter recipes by multiple criteria", emoji="🧰"),
             discord.SelectOption(label="Item database", value="item_page", description="Open an item's production and usage page", emoji="📖"),
@@ -1273,6 +1275,7 @@ class MainMenuView(SafeView):
 
     async def choose_action(self, interaction: discord.Interaction):
         action = interaction.data["values"][0]
+        record_player_activity(interaction.guild_id, interaction.user.id, "Opened crafting tool", action.replace("_", " ").title())
         if action == "browse":
             view = CraftingDirectoryView(
                 self.owner_id,
@@ -1304,6 +1307,13 @@ class MainMenuView(SafeView):
         elif action == "inventory_tracker":
             view = InventoryTrackerView(self.owner_id, interaction.guild_id)
             await interaction.response.edit_message(embed=view.current_embed(), view=view)
+        elif action == "shopping_lists":
+            view = SavedShoppingListsView(self.owner_id, interaction.guild_id)
+            await interaction.response.edit_message(embed=view.current_embed(), view=view)
+        elif action == "recent_activity":
+            source_embed = recent_activity_embed(interaction.guild_id, self.owner_id)
+            pager = InformationPagerView(self.owner_id, source_embed, 5)
+            await interaction.response.edit_message(embed=pager.current_embed(), view=pager)
         elif action == "multi_plan":
             await interaction.response.send_modal(MultiRecipeModal())
         elif action == "advanced_search":
@@ -1522,6 +1532,8 @@ async def on_message(message: discord.Message):
     if not content.startswith("!"):
         return
     query = content[1:].strip()
+    if query:
+        record_player_activity(message.guild.id, message.author.id, "Asked a question", query[:120])
     if not query:
         await message.reply("Use ! only when asking a question, for example: !where can I buy ammonia?", mention_author=False)
         return
@@ -2788,37 +2800,79 @@ async def crafting_command(interaction: discord.Interaction):
     )
 
 
+class RecipeSearchResultsView(SafeView):
+    def __init__(self, owner_id: int, query: str, results: list[tuple[str, dict]]):
+        super().__init__(timeout=300)
+        self.owner_id, self.query, self.results = owner_id, query, results
+        self.page = 0
+        self.page_size = 5
+        self.previous_button.disabled = True
+        self.next_button.disabled = len(results) <= self.page_size
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("These private search results belong to someone else. Run /search to make your own search.", ephemeral=True)
+            return False
+        return True
+
+    def current_embed(self):
+        total_pages = max(1, (len(self.results) + self.page_size - 1) // self.page_size)
+        start = self.page * self.page_size
+        embed = discord.Embed(
+            title="🔎 Crafting Directory Search",
+            description=f"Search: **{self.query[:120]}**\nFound **{len(self.results)}** matching recipe(s).",
+            color=COLOR,
+        )
+        for table_name, recipe in self.results[start:start + self.page_size]:
+            ingredients = ", ".join(f"{name} ×{amount}" for name, amount in recipe.get("ingredients", [])) or "No ingredients recorded"
+            value = f"**Ingredients:** {ingredients}"
+            if recipe.get("tools"):
+                value += "\n**Tools (not consumed):** " + ", ".join(recipe["tools"])
+            if recipe.get("notes"):
+                value += "\n⚠️ " + " ".join(recipe["notes"])
+            embed.add_field(name=f"{recipe.get('name', 'Unknown recipe')} · {table_name}"[:256], value=value[:1024], inline=False)
+        embed.set_footer(text=f"Page {self.page + 1}/{total_pages} • Search uses saved in-city recipe data only")
+        return embed
+
+    async def refresh(self, interaction):
+        total_pages = max(1, (len(self.results) + self.page_size - 1) // self.page_size)
+        self.previous_button.disabled = self.page <= 0
+        self.next_button.disabled = self.page >= total_pages - 1
+        await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary, row=0)
+    async def previous_button(self, interaction, button):
+        self.page = max(0, self.page - 1)
+        await self.refresh(interaction)
+
+    @discord.ui.button(label="Next", emoji="➡️", style=discord.ButtonStyle.primary, row=0)
+    async def next_button(self, interaction, button):
+        self.page = min(max(0, (len(self.results) - 1) // self.page_size), self.page + 1)
+        await self.refresh(interaction)
+
+
 @bot.tree.command(name="search", description="Search saved recipes, tables, ingredients, and tools.")
 @app_commands.describe(query="A recipe, table, ingredient, or tool name")
 async def search_command(interaction: discord.Interaction, query: str):
     data = include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id))
     results = advanced_search(data, query=query)
     if not results:
+        record_player_activity(interaction.guild_id, interaction.user.id, "Search with no results", query)
+        record_usage("no_result", query)
         await interaction.response.send_message(
             "I couldn't find matching saved recipes. Try an ingredient, tool, recipe, or crafting table name.",
             ephemeral=True,
         )
         return
-    embed = discord.Embed(
-        title="🔎 Crafting Directory Search",
-        description=f"Found **{len(results)}** matching recipe(s). Showing up to 15.",
-        color=COLOR,
-    )
-    for table_name, recipe in results[:15]:
-        ingredients = ", ".join(f"{name} ×{amount}" for name, amount in recipe.get("ingredients", [])) or "No ingredients recorded"
-        value = f"**Ingredients:** {ingredients}"
-        if recipe.get("tools"):
-            value += "\n**Tools (not consumed):** " + ", ".join(recipe["tools"])
-        if recipe.get("notes"):
-            value += "\n⚠️ " + " ".join(recipe["notes"])
-        embed.add_field(name=f"{recipe.get('name', 'Unknown recipe')} · {table_name}"[:256], value=value[:1024], inline=False)
-    embed.set_footer(text="Search uses saved in-city recipe data only.")
     record_usage("search", query)
-    await interaction.response.send_message(embed=embed, ephemeral=True)
+    record_player_activity(interaction.guild_id, interaction.user.id, "Searched recipes", query)
+    view = RecipeSearchResultsView(interaction.user.id, query, results)
+    await interaction.response.send_message(embed=view.current_embed(), view=view, ephemeral=True)
 
 
 @bot.tree.command(name="shops", description="Browse shop items and prices.")
 async def shops_command(interaction: discord.Interaction):
+    record_player_activity(interaction.guild_id, interaction.user.id, "Opened directory", "Shops and prices")
     source_embed = shops_embed()
     pager = InformationPagerView(interaction.user.id, source_embed, 2)
     await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
@@ -2826,6 +2880,7 @@ async def shops_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="locations", description="Browse postal codes and hidden locations.")
 async def locations_command(interaction: discord.Interaction):
+    record_player_activity(interaction.guild_id, interaction.user.id, "Opened directory", "Postal locations")
     source_embed = locations_embed()
     pager = InformationPagerView(interaction.user.id, source_embed, 3)
     await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
@@ -2833,6 +2888,7 @@ async def locations_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="moonshine", description="Show where to sell Moonshine.")
 async def moonshine_command(interaction: discord.Interaction):
+    record_player_activity(interaction.guild_id, interaction.user.id, "Opened directory", "Moonshine selling information")
     embed = discord.Embed(
         title="🥃 Fjord Cartel • Moonshine",
         description=(
@@ -2849,6 +2905,7 @@ async def moonshine_command(interaction: discord.Interaction):
 
 @bot.tree.command(name="dashboard", description="Open the Fjord Cartel Information dashboard.")
 async def dashboard_command(interaction: discord.Interaction):
+    record_player_activity(interaction.guild_id, interaction.user.id, "Opened dashboard")
     await interaction.response.send_message(
         embed=dashboard_embed(),
         view=DashboardMenuView(interaction.user.id),
