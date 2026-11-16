@@ -4,7 +4,7 @@ A Discord bot that provides a private, interactive reference for crafting tables
 
 ## Chat lookup shortcut
 
-Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The bot searches the saved crafting recipes plus the Shops, Locations, Usable Items, and Commands information shown in the slash-command pages. It includes ingredient and non-consumed tool lookups, inventory-limited batch estimates, shop prices, postal references, and activity information. It tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. Location notes that mention unnamed hidden materials are attached as data-review warnings to recipe searches and planning results; the bot does not invent the missing item. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items.
+Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, `!where is Clean Weed Bud used`, or `!item Filter Paper`. The bot searches the saved crafting recipes plus the Shops, Locations, Usable Items, and Commands information shown in the slash-command pages. It includes a unified `!item [name]` cross-reference for shop prices, recipe outputs, ingredient uses, and non-consumed equipment; ingredient and tool lookups; inventory-limited batch estimates; shop prices; postal references; and activity information. It tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. Location notes that mention unnamed hidden materials are attached as data-review warnings to recipe searches and planning results; the bot does not invent the missing item. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items.
 
 **Discord setup required:** In the Discord Developer Portal, open the bot application, go to **Bot → Privileged Gateway Intents**, enable **Message Content Intent**, and save. The bot requests this intent in code. Without the portal toggle, Discord will not provide ordinary message text to the shortcut.
 
@@ -46,7 +46,8 @@ The Admin tools submenu includes:
 - Add, edit, or remove a recipe.
 - Create a manual backup and download the latest backup file for an external copy.
 - Export JSON, CSV, and Excel workbooks (each ingredient occurrence is a separate row).
-- Validate recipe data for missing names/ingredients, invalid quantities, repeated recipe names, and possible spelling variations. Findings are review-only; nothing is auto-corrected.
+- Validate recipe and city reference data for missing names/ingredients, invalid quantities, repeated recipe names, possible spelling variations, duplicate shop aliases, invalid shop prices, and recipe ingredients without a matching shop-price entry. Findings are review-only; nothing is auto-corrected.
+- The item cross-reference joins the existing recipe directory, usable-item recipes, shop-price catalogue, and equipment/tool requirements at lookup time. It does not rename items or assume that similarly named items are identical. Unpriced ingredients are review information because some may be collected or produced in the city.
 - View a reversible recipe change history and restore a prior snapshot.
 - View table and recipe totals plus usage analytics, including common searches that return no matches.
 - Review spelling and data warnings. Possible spelling variations are suggestions only; ingredient names are never automatically merged or renamed.
@@ -82,7 +83,7 @@ Do not delete and reinvite the bot just to refresh commands.
 - `crafting-data.json` — runtime admin-edited override, created after the first admin change.
 - `crafting.py` — directory UI, search, ingredient parsing, and backup helpers.
 - `storage.py` — atomic JSON reads/writes and a process-wide storage lock.
-- `enhancements.py` — production chains, inventory and multi-recipe planning, advanced search, comparisons, imports, analytics, validation, typo-tolerant matching, and CSV/Excel exports.
+- `enhancements.py` — production chains, inventory and multi-recipe planning, advanced search, comparisons, imports, analytics, validation, typo-tolerant matching, item cross-references, city-data checks, and CSV/Excel exports.
 - `inventories.json` — private per-server/per-player saved stock (runtime data).
 - `history.json` — reversible administrator change snapshots, created when the first change is made.
 - `bot.py` — slash commands, dropdown menus, chat lookups, information pages, admin tools, usage tracking, reports, and logging.
