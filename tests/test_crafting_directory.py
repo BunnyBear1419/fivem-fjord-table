@@ -127,3 +127,22 @@ def test_crafting_directory_has_refresh_callback_and_preserves_current_table():
     assert "refresh.callback = self._refresh" in source
     assert "latest = self.refresh_data()" in source
     assert "self.table_index = min(self.table_index, max(0, len(self.tables) - 1))" in source
+
+
+
+def test_recipe_backup_verifier_accepts_valid_backup_and_rejects_corrupt_json(tmp_path):
+    import json
+    from crafting import verify_recipe_backup
+
+    valid = tmp_path / "valid.json"
+    valid.write_text(json.dumps({"tables": [{"name": "Bench", "recipes": [{"name": "Widget", "ingredients": [["Wire", 2]], "tools": []}]}]}), encoding="utf-8")
+    result = verify_recipe_backup(valid)
+    assert result["valid"] is True
+    assert result["tables"] == 1
+    assert result["recipes"] == 1
+
+    corrupt = tmp_path / "corrupt.json"
+    corrupt.write_text("{not json", encoding="utf-8")
+    failed = verify_recipe_backup(corrupt)
+    assert failed["valid"] is False
+    assert failed["errors"]
