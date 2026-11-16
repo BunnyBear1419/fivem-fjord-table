@@ -471,3 +471,11 @@ def test_grinding_station_table_contains_all_user_supplied_recipes_and_tool():
     assert table["recipes"][11]["ingredients"] == [["Mushrooms", 5]]
     assert table["recipes"][12]["ingredients"] == [["Dried Golden Teacher Shrooms", 3]]
     assert all(recipe["id"].startswith("recipe_012_") for recipe in table["recipes"])
+
+
+def test_recipe_validator_flags_repeated_ingredient_rows_without_changing_data():
+    from enhancements import validate_recipe_data
+    data = {"tables": [{"name": "Bench", "recipes": [{"name": "Widget", "ingredients": [["Iron", 2], ["iron", 3]]}]}]}
+    findings = validate_recipe_data(data)
+    assert any(item["severity"] == "warning" and "appears more than once" in item["message"] for item in findings)
+    assert data["tables"][0]["recipes"][0]["ingredients"] == [["Iron", 2], ["iron", 3]]
