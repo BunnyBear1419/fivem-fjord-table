@@ -4,19 +4,19 @@ A Discord bot that provides a private, interactive reference for crafting tables
 
 ## Chat lookup shortcut
 
-Members can also type messages such as `!how to make Heroin`, `!how do I craft Kief`, `!where is Clean Weed Bud used`, or `!item Filter Paper`. The bot searches the saved crafting recipes plus the Shops, Locations, Usable Items, and Commands information shown in the slash-command pages. It includes a unified `!item [name]` cross-reference for shop prices, recipe outputs, ingredient uses, and non-consumed equipment; ingredient and tool lookups; inventory-limited batch estimates; shop prices; postal references; and activity information. It tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. Location notes that mention unnamed hidden materials are attached as data-review warnings to recipe searches and planning results; the bot does not invent the missing item. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items.
+Members can ask natural-language questions by starting a message with `!`, such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The `!` prefix is reserved for questions only. All bot features and utilities are accessed through slash commands and interactive menus. `/item` provides a unified cross-reference for shop prices, recipe outputs, ingredient uses, and non-consumed equipment; `/search` searches recipes, tables, ingredients, and tools. Question lookups use saved crafting recipes plus the Shops, Locations, Usable Items, and activity information. The bot tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. Location notes that mention unnamed hidden materials are attached as data-review warnings to recipe searches and planning results; the bot does not invent the missing item. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items. It tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. Location notes that mention unnamed hidden materials are attached as data-review warnings to recipe searches and planning results; the bot does not invent the missing item. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items.
 
 **Discord setup required:** In the Discord Developer Portal, open the bot application, go to **Bot → Privileged Gateway Intents**, enable **Message Content Intent**, and save. The bot requests this intent in code. Without the portal toggle, Discord will not provide ordinary message text to the shortcut.
 
 ## Slash commands
 
-The bot registers five global slash commands:
+The bot registers seven global slash commands:
 
 - **`/dashboard`** — open the main information menu.
 - **`/crafting`** — open the private recipe directory and planning tools.
 - **`/shops`** — browse saved shop prices.
 - **`/locations`** — browse postal codes and hidden locations.
-- **`/moonshine`** — show the Old Man selling information.
+- **`/moonshine`** — show the Old Man selling information.\n- **`/item [item_name]`** — look up an item across shop prices, crafting outputs, ingredient uses, and required equipment.\n- **`/search [query]`** — search saved recipes, tables, ingredients, and tools.
 
 `/crafting` opens a private dropdown menu with:
 
@@ -63,7 +63,7 @@ Admin edits are written to `crafting-data.json`, a runtime override separate fro
 
 ## Command registration
 
-The bot syncs the five current global slash commands listed above. On startup it also clears legacy guild-specific command registrations in servers the bot is connected to. Discord may take up to an hour to remove old global command suggestions from every client; restarting Discord or refreshing the client can help.
+The bot syncs the seven current global slash commands listed above. On startup it also clears legacy guild-specific command registrations in servers the bot is connected to. Discord may take up to an hour to remove old global command suggestions from every client; restarting Discord or refreshing the client can help.
 
 Do not delete and reinvite the bot just to refresh commands.
 
