@@ -48,6 +48,8 @@ STATS_FILE = BASE_DIR / "stats.json"
 REPORTS_FILE = BASE_DIR / "reports.json"
 HISTORY_FILE = BASE_DIR / "history.json"
 INVENTORIES_FILE = BASE_DIR / "inventories.json"
+SHOPPING_LISTS_FILE = BASE_DIR / "shopping-lists.json"
+PLAYER_ACTIVITY_FILE = BASE_DIR / "player-activity.json"
 ALIASES_FILE = BASE_DIR / "aliases.json"
 AUDIT_FILE = BASE_DIR / "audit-log.json"
 GUILD_PROFILES_FILE = BASE_DIR / "guild-profiles.json"
@@ -113,6 +115,40 @@ def record_audit_event(guild_id, actor_id: int, action: str, details: str):
         entries = read_json(AUDIT_FILE, [])
         entries.append({"guild_id": guild_id, "actor_id": actor_id, "action": action[:80], "details": details[:300], "created_at": discord.utils.utcnow().isoformat()})
         write_json(AUDIT_FILE, entries[-1000:])
+
+
+def record_player_activity(guild_id, user_id: int, action: str, details: str = ""):
+    """Keep a bounded, private-to-the-member activity trail for useful bot actions."""
+    if user_id is None:
+        return
+    with file_lock():
+        entries = read_json(PLAYER_ACTIVITY_FILE, [])
+        entries.append({
+            "guild_id": str(guild_id or "dm"),
+            "user_id": str(user_id),
+            "action": str(action)[:80],
+            "details": str(details)[:120],
+            "created_at": discord.utils.utcnow().isoformat(),
+        })
+        write_json(PLAYER_ACTIVITY_FILE, entries[-1000:])
+
+
+def recent_activity_embed(guild_id, user_id: int):
+    entries = [item for item in read_json(PLAYER_ACTIVITY_FILE, [])
+               if item.get("guild_id") == str(guild_id or "dm") and item.get("user_id") == str(user_id)]
+    embed = discord.Embed(
+        title="🕘 My Recent Activity",
+        description="Your latest bot searches and planning actions in this server. Only you can view this list.",
+        color=COLOR,
+    )
+    for item in reversed(entries[-20:]):
+        timestamp = str(item.get("created_at", "Unknown"))[:19].replace("T", " ")
+        value = str(item.get("details") or "No extra details")
+        embed.add_field(name=f"{item.get('action', 'Activity')} · {timestamp}", value=value[:300], inline=False)
+    if not entries:
+        embed.description += "\n\nNo activity has been recorded yet."
+    embed.set_footer(text="FJORD CARTEL • PRIVATE MEMBER ACTIVITY")
+    return embed
 
 
 def _profile_path(guild_id: int, profile: str) -> Path:
