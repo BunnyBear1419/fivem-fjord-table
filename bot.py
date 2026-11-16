@@ -38,7 +38,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings, item_cross_reference, validate_city_reference_data,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings, validate_city_reference_data,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -2463,44 +2463,6 @@ async def crafting_command(interaction: discord.Interaction):
         view=MainMenuView(interaction.user.id),
         ephemeral=True,
     )
-
-
-@bot.tree.command(name="item", description="Look up an item across shops, recipes, ingredients, and equipment.")
-@app_commands.describe(item_name="The in-city item name to look up")
-async def item_command(interaction: discord.Interaction, item_name: str):
-    data = include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id))
-    result = item_cross_reference(data, item_name)
-    if result.get("suggestions"):
-        await interaction.response.send_message(
-            "Several items match. Try one of these exact names: " + ", ".join(result["suggestions"]),
-            ephemeral=True,
-        )
-        return
-    if result.get("error"):
-        await interaction.response.send_message(result["error"], ephemeral=True)
-        return
-    embed = discord.Embed(title=f"🔎 Item Lookup · {result['item']}", color=COLOR)
-    if result["shops"]:
-        lines = []
-        for shop in result["shops"][:8]:
-            price = shop["price"]
-            price_text = f"{chr(36)}{price:,}" if isinstance(price, int) else "Price not recorded"
-            lines.append(f"• **{shop['shop']}** — {price_text}")
-        embed.add_field(name="Where to buy", value="\n".join(lines), inline=False)
-    if result["produced_by"]:
-        lines = [f"• **{row['recipe']}** — {row['table']}" for row in result["produced_by"][:12]]
-        embed.add_field(name="Crafted at", value="\n".join(lines), inline=False)
-    if result["used_in"]:
-        lines = [f"• **{row['recipe']}** — {row['table']} (×{row['quantity']})" for row in result["used_in"][:15]]
-        embed.add_field(name="Used as an ingredient", value="\n".join(lines), inline=False)
-    if result["required_as_tool"]:
-        lines = [f"• **{row['recipe']}** — {row['table']}" for row in result["required_as_tool"][:12]]
-        embed.add_field(name="Required equipment (not consumed)", value="\n".join(lines), inline=False)
-    if not any(result[key] for key in ("shops", "produced_by", "used_in", "required_as_tool")):
-        embed.description = "The item is saved, but no shop, recipe, or equipment relationships are recorded yet."
-    embed.set_footer(text="Unified lookup uses saved in-city data only.")
-    record_usage("search", f"item:{item_name}")
-    await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @bot.tree.command(name="search", description="Search saved recipes, tables, ingredients, and tools.")
