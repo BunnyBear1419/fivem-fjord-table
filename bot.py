@@ -913,10 +913,13 @@ class SavedShoppingListModal(SafeModal, title="Create a shopping list"):
 
     async def on_submit(self, interaction: discord.Interaction):
         try:
+            list_name = self.name.value.strip()
+            if not list_name:
+                raise ValueError("Give this shopping list a name.")
             items = parse_inventory(self.items.value)
             if not items or len(items) > 25:
                 raise ValueError("Enter between 1 and 25 different item names.")
-            saved = _save_shopping_list(interaction.guild_id, interaction.user.id, self.name.value.strip(), items)
+            saved = _save_shopping_list(interaction.guild_id, interaction.user.id, list_name, items)
         except ValueError as exc:
             await interaction.response.send_message(str(exc), ephemeral=True)
             return
