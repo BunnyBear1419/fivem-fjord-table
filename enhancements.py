@@ -318,6 +318,36 @@ def calculate_shop_price_query(query: str):
         "total": quantity * item["price"] if quantity is not None else None,
     }
 
+
+def calculate_shop_basket(items_text: str):
+    """Estimate a shopping basket using exact known catalogue names and aliases."""
+    quantities = parse_inventory(items_text)
+    results, unknown = [], []
+    for requested_name, quantity in quantities.items():
+        needle = re.sub(r"[^a-z0-9]+", " ", requested_name.casefold()).strip()
+        candidates = []
+        for item in SHOP_PRICE_CATALOG:
+            aliases = (item["name"], *item.get("aliases", ()))
+            if any(needle == re.sub(r"[^a-z0-9]+", " ", str(alias).casefold()).strip() for alias in aliases):
+                candidates.append(item)
+        unique = {item["name"]: item for item in candidates}
+        if len(unique) != 1:
+            unknown.append(requested_name)
+            continue
+        item = next(iter(unique.values()))
+        results.append({
+            "requested": requested_name, "name": item["name"], "shop": item["shop"],
+            "quantity": quantity, "unit_price": int(item["price"]),
+            "total": int(item["price"]) * quantity,
+        })
+    shops = list(dict.fromkeys(item["shop"] for item in results))
+    return {
+        "items": results, "unknown": unknown,
+        "total": sum(item["total"] for item in results),
+        "by_shop": {shop: sum(item["total"] for item in results if item["shop"] == shop) for shop in shops},
+    }
+
+
 def _normalize_chat_search(value: str) -> str:
     """Normalize user input for matching without modifying saved recipe names."""
     return re.sub(r"[^a-z0-9]+", " ", str(value or "").casefold()).strip()
