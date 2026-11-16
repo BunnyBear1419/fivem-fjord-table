@@ -4,19 +4,19 @@ A Discord bot that provides a private, interactive reference for crafting tables
 
 ## Chat lookup shortcut
 
-Members ask natural-language questions by starting a message with `!`. The `!` prefix is reserved exclusively for questions; every utility and feature remains a Discord slash command. The assistant combines deterministic directory lookups with an optional OpenAI-powered hybrid AI layer. Deterministic calculators and saved city data remain authoritative; the AI interprets natural phrasing, explains relevant facts, and understands short follow-up questions using a short-lived per-member conversation context. If the AI service is not configured or unavailable, the existing local lookup system continues to work. The assistant must not invent prices, ingredients, tools, or postals, and it avoids actionable dangerous-drug synthesis details. Chat context is held in memory only, expires after 30 minutes of inactivity, and is not written to disk.
+Members ask natural-language questions by starting a message with `!`. The `!` prefix is reserved exclusively for questions; every utility and feature remains a Discord slash command. The assistant combines deterministic directory lookups with an optional Groq-powered hybrid AI layer. Deterministic calculators and saved city data remain authoritative; the AI interprets natural phrasing, explains relevant facts, and understands short follow-up questions using a short-lived per-member conversation context. If the AI service is not configured or unavailable, the existing local lookup system continues to work. The assistant must not invent prices, ingredients, tools, or postals, and it avoids actionable dangerous-drug synthesis details. Chat context is held in memory only, expires after 30 minutes of inactivity, and is not written to disk.
 
 **Discord setup required:** In the Discord Developer Portal, open the bot application, go to **Bot → Privileged Gateway Intents**, enable **Message Content Intent**, and save. The bot requests this intent in code. Without the portal toggle, Discord will not provide ordinary message text to the shortcut.
 
 
-### Hybrid AI configuration
+### Free hybrid AI configuration
 
-To enable the conversational AI layer, add these environment variables to the existing Discloud app:
+The conversational AI layer uses Groq's OpenAI-compatible Chat Completions API. To enable it, create a Groq account and API key at [Groq Console](https://console.groq.com/keys), then add these environment variables to the existing Discloud app:
 
-- `OPENAI_API_KEY` — your OpenAI API key. Keep it in Discloud environment settings; do not commit it to GitHub.
-- `OPENAI_MODEL` — optional model override. Defaults to `gpt-4.1-mini`.
+- `GROQ_API_KEY` — your Groq API key. Keep it in Discloud environment settings; never commit it to GitHub.
+- `GROQ_MODEL` — optional model override. Defaults to `openai/gpt-oss-20b`, which is listed in Groq's supported models. Free-tier access is subject to Groq's current model availability and account rate limits; it is not unlimited.
 
-The deploy workflow packages the AI module but deliberately does not copy the API key from GitHub or write it into the deployment archive. The bot continues to run without an API key and falls back to its built-in lookups. AI calls may incur API usage charges. The model receives the current question, relevant saved directory matches, and a short-lived conversation window; it cannot edit recipes, shops, prices, or locations.
+The deploy workflow packages the AI module but deliberately does not copy the API key from GitHub or write it into the deployment archive. The bot continues to run without an API key and falls back to its built-in lookups. If Groq is temporarily unavailable or a rate limit is reached, the built-in lookup still works. The model receives the current question, relevant saved directory matches, and a short-lived conversation window; it cannot edit recipes, shops, prices, or locations.
 
 ## Slash commands
 
