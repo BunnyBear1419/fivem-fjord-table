@@ -1395,6 +1395,40 @@ async def on_message(message: discord.Message):
     query_data = include_usable_item_recipes(data)
     lowered = query.casefold()
 
+    # Explicit directory search: recipe name, table, ingredient, or tool.
+    search_text = None
+    ingredient_filter = ""
+    for prefix in ("search recipes for ", "search crafting for ", "find recipes matching ", "show recipes matching ", "search for "):
+        if lowered.startswith(prefix):
+            search_text = query[len(prefix):].strip(" ?.! ")
+            break
+    for prefix in ("find recipes using ", "show recipes using ", "which recipes use ", "recipes using "):
+        if lowered.startswith(prefix):
+            ingredient_filter = query[len(prefix):].strip(" ?.! ")
+            search_text = ""
+            break
+    if search_text is not None or ingredient_filter:
+        results = advanced_search(query_data, query=search_text or "", ingredient_filter=ingredient_filter)
+        if not results:
+            await message.reply("I couldn't find matching saved recipes. Try an ingredient, tool, recipe name, or crafting table name.", mention_author=False)
+            return
+        embed = discord.Embed(
+            title="🔎 Crafting Directory Search",
+            description=f"Found **{len(results)}** matching recipe(s). Showing up to 15.",
+            color=COLOR,
+        )
+        for table_name, recipe in results[:15]:
+            ingredients = ", ".join(f"{name} ×{amount}" for name, amount in recipe.get("ingredients", [])) or "No ingredients recorded"
+            value = f"**Ingredients:** {ingredients}"
+            if recipe.get("tools"):
+                value += "\\n**Tools (not consumed):** " + ", ".join(recipe["tools"])
+            if recipe.get("notes"):
+                value += "\\n⚠️ " + " ".join(recipe["notes"])
+            embed.add_field(name=f"{recipe.get('name', 'Unknown recipe')} · {table_name}"[:256], value=value[:1024], inline=False)
+        embed.set_footer(text="Search uses saved recipe data only • Try !search recipes for [term] or !find recipes using [ingredient]")
+        await message.reply(embed=embed, mention_author=False)
+        return
+
     # Postal/location questions search the same saved directory shown by /locations.
     postal_match = re.search(r"\b(\d{3,5})\b", query)
     asks_location = postal_match and any(word in lowered for word in ("where", "what", "postal", "location", "at "))
@@ -2318,7 +2352,9 @@ def commands_embed():
             "`!what does [usable item] do` — search the saved Usable Items page.\n"
             "`!how do I do [activity]` — search saved activity and location notes.\n"
             "`!what tables are related to [topic]` — find matching crafting tables.\n"
-            "`!what can I craft: Item x10, Item x5` — check what your stock can make."
+            "`!what can I craft: Item x10, Item x5` — check what your stock can make.\\n"
+            "`!search recipes for [term]` — search recipe, table, ingredient, and tool names.\\n"
+            "`!find recipes using [ingredient]` — list every saved recipe that consumes an ingredient."
         ),
         inline=False,
     )
