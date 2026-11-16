@@ -143,11 +143,12 @@ def recipe_embed(table_name: str, recipe: dict[str, Any]) -> discord.Embed:
 
 
 class CraftingDirectoryView(SafeView):
-    def __init__(self, owner_id: int, data: dict[str, Any], on_table_selected=None):
+    def __init__(self, owner_id: int, data: dict[str, Any], on_table_selected=None, on_home=None):
         super().__init__(timeout=300)
         self.owner_id = owner_id
         self.tables = data["tables"]
         self.on_table_selected = on_table_selected
+        self.on_home = on_home
         self.table_index = 0
         self.table_page = 0
         self.recipe_page = 0
@@ -188,16 +189,42 @@ class CraftingDirectoryView(SafeView):
         table_next = discord.ui.Button(label="More tables ▶", style=discord.ButtonStyle.secondary, disabled=self.table_page + 1 >= table_pages, row=3)
         table_next.callback = self._next_table_page
         self.add_item(table_next)
+        home = discord.ui.Button(label="Home", emoji="🏠", style=discord.ButtonStyle.success, row=4)
+        home.callback = self._home
+        self.add_item(home)
 
     def current_embed(self):
         if not self.tables:
             return discord.Embed(title="Fjord Cartel Information", description="No crafting tables have been added yet.", color=discord.Color.orange())
         table = self.tables[self.table_index]
-        pages = max(1, (len(table.get("recipes", [])) + 24) // 25)
-        embed = discord.Embed(title="⚔️ Fjord Cartel Information", description=f"**Table:** {table['name']}\n" + (f"{table['description']}\n\n" if table.get("description") else "") + f"**Recipes:** {len(table.get('recipes', []))}\nChoose a recipe to see its ingredients and tools.", color=discord.Color.from_rgb(24, 112, 66))
+        recipes = table.get("recipes", [])
+        pages = max(1, (len(recipes) + 24) // 25)
+        start = self.recipe_page * 25
+        visible = recipes[start:start + 25]
+        recipe_lines = [
+            f"**{start + index + 1}.** {recipe.get('name', 'Unnamed recipe')}"
+            for index, recipe in enumerate(visible)
+        ]
+        description = f"**Table:** {table['name']}\n"
+        if table.get("description"):
+            description += f"{table['description']}\n"
+        description += f"\n**Recipes ({len(recipes)} total)**\n"
+        description += "\n".join(recipe_lines) if recipe_lines else "No recipes have been added to this table yet."
+        description += "\n\nChoose a recipe from the dropdown to view its saved details."
+        embed = discord.Embed(
+            title="⚔️ Fjord Cartel • Crafting Directory",
+            description=description[:4000],
+            color=discord.Color.from_rgb(24, 112, 66),
+        )
         table_pages = max(1, (len(self.tables) + 24) // 25)
         embed.set_footer(text=f"Table page {self.table_page + 1}/{table_pages} • Recipe page {self.recipe_page + 1}/{pages} • Private menu")
         return embed
+
+    async def _home(self, interaction):
+        if self.on_home:
+            await self.on_home(interaction, self.owner_id)
+        else:
+            await interaction.response.send_message("Use /dashboard to return to the main menu.", ephemeral=True)
 
     async def _choose_table(self, interaction):
         self.table_index = int(interaction.data["values"][0])
