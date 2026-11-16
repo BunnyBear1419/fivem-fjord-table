@@ -41,6 +41,9 @@ The bot registers six global slash commands:
 - **Inventory calculator** — enter current stock once to calculate craftable batches plus missing quantities.
 - **My saved inventory** — save your personal ingredient stock privately per Discord server, update or clear it, and reuse it when planning recipes.
 - **Multi-recipe planner** — combine several table/recipe/batch requests into one shopping list.
+- **Combined shopping planner** — combine eligible recipes and subtract your private saved inventory without changing stock.
+- **Location search** — find saved postal/location sections by postal number or keyword.
+- **Shopping basket estimate** — total known catalogue prices and group purchases by shop; unknown prices are never guessed.
 - **Advanced search** — filter by keyword, table, ingredient, tool, and minimum ingredient-row count.
 - **Item database** — open an exact-name item page showing where it is produced and consumed.
 - **Recipe comparison** — compare two recipes' shared and exclusive ingredients.
@@ -65,7 +68,7 @@ The Admin tools submenu includes:
 - Import/merge recipe JSON (up to the Discord modal's 4,000-character limit) with a preview, structural validation, skip/replace conflict handling, stale-preview protection, backup, and history snapshot.
 - Review structured issue reports and resolve a report by number.
 
-Admin tools are available to all members who can access the menu. Control slash-command access with Discord channel permissions and Integration command permissions; the bot does not enforce a separate staff-role gate. Every recipe-data change creates a timestamped backup and a history snapshot before saving. Automatic backups run at startup and every 24 hours; up to 25 timestamped backup files are retained. Admins can download the newest backup from the admin menu; keep a copy outside Discloud because host-side rebuilds or app replacement may not preserve local runtime files. The latest 30 reversible history snapshots are retained. Issue reports are capped at 500 and usage analytics retain at most 100 search terms and 50 table counters. Recipe tables and recipes receive stable IDs when data is loaded and saved.
+Admin tools are available to all members who can access the menu. Control slash-command access with Discord channel permissions and Integration command permissions; the bot does not enforce a separate staff-role gate. Every recipe-data change creates a timestamped backup and a history snapshot before saving. Automatic recipe and shared server-data backups run at startup and every 24 hours; up to 25 recipe backups and 10 shared-data ZIP backups are retained. Shared-data archives exclude member-private inventories, saved shopping lists, and personal activity. Admins can download the newest backup from the admin menu; keep a copy outside Discloud because host-side rebuilds or app replacement may not preserve local runtime files. The latest 30 reversible history snapshots are retained. Issue reports are capped at 500 and usage analytics retain at most 100 search terms and 50 table counters. Recipe tables and recipes receive stable IDs when data is loaded and saved.
 
 For ingredient input, use comma-separated entries such as `Plastic bag x2, Powder x1`. Repeated ingredient entries are intentionally preserved and never deduplicated.
 
@@ -147,3 +150,11 @@ The private crafting menu includes:
 - The optional Groq assistant is instructed to cite only source labels present in the supplied city directory and to say when a detail is not confirmed.
 
 Shopping lists and member activity are runtime data stored separately from the public recipe catalogue. They are excluded from Git commits. As with other runtime files on Discloud, download backups externally if the host does not provide persistent storage.
+
+
+### Paging, shopping and location upgrades
+
+- Directory and recipe-search pagers use immutable page snapshots, explicit page IDs, and visible page/entry ranges so Previous and Next render distinct slices.
+- Combined shopping plans subtract matching items from the member's saved inventory without changing it. Restricted controlled-substance production entries are not expanded by this planner.
+- The dashboard offers a location/postal keyword search and a shopping basket estimate grouped by shop. The estimator only totals exact names/aliases in the saved catalogue and reports unknown prices instead of guessing.
+- Shared server-data backups can be created/downloaded from Admin tools and are also generated automatically. They include shared configuration, recipe overrides, reports and admin records; private member inventory, saved shopping lists, and personal activity are excluded.
