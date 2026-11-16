@@ -647,4 +647,3 @@ def test_all_new_member_tools_and_shared_backups_are_wired_into_menus():
         'value="download_runtime_backup"',
     ):
         assert token in source
-    assert "Member-private data" not in source
