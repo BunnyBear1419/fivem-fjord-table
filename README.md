@@ -26,7 +26,8 @@ The bot registers six global slash commands:
 - **`/crafting`** — open the private recipe directory and planning tools.
 - **`/shops`** — browse saved shop prices.
 - **`/locations`** — browse postal codes and hidden locations.
-- **`/moonshine`** — show the Old Man selling information.\n- **`/item [item_name]`** — look up an item across shop prices, crafting outputs, ingredient uses, and required equipment.\n- **`/search [query]`** — search saved recipes, tables, ingredients, and tools.
+- **`/moonshine`** — show the Old Man selling information.
+- **`/search [query]`** — search saved recipes, tables, ingredients, and tools.
 
 `/crafting` opens a private dropdown menu with:
 
