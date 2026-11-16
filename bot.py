@@ -1411,7 +1411,7 @@ async def on_message(message: discord.Message):
             shop_lines = []
             for shop in result["shops"][:8]:
                 price = shop["price"]
-                price_text = f"\${price:,}" if isinstance(price, int) else "Price not recorded"
+                price_text = f"{chr(36)}{price:,}" if isinstance(price, int) else "Price not recorded"
                 shop_lines.append(f"• **{shop['shop']}** — {price_text}")
             embed.add_field(name="Where to buy", value="\n".join(shop_lines), inline=False)
         if result["produced_by"]:
