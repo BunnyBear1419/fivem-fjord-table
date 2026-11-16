@@ -2018,6 +2018,7 @@ def locations_embed():
             "• **1017–1019 — NPC Pickup Supplies:** Random guy/pickup supplies. Access and details unconfirmed.\n"
             "• **9062 — Pickup Supplies.**\n"
             "• **8175 — Hooker.**\n"
+            "• **8042 — Hookers.**\n"
             "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\n"
             "• **Drug Runs — Mysterious Person:** Drug runs are marked on the map as \"Mysterious Person\".\n"
             "• **1056 — Empty Lab:** White side door, opposite the fishing guy. Possibly owned; ownership unconfirmed.\n"
