@@ -272,6 +272,16 @@ class SafeView(discord.ui.View):
             view=DashboardMenuView(owner_id),
         )
 
+    async def on_timeout(self):
+        for child in self.children:
+            child.disabled = True
+        message = getattr(self, "message", None)
+        if message is not None:
+            try:
+                await message.edit(view=self)
+            except discord.HTTPException:
+                logger.debug("Timed-out view message could not be updated.")
+
     async def on_error(self, interaction, error, item):
         logger.error("Discord view interaction failed (%s): %s", type(item).__name__, error, exc_info=(type(error), error, error.__traceback__))
         message = "That action could not be completed. The error was logged for troubleshooting."
