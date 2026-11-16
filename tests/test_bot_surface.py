@@ -27,7 +27,7 @@ def _commands(path):
 
 def test_dashboard_and_information_commands_are_registered_without_role_management_commands():
     commands = set(_commands("bot.py"))
-    assert commands == {"dashboard", "crafting", "shops", "locations", "moonshine", "item", "search"}
+    assert commands == {"dashboard", "crafting", "shops", "locations", "moonshine", "search"}
     assert "setrole" not in commands
     assert "removerole" not in commands
 
