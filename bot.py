@@ -2352,8 +2352,8 @@ def commands_embed():
             "`!what does [usable item] do` — search the saved Usable Items page.\n"
             "`!how do I do [activity]` — search saved activity and location notes.\n"
             "`!what tables are related to [topic]` — find matching crafting tables.\n"
-            "`!what can I craft: Item x10, Item x5` — check what your stock can make.\\n"
-            "`!search recipes for [term]` — search recipe, table, ingredient, and tool names.\\n"
+            "`!what can I craft: Item x10, Item x5` — check what your stock can make.\n"
+            "`!search recipes for [term]` — search recipe, table, ingredient, and tool names.\n"
             "`!find recipes using [ingredient]` — list every saved recipe that consumes an ingredient."
         ),
         inline=False,
