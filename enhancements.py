@@ -610,6 +610,7 @@ def validate_recipe_data(data: dict[str, Any]):
                 continue
             if not ingredients:
                 findings.append({"severity": "warning", "message": f"{table_name} / {recipe_name or 'Unnamed recipe'}: no ingredients are recorded."})
+            seen_recipe_ingredients = set()
             for item in ingredients:
                 if not isinstance(item, (list, tuple)) or len(item) != 2:
                     findings.append({"severity": "error", "message": f"{table_name} / {recipe_name}: malformed ingredient entry {item!r}."})
@@ -619,6 +620,10 @@ def validate_recipe_data(data: dict[str, Any]):
                 if not label:
                     findings.append({"severity": "error", "message": f"{table_name} / {recipe_name}: ingredient name must be a non-empty string."})
                     continue
+                folded_ingredient = label.casefold()
+                if folded_ingredient in seen_recipe_ingredients:
+                    findings.append({"severity": "warning", "message": f"{table_name} / {recipe_name}: '{label}' appears more than once in the ingredient list. Confirm whether the rows should be combined; no quantities were changed."})
+                seen_recipe_ingredients.add(folded_ingredient)
                 valid_quantity = (
                     isinstance(quantity, int) and not isinstance(quantity, bool) and quantity >= 1
                 ) or (
