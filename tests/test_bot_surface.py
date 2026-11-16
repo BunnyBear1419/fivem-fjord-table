@@ -578,3 +578,48 @@ def test_bot_views_include_dashboard_home_navigation():
     assert "class InformationPagerView(SafeView):" in source
     assert "class DashboardMenuView(SafeView):" in source
     assert "on_home=return_to_dashboard" in source
+
+def test_saved_shopping_lists_have_private_checklists_and_remaining_quantities():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    for expected in (
+        'SHOPPING_LISTS_FILE = BASE_DIR / "shopping-lists.json"',
+        "class SavedShoppingListModal",
+        "class SavedShoppingListsView",
+        "Mark collected / Undo",
+        "remaining",
+        "record_player_activity",
+        'value="shopping_lists"',
+    ):
+        assert expected in source
+
+
+def test_recent_activity_is_member_scoped_and_available_from_crafting_menu():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert 'PLAYER_ACTIVITY_FILE = BASE_DIR / "player-activity.json"' in source
+    assert "def record_player_activity(" in source
+    assert "def recent_activity_embed(" in source
+    assert 'value="recent_activity"' in source
+    assert 'item.get("user_id") == str(user_id)' in source
+    assert "PRIVATE MEMBER ACTIVITY" in source
+
+
+def test_recipe_search_is_paginated_and_private_with_home_navigation():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "class RecipeSearchResultsView(SafeView):" in source
+    assert "self.page_size = 5" in source
+    assert "Page {self.page + 1}/{total_pages}" in source
+    assert "These private search results belong to someone else" in source
+    assert "view=view, ephemeral=True" in source
+
+
+def test_safe_views_disable_controls_when_sessions_expire():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "async def on_timeout(self):" in source
+    assert "child.disabled = True" in source
+    assert "await message.edit(view=self)" in source
+
+
+def test_private_runtime_shopping_and_activity_files_are_gitignored():
+    ignore = Path(".gitignore").read_text(encoding="utf-8")
+    assert "shopping-lists.json" in ignore
+    assert "player-activity.json" in ignore
