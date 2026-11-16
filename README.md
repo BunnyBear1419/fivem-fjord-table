@@ -136,3 +136,14 @@ This is a FiveM roleplay game reference only, not real-world instructions.
 ### Runtime persistence warning
 
 Discloud runtime JSON files (saved inventories, aliases, audit logs, profile mappings and profile snapshots) are not committed to Git. Download recipe and inventory backups regularly and store them outside the hosting application. A host-side rebuild or app replacement may remove runtime files.
+
+## Member planning and navigation
+
+The private crafting menu includes:
+- Saved shopping lists with up to 20 personal lists, item quantities, collected checkboxes, and remaining totals.
+- A private recent-activity view for the member's own searches and planning actions.
+- Paginated recipe search results instead of truncating results after the first page.
+- Home navigation on interactive menus, owner checks on private views, and disabled controls when a view expires.
+- The optional Groq assistant is instructed to cite only source labels present in the supplied city directory and to say when a detail is not confirmed.
+
+Shopping lists and member activity are runtime data stored separately from the public recipe catalogue. They are excluded from Git commits. As with other runtime files on Discloud, download backups externally if the host does not provide persistent storage.
