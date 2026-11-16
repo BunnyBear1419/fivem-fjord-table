@@ -607,7 +607,7 @@ def test_recipe_search_is_paginated_and_private_with_home_navigation():
     source = Path("bot.py").read_text(encoding="utf-8")
     assert "class RecipeSearchResultsView(SafeView):" in source
     assert "self.page_size = 5" in source
-    assert "Page {self.page + 1}/{total_pages}" in source
+    assert "Page {self.page + 1}/{self.total_pages}" in source
     assert "These private search results belong to someone else" in source
     assert "view=view, ephemeral=True" in source
 
