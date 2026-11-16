@@ -39,7 +39,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings, validate_city_reference_data,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_shop_basket, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings, validate_city_reference_data,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1269,6 +1269,7 @@ class MainMenuView(SafeView):
             discord.SelectOption(label="My saved shopping lists", value="shopping_lists", description="Save ingredient checklists and track what you have collected", emoji="🛒"),
             discord.SelectOption(label="My recent activity", value="recent_activity", description="Review your latest searches and planning actions", emoji="🕘"),
             discord.SelectOption(label="Multi-recipe planner", value="multi_plan", description="Combine several recipes into one list", emoji="🧾"),
+            discord.SelectOption(label="Combined shopping planner", value="combined_shopping", description="Combine recipes and subtract your saved inventory", emoji="🛒"),
             discord.SelectOption(label="Advanced search", value="advanced_search", description="Filter recipes by multiple criteria", emoji="🧰"),
             discord.SelectOption(label="Item database", value="item_page", description="Open an item's production and usage page", emoji="📖"),
             discord.SelectOption(label="Recipe comparison", value="recipe_compare", description="Compare two recipes", emoji="⚖️"),
@@ -1329,6 +1330,8 @@ class MainMenuView(SafeView):
             await interaction.response.edit_message(embed=pager.current_embed(), view=pager)
         elif action == "multi_plan":
             await interaction.response.send_modal(MultiRecipeModal())
+        elif action == "combined_shopping":
+            await interaction.response.send_modal(CombinedShoppingModal())
         elif action == "advanced_search":
             await interaction.response.send_modal(AdvancedSearchModal())
         elif action == "item_page":
@@ -1401,6 +1404,75 @@ class InventoryModal(SafeModal, title="Inventory calculator"):
         full_text = "INVENTORY PLAN\nRecipe: " + result["recipe"] + "\nTarget batches: " + str(result["target_batches"]) + "\nCraftable batches from stock: " + str(result["available_batches"]) + "\n\nMissing for target:\n" + ("\n".join(missing_lines) or "Nothing missing.") + "\n\nRequired total:\n" + "\n".join(required_lines)
         file = discord.File(io.BytesIO(full_text.encode("utf-8")), filename="fivem-inventory-plan.txt")
         await interaction.response.send_message(content="The complete inventory calculation is attached.", embed=embed, file=file, ephemeral=True)
+
+
+class CombinedShoppingModal(SafeModal, title="Combined shopping planner"):
+    requests = discord.ui.TextInput(
+        label="One recipe per line: Table | Recipe | batches",
+        style=discord.TextStyle.paragraph,
+        placeholder="Crafting Bench | Metal Pin | 2",
+        max_length=1800,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        restricted_terms = (
+            "heroin", "fentanyl", "carfentanil", "cartentanil", "methadone",
+            "hydrocodone", "oxymorphone", "pethidine", "xylazine", "krakadil",
+            "isotonitazine", "anpp", "codeine", "meth", "cocaine", "crack",
+            "amphetamine", "adderall", "xanax", "valium", "quaalude", "opioid",
+        )
+        parsed = []
+        data = include_usable_item_recipes(get_guild_recipe_data(interaction.guild_id))
+        try:
+            for line in self.requests.value.splitlines():
+                if not line.strip():
+                    continue
+                parts = [part.strip() for part in line.split("|")]
+                if len(parts) != 3:
+                    raise ValueError("Use one line per recipe: Table | Recipe | batches.")
+                table_name, recipe_name, batch_text = parts
+                if any(term in recipe_name.casefold() for term in restricted_terms):
+                    raise ValueError("This inventory-aware planner does not expand controlled-substance production entries.")
+                parsed.append((table_name, recipe_name, int(batch_text)))
+            result = multi_recipe_plan(data, parsed)
+            saved = _load_saved_inventory(interaction.guild_id, interaction.user.id).get("items", {})
+        except (ValueError, TypeError) as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        stock = {str(name).casefold().strip(): int(qty) for name, qty in saved.items()}
+        missing, covered = {}, {}
+        for name, quantity in result["ingredients"].items():
+            have = stock.get(str(name).casefold().strip(), 0)
+            used = min(int(quantity), have)
+            if used:
+                covered[name] = used
+            if int(quantity) - used:
+                missing[name] = int(quantity) - used
+        lines = [f"• **{name}** ×{qty}" for name, qty in missing.items()]
+        embed = discord.Embed(
+            title="🛒 Combined shopping plan",
+            description="\n".join(result["selected"][:8]) or "No recipes selected.",
+            color=COLOR,
+        )
+        embed.add_field(name="Still needed after saved inventory", value="\n".join(lines[:12])[:1000] or "Nothing — your saved stock covers the plan.", inline=False)
+        if covered:
+            embed.add_field(name="Covered by your saved inventory", value="\n".join(f"• **{name}** ×{qty}" for name, qty in covered.items())[:1000], inline=False)
+        if result.get("tools"):
+            embed.add_field(name="Tools (not consumed)", value=", ".join(result["tools"])[:900], inline=False)
+        if result.get("notes"):
+            embed.add_field(name="Data review notes", value="\n".join(f"• {note}" for note in result["notes"])[:1000], inline=False)
+        full = [
+            "COMBINED SHOPPING PLAN", "", "Recipes:", *result["selected"], "",
+            "Still needed:", *(f"{name} x{qty}" for name, qty in missing.items()), "",
+            "Covered by saved inventory:", *(f"{name} x{qty}" for name, qty in covered.items()), "",
+            "Tools (not consumed):", *result["tools"],
+        ]
+        file = discord.File(io.BytesIO("\n".join(full).encode("utf-8")), filename="fivem-combined-shopping-plan.txt")
+        record_player_activity(interaction.guild_id, interaction.user.id, "Created combined shopping plan", f"{len(parsed)} recipe(s)")
+        await interaction.response.send_message(
+            content="Calculated from your saved inventory. Stock was not changed.",
+            embed=embed, file=file, ephemeral=True,
+        )
 
 
 class MultiRecipeModal(SafeModal, title="Multi-recipe planner"):
@@ -2707,45 +2779,113 @@ def commands_embed():
 
 
 class InformationPagerView(SafeView):
+    """Stable field pager shared by shops, locations, help, and activity pages."""
     def __init__(self, owner_id: int, source_embed: discord.Embed, page_size: int = 3):
         super().__init__(timeout=300)
         self.owner_id = owner_id
-        self.source_embed = source_embed
-        self.page_size = page_size
+        self.source_embed = discord.Embed.from_dict(source_embed.to_dict())
+        self.fields = tuple((field.name, field.value, field.inline) for field in self.source_embed.fields)
+        self.page_size = max(1, int(page_size))
         self.page = 0
-        self.total_pages = max(1, (len(source_embed.fields) + page_size - 1) // page_size)
-        self.previous_button.disabled = True
-        self.next_button.disabled = self.total_pages <= 1
+        self.total_pages = max(1, (len(self.fields) + self.page_size - 1) // self.page_size)
+        self._sync_navigation_buttons()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.owner_id:
-            await interaction.response.send_message("This private directory belongs to someone else. Run /dashboard to open your own.", ephemeral=True)
+            await interaction.response.send_message(
+                "This private directory belongs to someone else. Run /dashboard to open your own.",
+                ephemeral=True,
+            )
             return False
         return True
+
+    def _sync_navigation_buttons(self):
+        for child in self.children:
+            if not isinstance(child, discord.ui.Button):
+                continue
+            if child.custom_id == "information_previous":
+                child.disabled = self.page <= 0
+            elif child.custom_id == "information_next":
+                child.disabled = self.page >= self.total_pages - 1
 
     def current_embed(self) -> discord.Embed:
         embed = discord.Embed.from_dict(self.source_embed.to_dict())
         embed.clear_fields()
         start = self.page * self.page_size
-        for field in self.source_embed.fields[start:start + self.page_size]:
-            embed.add_field(name=field.name, value=field.value, inline=field.inline)
-        embed.set_footer(text=f"FJORD CARTEL • PAGE {self.page + 1}/{self.total_pages} • Use buttons to browse")
+        stop = start + self.page_size
+        for name, value, inline in self.fields[start:stop]:
+            embed.add_field(name=name, value=value, inline=inline)
+        embed.set_footer(text=f"FJORD CARTEL • PAGE {self.page + 1}/{self.total_pages} • Showing entries {start + 1}-{min(stop, len(self.fields))} of {len(self.fields)}")
         return embed
 
     async def refresh(self, interaction: discord.Interaction):
-        self.previous_button.disabled = self.page <= 0
-        self.next_button.disabled = self.page >= self.total_pages - 1
+        self.page = max(0, min(self.page, self.total_pages - 1))
+        self._sync_navigation_buttons()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
-    @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary)
+    @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary, custom_id="information_previous", row=0)
     async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.page = max(0, self.page - 1)
         await self.refresh(interaction)
 
-    @discord.ui.button(label="Next", emoji="➡️", style=discord.ButtonStyle.primary)
+    @discord.ui.button(label="Next", emoji="➡️", style=discord.ButtonStyle.primary, custom_id="information_next", row=0)
     async def next_button(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.page = min(self.total_pages - 1, self.page + 1)
         await self.refresh(interaction)
+
+class LocationSearchModal(SafeModal, title="Find a saved location"):
+    query = discord.ui.TextInput(label="Postal code, shop, or location keyword", placeholder="Example: 9195, lab, farm supplier", max_length=100)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        needle = self.query.value.casefold().strip()
+        source = locations_embed()
+        matches = [
+            (field.name, field.value, field.inline)
+            for field in source.fields
+            if needle in field.name.casefold() or needle in field.value.casefold()
+        ]
+        if not matches:
+            await interaction.response.send_message(
+                f"No saved location entry matched **{self.query.value.strip()[:100]}**. Try a postal number or a shorter keyword.",
+                ephemeral=True,
+            )
+            return
+        result = discord.Embed(
+            title="📍 Location search results",
+            description=f"Matches for **{self.query.value.strip()[:100]}** • {len(matches)} section(s)",
+            color=COLOR,
+        )
+        for name, value, inline in matches:
+            result.add_field(name=name, value=value, inline=inline)
+        pager = InformationPagerView(interaction.user.id, result, 2)
+        await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
+
+
+class ShopBasketModal(SafeModal, title="Estimate a shopping basket"):
+    items = discord.ui.TextInput(
+        label="Items and quantities", style=discord.TextStyle.paragraph,
+        placeholder="Spring Water x4, Flower Pot x2, Cheesecloth x10", max_length=1500,
+    )
+
+    async def on_submit(self, interaction: discord.Interaction):
+        try:
+            result = calculate_shop_basket(self.items.value)
+        except ValueError as exc:
+            await interaction.response.send_message(str(exc), ephemeral=True)
+            return
+        embed = discord.Embed(
+            title="💰 Shopping basket estimate",
+            description=f"**Known-item total:** ${result['total']:,}\nPrices are estimates from the saved shop catalogue.",
+            color=COLOR,
+        )
+        for shop, total in result["by_shop"].items():
+            lines = [f"• {item['name']} ×{item['quantity']} — ${item['total']:,}" for item in result["items"] if item["shop"] == shop]
+            embed.add_field(name=f"{shop} · ${total:,}"[:256], value="\n".join(lines)[:1000], inline=False)
+        if result["unknown"]:
+            embed.add_field(name="Not priced in the saved catalogue", value=", ".join(result["unknown"])[:1000], inline=False)
+        embed.set_footer(text="No unknown price is guessed • Check in-city prices before purchasing")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
 
 class DashboardMenuView(SafeView):
     def __init__(self, owner_id: int):
@@ -2761,6 +2901,8 @@ class DashboardMenuView(SafeView):
                 discord.SelectOption(label="Shops & Prices", value="shops", description="Browse shop items and prices", emoji="🛒"),
                 discord.SelectOption(label="Locations", value="locations", description="Browse postal locations a few at a time", emoji="📍"),
                 discord.SelectOption(label="Usable Items", value="usable", description="Inventory items and their requirements", emoji="🎒"),
+                discord.SelectOption(label="Find a location / postal", value="location_search", description="Search saved postal and hidden-location notes", emoji="📍"),
+                discord.SelectOption(label="Estimate a shopping basket", value="shop_basket", description="Total known prices and group items by shop", emoji="💰"),
             ],
         )
         select.callback = self.choose_section
@@ -2774,6 +2916,12 @@ class DashboardMenuView(SafeView):
 
     async def choose_section(self, interaction: discord.Interaction):
         section = interaction.data["values"][0]
+        if section == "location_search":
+            await interaction.response.send_modal(LocationSearchModal())
+            return
+        if section == "shop_basket":
+            await interaction.response.send_modal(ShopBasketModal())
+            return
         if section == "crafting":
             if bot.recipe_data is None:
                 await interaction.response.send_message("The crafting directory is still loading. Try again shortly.", ephemeral=True)
@@ -2816,11 +2964,11 @@ async def crafting_command(interaction: discord.Interaction):
 class RecipeSearchResultsView(SafeView):
     def __init__(self, owner_id: int, query: str, results: list[tuple[str, dict]]):
         super().__init__(timeout=300)
-        self.owner_id, self.query, self.results = owner_id, query, results
+        self.owner_id, self.query, self.results = owner_id, query, list(results)
         self.page = 0
         self.page_size = 5
-        self.previous_button.disabled = True
-        self.next_button.disabled = len(results) <= self.page_size
+        self.total_pages = max(1, (len(self.results) + self.page_size - 1) // self.page_size)
+        self._sync_navigation_buttons()
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.owner_id:
@@ -2828,8 +2976,15 @@ class RecipeSearchResultsView(SafeView):
             return False
         return True
 
+    def _sync_navigation_buttons(self):
+        for child in self.children:
+            if isinstance(child, discord.ui.Button):
+                if child.custom_id == "recipe_search_previous":
+                    child.disabled = self.page <= 0
+                elif child.custom_id == "recipe_search_next":
+                    child.disabled = self.page >= self.total_pages - 1
+
     def current_embed(self):
-        total_pages = max(1, (len(self.results) + self.page_size - 1) // self.page_size)
         start = self.page * self.page_size
         embed = discord.Embed(
             title="🔎 Crafting Directory Search",
@@ -2844,23 +2999,22 @@ class RecipeSearchResultsView(SafeView):
             if recipe.get("notes"):
                 value += "\n⚠️ " + " ".join(recipe["notes"])
             embed.add_field(name=f"{recipe.get('name', 'Unknown recipe')} · {table_name}"[:256], value=value[:1024], inline=False)
-        embed.set_footer(text=f"Page {self.page + 1}/{total_pages} • Search uses saved in-city recipe data only")
+        embed.set_footer(text=f"Page {self.page + 1}/{self.total_pages} • Search uses saved in-city recipe data only")
         return embed
 
     async def refresh(self, interaction):
-        total_pages = max(1, (len(self.results) + self.page_size - 1) // self.page_size)
-        self.previous_button.disabled = self.page <= 0
-        self.next_button.disabled = self.page >= total_pages - 1
+        self.page = max(0, min(self.page, self.total_pages - 1))
+        self._sync_navigation_buttons()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
-    @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary, row=0)
+    @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary, custom_id="recipe_search_previous", row=0)
     async def previous_button(self, interaction, button):
         self.page = max(0, self.page - 1)
         await self.refresh(interaction)
 
-    @discord.ui.button(label="Next", emoji="➡️", style=discord.ButtonStyle.primary, row=0)
+    @discord.ui.button(label="Next", emoji="➡️", style=discord.ButtonStyle.primary, custom_id="recipe_search_next", row=0)
     async def next_button(self, interaction, button):
-        self.page = min(max(0, (len(self.results) - 1) // self.page_size), self.page + 1)
+        self.page = min(self.total_pages - 1, self.page + 1)
         await self.refresh(interaction)
 
 
