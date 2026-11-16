@@ -2382,6 +2382,7 @@ def commands_embed():
         name="💬 Chat lookups (start with !)",
         value=(
             "`!how to make [item]` — find a recipe and its ingredients.\n"
+            "`!item [item name]` — connect shop prices, crafting outputs, ingredient uses, and required tools.\n"
             "`!where is [ingredient or tool] used` — find ingredient uses and non-consumed tool requirements.\n"
             "`!how much [recipe] can I make with 500 [ingredient]` — estimate batches from the stock you list.\n"
             "`!what does [usable item] do` — search the saved Usable Items page.\n"
