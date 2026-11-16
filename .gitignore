@@ -11,6 +11,8 @@ reports.json
 history.json
 permissions.json
 inventories.json
+shopping-lists.json
+player-activity.json
 backups/
 bot.log*
 *.tmp
