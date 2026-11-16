@@ -553,9 +553,9 @@ def test_directory_search_is_a_slash_command_not_a_chat_command():
     assert 'lowered.startswith(("item ", "lookup item ", "item info "))' not in source
 
 
-def test_item_cross_reference_is_a_slash_command_not_a_chat_command():
+def test_item_is_not_registered_as_a_slash_command():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert '@bot.tree.command(name="item"' in source
-    assert "item_cross_reference(data, item_name)" in source
-    assert "`/item [item name]`" in source
+    assert '@bot.tree.command(name="item"' not in source
+    assert '@bot.tree.command(name="search"' in source
+    assert "class ItemPageModal" in source
     assert "validate_city_reference_data(active_data)" in source
