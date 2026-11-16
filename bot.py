@@ -5,6 +5,7 @@ import logging
 import os
 import re
 import threading
+import zipfile
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -342,14 +343,39 @@ def refresh_recipe_data():
     bot.recipe_data = ensure_stable_ids(load_recipe_data())
 
 
+def create_runtime_backup():
+    """Archive shared server configuration and admin records, excluding member-private data."""
+    BACKUP_DIR.mkdir(parents=True, exist_ok=True)
+    stamp = discord.utils.utcnow().strftime("%Y%m%d-%H%M%S")
+    destination = BACKUP_DIR / f"runtime-backup-{stamp}.zip"
+    included = [
+        OVERRIDE_FILE, STATS_FILE, REPORTS_FILE, HISTORY_FILE, ALIASES_FILE,
+        AUDIT_FILE, GUILD_PROFILES_FILE,
+    ]
+    with zipfile.ZipFile(destination, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for path in included:
+            if path.is_file():
+                archive.write(path, arcname=path.name)
+        if PROFILES_DIR.is_dir():
+            for path in PROFILES_DIR.rglob("*.json"):
+                if path.is_file():
+                    archive.write(path, arcname=str(path.relative_to(BASE_DIR)))
+    backups = sorted(BACKUP_DIR.glob("runtime-backup-*.zip"), key=lambda item: item.stat().st_mtime, reverse=True)
+    for old in backups[10:]:
+        old.unlink(missing_ok=True)
+    return destination
+
+
 @tasks.loop(hours=24)
 async def automatic_backup():
     try:
         path = create_backup()
+        runtime_path = create_runtime_backup()
         backups = sorted(path.parent.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
         for old in backups[25:]:
             old.unlink(missing_ok=True)
         logger.info("Automatic recipe backup created: %s", path.name)
+        logger.info("Automatic shared runtime backup created: %s", runtime_path.name)
     except Exception:
         logger.exception("Automatic recipe backup failed")
 
@@ -633,6 +659,8 @@ class AdminMenuView(SafeView):
             discord.SelectOption(label="Remove a recipe", value="remove_recipe", emoji="🗑️"),
             discord.SelectOption(label="Create a backup", value="backup", emoji="💾"),
             discord.SelectOption(label="Download latest backup", value="download_backup", emoji="⬇️"),
+            discord.SelectOption(label="Create shared-data backup", value="backup_runtime", emoji="🗄️"),
+            discord.SelectOption(label="Download latest shared-data backup", value="download_runtime_backup", emoji="📦"),
             discord.SelectOption(label="Export recipe data (JSON)", value="export", emoji="📤"),
             discord.SelectOption(label="Export ingredients (CSV)", value="export_csv", emoji="📄"),
             discord.SelectOption(label="Export ingredients (Excel)", value="export_xlsx", emoji="📊"),
@@ -672,6 +700,23 @@ class AdminMenuView(SafeView):
         elif action == "backup":
             path = create_backup()
             await interaction.response.send_message(f"Backup created: **{path.name}**", ephemeral=True)
+        elif action == "backup_runtime":
+            path = create_runtime_backup()
+            await interaction.response.send_message(
+                f"Shared server-data backup created: **{path.name}**. Member-private inventories and activity are intentionally excluded.",
+                ephemeral=True,
+            )
+        elif action == "download_runtime_backup":
+            backups = sorted(BACKUP_DIR.glob("runtime-backup-*.zip"), key=lambda item: item.stat().st_mtime, reverse=True)
+            if not backups:
+                await interaction.response.send_message("No shared-data backups are available yet. Create one first.", ephemeral=True)
+                return
+            latest = backups[0]
+            await interaction.response.send_message(
+                content="Download this shared-data backup and keep an external copy outside Discloud.",
+                file=discord.File(latest, filename=latest.name),
+                ephemeral=True,
+            )
         elif action == "download_backup":
             from crafting import BACKUP_DIR
             backups = sorted(BACKUP_DIR.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
