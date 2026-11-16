@@ -178,8 +178,8 @@ def test_production_hardening_uses_atomic_storage_and_bounded_logs():
 def test_discloud_bundle_and_ci_compile_include_storage_module():
     deploy = Path(".github/workflows/discloud-deploy.yml").read_text(encoding="utf-8")
     tests = Path(".github/workflows/tests.yml").read_text(encoding="utf-8")
-    assert "enhancements.py storage.py recipes.json" in deploy
-    assert "enhancements.py storage.py" in tests
+    assert "enhancements.py storage.py hybrid_ai.py recipes.json" in deploy
+    assert "enhancements.py storage.py hybrid_ai.py" in tests
 
 
 def test_admin_menu_has_a_backup_download_path():
