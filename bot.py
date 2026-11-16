@@ -30,7 +30,7 @@ from discord.ext import commands, tasks
 
 from crafting import (
     OVERRIDE_FILE, BACKUP_DIR, CraftingDirectoryView, create_backup, load_recipe_data,
-    parse_ingredients, save_recipe_data, search_embed, ingredient_usage_embed,
+    parse_ingredients, save_recipe_data, verify_recipe_backup, search_embed, ingredient_usage_embed,
     build_ingredient_directory, ingredient_directory_embed, ingredient_directory_document,
 )
 from storage import atomic_write_json, read_json as storage_read_json, file_lock
@@ -192,6 +192,10 @@ def get_guild_recipe_data(guild_id):
 
 
 def save_guild_recipe_data(guild_id, data):
+    data = ensure_stable_ids(data)
+    errors = [item["message"] for item in validate_recipe_data(data) if item.get("severity") == "error"]
+    if errors:
+        raise ValueError("Recipe data was not saved: " + "; ".join(errors[:5]))
     if guild_id is None:
         save_recipe_data(data)
         refresh_recipe_data()
@@ -201,10 +205,21 @@ def save_guild_recipe_data(guild_id, data):
     if selected:
         path = PROFILES_DIR / str(guild_id) / (str(selected) + ".json")
         path.parent.mkdir(parents=True, exist_ok=True)
-        atomic_write_json(path, ensure_stable_ids(data))
+        atomic_write_json(path, data)
     else:
         save_recipe_data(data)
         refresh_recipe_data()
+
+
+def guild_recipe_source_path(guild_id):
+    """Return the active recipe file used by this guild, for diagnostics."""
+    profiles = read_json(GUILD_PROFILES_FILE, {}) if guild_id is not None else {}
+    selected = profiles.get(str(guild_id)) if guild_id is not None else None
+    if selected:
+        profile_path = _profile_path(guild_id, selected)
+        if profile_path.is_file():
+            return profile_path
+    return OVERRIDE_FILE if OVERRIDE_FILE.is_file() else DATA_FILE
 
 
 def guild_aliases(guild_id):
@@ -672,6 +687,7 @@ class AdminMenuView(SafeView):
             discord.SelectOption(label="Remove a recipe", value="remove_recipe", emoji="🗑️"),
             discord.SelectOption(label="Create a backup", value="backup", emoji="💾"),
             discord.SelectOption(label="Download latest backup", value="download_backup", emoji="⬇️"),
+            discord.SelectOption(label="Verify saved backups", value="verify_backups", emoji="🛡️"),
             discord.SelectOption(label="Create shared-data backup", value="backup_runtime", emoji="🗄️"),
             discord.SelectOption(label="Download latest shared-data backup", value="download_runtime_backup", emoji="📦"),
             discord.SelectOption(label="Export recipe data (JSON)", value="export", emoji="📤"),
@@ -742,6 +758,33 @@ class AdminMenuView(SafeView):
                 file=discord.File(latest, filename=latest.name),
                 ephemeral=True,
             )
+        elif action == "verify_backups":
+            recipe_backups = sorted(BACKUP_DIR.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
+            runtime_backups = sorted(BACKUP_DIR.glob("runtime-backup-*.zip"), key=lambda item: item.stat().st_mtime, reverse=True)
+            lines = []
+            for path in recipe_backups[:5]:
+                check = verify_recipe_backup(path)
+                icon = "✅" if check["valid"] else "❌"
+                lines.append(f"{icon} **{path.name}** — {check['tables']} tables, {check['recipes']} recipes")
+                if check["errors"]:
+                    lines.append("  " + "; ".join(check["errors"][:2])[:400])
+            for path in runtime_backups[:5]:
+                try:
+                    with zipfile.ZipFile(path, "r") as archive:
+                        bad_member = archive.testzip()
+                        if bad_member:
+                            raise ValueError(f"Corrupt archive member: {bad_member}")
+                        json_members = [name for name in archive.namelist() if name.endswith(".json")]
+                        for name in json_members:
+                            json.loads(archive.read(name).decode("utf-8"))
+                    lines.append(f"✅ **{path.name}** — archive integrity passed ({len(json_members)} JSON files)")
+                except (OSError, zipfile.BadZipFile, UnicodeDecodeError, json.JSONDecodeError, ValueError) as exc:
+                    lines.append(f"❌ **{path.name}** — {str(exc)[:250]}")
+            if not lines:
+                lines.append("No backups exist yet. Create a recipe or shared-data backup first.")
+            embed = discord.Embed(title="🛡️ Backup Verification", description="\n".join(lines)[:4000], color=COLOR)
+            embed.set_footer(text="Verification is read-only; no backup or live data was changed.")
+            await interaction.response.send_message(embed=embed, ephemeral=True)
         elif action == "export":
             payload = json.dumps(get_guild_recipe_data(interaction.guild_id), ensure_ascii=False, indent=2).encode("utf-8")
             await interaction.response.send_message("Current recipe directory export:", file=discord.File(io.BytesIO(payload), filename="crafting-recipes-export.json"), ephemeral=True)
@@ -767,10 +810,32 @@ class AdminMenuView(SafeView):
         elif action == "health":
             data = get_guild_recipe_data(interaction.guild_id)
             total = sum(len(t.get("recipes", [])) for t in data.get("tables", []))
-            backups = list(BACKUP_DIR.glob("crafting-backup-*.json"))
-            status = "Healthy" if bot.is_ready() and data.get("tables") else "Needs attention"
-            embed = discord.Embed(title="🩺 Crafting Bot Health", description=f"**Status:** {status}\n**Bot connected:** {bot.is_ready()}\n**Tables:** {len(data.get('tables', []))}\n**Recipes:** {total}\n**Backups available:** {len(backups)}\n**Inventory file:** {'Present' if INVENTORIES_FILE.exists() else 'Not created'}\n**Reports file:** {'Present' if REPORTS_FILE.exists() else 'Not created'}", color=COLOR)
-            embed.add_field(name="Storage note", value="Runtime files on Discloud may not survive host-side rebuilds. Download backups externally.", inline=False)
+            source = guild_recipe_source_path(interaction.guild_id)
+            source_time = datetime.fromtimestamp(source.stat().st_mtime, tz=timezone.utc).strftime("%Y-%m-%d %H:%M UTC") if source.is_file() else "Missing"
+            active_data = include_usable_item_recipes(data)
+            findings = validate_recipe_data(active_data) + validate_city_reference_data(active_data)
+            errors = sum(1 for item in findings if item.get("severity") == "error")
+            warnings = sum(1 for item in findings if item.get("severity") != "error")
+            backups = sorted(BACKUP_DIR.glob("crafting-backup-*.json"), key=lambda item: item.stat().st_mtime, reverse=True)
+            valid_backups = sum(1 for path in backups[:10] if verify_recipe_backup(path)["valid"])
+            writable = os.access(BASE_DIR, os.W_OK)
+            status = "Healthy" if bot.is_ready() and data.get("tables") and errors == 0 and writable else "Needs attention"
+            embed = discord.Embed(
+                title="🩺 Crafting Bot Health",
+                description=(
+                    f"**Status:** {status}\n**Bot connected:** {bot.is_ready()}\n"
+                    f"**Tables:** {len(data.get('tables', []))}\n**Recipes:** {total}\n"
+                    f"**Data source:** {source.name}\n**Data last modified:** {source_time}\n"
+                    f"**Validation:** {errors} error(s), {warnings} warning(s)\n"
+                    f"**Verified backups:** {valid_backups}/{min(10, len(backups))} latest recipe backup(s)\n"
+                    f"**Storage writable:** {writable}\n"
+                    f"**Inventory file:** {'Present' if INVENTORIES_FILE.exists() else 'Not created'}\n"
+                    f"**Reports file:** {'Present' if REPORTS_FILE.exists() else 'Not created'}"
+                ),
+                color=COLOR if status == "Healthy" else discord.Color.orange(),
+            )
+            embed.add_field(name="Storage note", value="Runtime files on Discloud may not survive host-side rebuilds. Download verified backups externally.", inline=False)
+            embed.set_footer(text="Health checks are read-only • Use Verify saved backups before relying on recovery files")
             await interaction.response.send_message(embed=embed, ephemeral=True)
         elif action == "audit":
             entries = [item for item in read_json(AUDIT_FILE, []) if item.get("guild_id") == interaction.guild_id][-10:]
