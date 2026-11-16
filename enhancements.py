@@ -1144,3 +1144,141 @@ def analytics_embed(data: dict[str, Any], stats: dict[str, Any]):
     top_misses = sorted(stats.get("no_result_terms", {}).items(), key=lambda x: x[1], reverse=True)[:8]
     embed.add_field(name="Searches needing better matches", value="\n".join(f"• {name}: {count}" for name, count in top_misses) or "No unmatched searches recorded.", inline=False)
     return embed
+
+
+def item_cross_reference(data: dict[str, Any], query: str, shop_catalog=None):
+    """Join an item across saved recipe outputs, ingredients, tools and shop listings."""
+    catalog = SHOP_PRICE_CATALOG if shop_catalog is None else shop_catalog
+    needle = _normalize_chat_search(query)
+    if not needle:
+        return {"error": "Enter an item name, for example !item Filter Paper."}
+
+    candidates = {}
+    def add_candidate(name, kind, details=None, aliases=()):
+        label = str(name or "").strip()
+        if not label:
+            return
+        key = _normalize_chat_search(label)
+        if not key:
+            return
+        entry = candidates.setdefault(key, {"name": label, "aliases": set(), "kinds": set()})
+        entry["kinds"].add(kind)
+        for alias in aliases or ():
+            alias_key = _normalize_chat_search(alias)
+            if alias_key:
+                entry["aliases"].add(alias_key)
+
+    for table in data.get("tables", []):
+        if not isinstance(table, dict):
+            continue
+        for recipe in table.get("recipes", []):
+            if not isinstance(recipe, dict):
+                continue
+            add_candidate(recipe.get("name"), "output")
+            for ingredient, _quantity in recipe.get("ingredients") or []:
+                add_candidate(ingredient, "ingredient")
+            for tool in recipe.get("tools") or []:
+                add_candidate(tool, "tool")
+
+    for item in catalog:
+        add_candidate(item.get("name"), "shop", aliases=item.get("aliases", ()))
+
+    scored = []
+    for key, entry in candidates.items():
+        names = {key, *entry["aliases"]}
+        score = max(
+            1.0 if needle == name else
+            0.96 if needle in name or name in needle else
+            _fuzzy_name_score(needle, name)
+            for name in names
+        )
+        if score >= (0.76 if len(needle.replace(" ", "")) <= 5 else 0.68):
+            scored.append((score, key, entry))
+    if not scored:
+        return {"error": f"I couldn't find **{query}** in saved recipes, tools, or shop listings. I won't guess."}
+
+    scored.sort(key=lambda row: (-row[0], row[2]["name"].casefold()))
+    best_score = scored[0][0]
+    best = [row for row in scored if abs(row[0] - best_score) < 0.0001]
+    if len(best) > 1:
+        return {"suggestions": [row[2]["name"] for row in best[:8]]}
+
+    _score, matched_key, entry = best[0]
+    item_name = entry["name"]
+    result = {"item": item_name, "produced_by": [], "used_in": [], "required_as_tool": [], "shops": []}
+    for table in data.get("tables", []):
+        if not isinstance(table, dict):
+            continue
+        table_name = str(table.get("name", "Unknown table"))
+        for recipe in table.get("recipes", []):
+            if not isinstance(recipe, dict):
+                continue
+            recipe_name = str(recipe.get("name", "Unknown recipe"))
+            if _normalize_chat_search(recipe_name) == matched_key:
+                result["produced_by"].append({"table": table_name, "recipe": recipe_name})
+            for ingredient, quantity in recipe.get("ingredients") or []:
+                if _normalize_chat_search(ingredient) == matched_key:
+                    result["used_in"].append({"table": table_name, "recipe": recipe_name, "quantity": quantity})
+            if any(_normalize_chat_search(tool) == matched_key for tool in recipe.get("tools") or []):
+                result["required_as_tool"].append({"table": table_name, "recipe": recipe_name})
+    for item in catalog:
+        item_key = _normalize_chat_search(item.get("name"))
+        alias_keys = {_normalize_chat_search(alias) for alias in item.get("aliases", ())}
+        if item_key == matched_key or matched_key in alias_keys:
+            result["shops"].append({
+                "shop": item.get("shop", "Shop not recorded"),
+                "price": item.get("price"),
+            })
+    return result
+
+
+def validate_city_reference_data(data: dict[str, Any], shop_catalog=None):
+    """Review cross-reference coverage and shop catalogue consistency without changing data."""
+    catalog = SHOP_PRICE_CATALOG if shop_catalog is None else shop_catalog
+    findings = []
+    alias_owners = defaultdict(set)
+    seen_items = set()
+    for index, item in enumerate(catalog, start=1):
+        if not isinstance(item, dict):
+            findings.append({"severity": "error", "message": f"Shop catalogue entry {index} is not an object."})
+            continue
+        name = str(item.get("name", "")).strip()
+        if not name:
+            findings.append({"severity": "error", "message": f"Shop catalogue entry {index} has no item name."})
+            continue
+        key = _normalize_chat_search(name)
+        if key in seen_items:
+            findings.append({"severity": "warning", "message": f"Shop catalogue contains a repeated item name: '{name}'."})
+        seen_items.add(key)
+        price = item.get("price")
+        if not isinstance(price, int) or isinstance(price, bool) or price < 0:
+            findings.append({"severity": "error", "message": f"'{name}' has a missing or invalid shop price."})
+        for alias in [name, *(item.get("aliases") or ())]:
+            alias_key = _normalize_chat_search(alias)
+            if alias_key:
+                alias_owners[alias_key].add(name)
+    collisions = [(alias, sorted(owners)) for alias, owners in alias_owners.items() if len(owners) > 1]
+    for alias, owners in collisions[:20]:
+        findings.append({"severity": "warning", "message": f"Shop search alias '{alias}' points to multiple items: {', '.join(owners)}. Review manually; no names were changed."})
+
+    ingredient_names = set()
+    for table in (data or {}).get("tables", []):
+        if not isinstance(table, dict):
+            continue
+        for recipe in table.get("recipes", []):
+            if not isinstance(recipe, dict):
+                continue
+            for ingredient, _quantity in recipe.get("ingredients") or []:
+                key = _normalize_chat_search(ingredient)
+                if key:
+                    ingredient_names.add(key)
+    known_shop_names = set(alias_owners)
+    not_listed = sorted(name for name in ingredient_names if name not in known_shop_names)
+    if not_listed:
+        findings.append({
+            "severity": "info",
+            "message": f"{len(not_listed)} recipe ingredient name(s) have no matching shop-price entry. This may be intentional for collected, produced, or otherwise unpriced items. Examples: {', '.join(not_listed[:10])}.",
+        })
+    if not findings:
+        findings.append({"severity": "success", "message": "No obvious shop catalogue or cross-reference issues found."})
+    return findings[:40]
