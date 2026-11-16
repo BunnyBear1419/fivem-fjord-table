@@ -27,7 +27,7 @@ def _commands(path):
 
 def test_dashboard_and_information_commands_are_registered_without_role_management_commands():
     commands = set(_commands("bot.py"))
-    assert commands == {"dashboard", "crafting", "shops", "locations", "moonshine"}
+    assert commands == {"dashboard", "crafting", "shops", "locations", "moonshine", "item", "search"}
     assert "setrole" not in commands
     assert "removerole" not in commands
 
@@ -544,17 +544,17 @@ def test_system_one_requires_flower_pot_even_when_planted_in_grass():
     assert result["systems"]["grape"]["total"] == 1800
 
 
-def test_chat_search_examples_are_connected_to_saved_directory_search():
+def test_directory_search_is_a_slash_command_not_a_chat_command():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert "search recipes for " in source
-    assert "find recipes using " in source
-    assert "advanced_search(query_data" in source
-    assert "!search recipes for [term]" in source
+    assert '@bot.tree.command(name="search"' in source
+    assert "advanced_search(data, query=query)" in source
+    assert "`/search [term]`" in source
+    assert 'lowered.startswith(("item ", "lookup item ", "item info "))' not in source
 
 
-def test_chat_item_lookup_is_exposed_and_uses_unified_saved_data():
+def test_item_cross_reference_is_a_slash_command_not_a_chat_command():
     source = Path("bot.py").read_text(encoding="utf-8")
-    assert 'lowered.startswith(("item ", "lookup item ", "item info "))' in source
-    assert "item_cross_reference(query_data, item_query)" in source
-    assert "`!item [item name]`" in source
+    assert '@bot.tree.command(name="item"' in source
+    assert "item_cross_reference(data, item_name)" in source
+    assert "`/item [item name]`" in source
     assert "validate_city_reference_data(active_data)" in source
