@@ -4,9 +4,19 @@ A Discord bot that provides a private, interactive reference for crafting tables
 
 ## Chat lookup shortcut
 
-Members can ask natural-language questions by starting a message with `!`, such as `!how to make Heroin`, `!how do I craft Kief`, or `!where is Clean Weed Bud used`. The `!` prefix is reserved for questions only. All bot features and utilities are accessed through slash commands and interactive menus. `/search` searches recipes, tables, ingredients, and tools. Question lookups use saved crafting recipes plus the Shops, Locations, Usable Items, and activity information. The bot tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. Location notes that mention unnamed hidden materials are attached as data-review warnings to recipe searches and planning results; the bot does not invent the missing item. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items. It tolerates common spelling mistakes and offers a dropdown when several close recipe matches are found. Location notes that mention unnamed hidden materials are attached as data-review warnings to recipe searches and planning results; the bot does not invent the missing item. This is a local directory lookup, not an external AI service; it does not invent recipes or rename saved items.
+Members ask natural-language questions by starting a message with `!`. The `!` prefix is reserved exclusively for questions; every utility and feature remains a Discord slash command. The assistant combines deterministic directory lookups with an optional OpenAI-powered hybrid AI layer. Deterministic calculators and saved city data remain authoritative; the AI interprets natural phrasing, explains relevant facts, and understands short follow-up questions using a short-lived per-member conversation context. If the AI service is not configured or unavailable, the existing local lookup system continues to work. The assistant must not invent prices, ingredients, tools, or postals, and it avoids actionable dangerous-drug synthesis details. Chat context is held in memory only, expires after 30 minutes of inactivity, and is not written to disk.
 
 **Discord setup required:** In the Discord Developer Portal, open the bot application, go to **Bot → Privileged Gateway Intents**, enable **Message Content Intent**, and save. The bot requests this intent in code. Without the portal toggle, Discord will not provide ordinary message text to the shortcut.
+
+
+### Hybrid AI configuration
+
+To enable the conversational AI layer, add these environment variables to the existing Discloud app:
+
+- `OPENAI_API_KEY` — your OpenAI API key. Keep it in Discloud environment settings; do not commit it to GitHub.
+- `OPENAI_MODEL` — optional model override. Defaults to `gpt-4.1-mini`.
+
+The deploy workflow packages the AI module but deliberately does not copy the API key from GitHub or write it into the deployment archive. The bot continues to run without an API key and falls back to its built-in lookups. AI calls may incur API usage charges. The model receives the current question, relevant saved directory matches, and a short-lived conversation window; it cannot edit recipes, shops, prices, or locations.
 
 ## Slash commands
 
