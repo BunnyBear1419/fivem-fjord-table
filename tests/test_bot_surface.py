@@ -542,3 +542,11 @@ def test_system_one_requires_flower_pot_even_when_planted_in_grass():
     assert result["systems"]["smoke"]["total"] == 3865
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
     assert result["systems"]["grape"]["total"] == 1800
+
+
+def test_chat_search_examples_are_connected_to_saved_directory_search():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    assert "search recipes for " in source
+    assert "find recipes using " in source
+    assert "advanced_search(query_data" in source
+    assert "!search recipes for [term]" in source
