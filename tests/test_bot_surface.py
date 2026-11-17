@@ -757,3 +757,19 @@ def test_weed_system_two_keeps_its_existing_water_requirements():
     assert system["items"]["Spring Water"] == 10
     assert system["items"]["Watering Can"] == 10
     assert "Rainwater Jug" not in system["items"]
+
+
+
+def test_poppy_growing_calculator_recognizes_plural_poppies_question():
+    from enhancements import calculate_poppy_growing_requirements
+
+    result = calculate_poppy_growing_requirements(
+        "What do I need to grow poppies and what will it cost?"
+    )
+    assert result is not None
+    assert result["plants"] == 1
+    assert result["items"]["Poppy Seed"] == 1
+    assert result["items"]["Rainwater Jug"] == 1
+    assert result["items"]["Bone Meal"] == 1
+    assert result["items"]["Trowel"] == 1
+    assert result["total"] == 285
