@@ -301,10 +301,12 @@ def test_weed_growing_calculator_returns_both_systems_and_correct_shop_costs():
 
     result = calculate_weed_growing_requirements("How much to grow 100 weed plants?")
     assert result["plants"] == 100
-    assert result["systems"]["smoke"]["items"]["Spring Water"] == 100
+    assert result["systems"]["smoke"]["items"]["Rainwater Jug"] == 100
+    assert "Spring Water" not in result["systems"]["smoke"]["items"]
+    assert "Watering Can" not in result["systems"]["smoke"]["items"]
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 100
     assert result["systems"]["smoke"]["items"]["Trowel"] == 1
-    assert result["systems"]["smoke"]["total"] == 37615
+    assert result["systems"]["smoke"]["total"] == 37100
     assert result["systems"]["grape"]["items"]["Bloom Booster"] == 100
     assert result["systems"]["grape"]["items"]["Watering Can"] == 100
     assert result["systems"]["grape"]["total"] == 42100
@@ -315,7 +317,7 @@ def test_weed_growing_calculator_applies_different_grass_rules_to_each_system():
 
     result = calculate_weed_growing_requirements("How much to grow 100 weed plants in grass?")
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 100
-    assert result["systems"]["smoke"]["total"] == 37615
+    assert result["systems"]["smoke"]["total"] == 37100
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
     assert result["systems"]["grape"]["items"]["Watering Can"] == 100
     assert result["systems"]["grape"]["total"] == 17100
@@ -385,7 +387,7 @@ def test_weed_growing_calculator_defaults_to_one_plant_when_quantity_is_omitted(
         "What do I need to grow weed and how much will I spend?"
     )
     assert result["plants"] == 1
-    assert result["systems"]["smoke"]["total"] == 490
+    assert result["systems"]["smoke"]["total"] == 470
     assert result["systems"]["grape"]["total"] == 520
     assert result["systems"]["smoke"]["items"]["Weed Seed"] == 1
     assert result["systems"]["grape"]["items"]["Bloom Booster"] == 1
@@ -540,7 +542,7 @@ def test_system_one_requires_flower_pot_even_when_planted_in_grass():
 
     result = calculate_weed_growing_requirements("How much for 10 weed plants in grass?")
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 10
-    assert result["systems"]["smoke"]["total"] == 3865
+    assert result["systems"]["smoke"]["total"] == 3800
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
     assert result["systems"]["grape"]["total"] == 1800
 
@@ -706,3 +708,52 @@ def test_private_member_favorites_and_recent_files_are_gitignored():
     ignore = Path(".gitignore").read_text(encoding="utf-8")
     assert "member-favorites.json" in ignore
     assert "member-recent-items.json" in ignore
+
+
+def test_poppy_plant_growing_calculator_counts_reusable_trowel_once():
+    from enhancements import calculate_poppy_growing_requirements
+
+    result = calculate_poppy_growing_requirements("How much to grow 10 poppy plants?")
+    assert result["plants"] == 10
+    assert result["items"] == {
+        "Poppy Seed": 10,
+        "Rainwater Jug": 10,
+        "Bone Meal": 10,
+        "Trowel": 1,
+    }
+    assert result["costs"]["Trowel"] == 100
+    assert result["total"] == 1_950
+    assert "Trowel is reusable" in result["note"]
+
+
+def test_poppy_plant_growing_calculator_defaults_to_one_plant():
+    from enhancements import calculate_poppy_growing_requirements
+
+    result = calculate_poppy_growing_requirements("How do I grow a poppy plant?")
+    assert result["plants"] == 1
+    assert result["items"]["Rainwater Jug"] == 1
+    assert result["items"]["Bone Meal"] == 1
+    assert result["items"]["Poppy Seed"] == 1
+    assert result["items"]["Trowel"] == 1
+
+
+def test_weed_system_one_uses_rainwater_jug_instead_of_spring_water_and_watering_can():
+    from enhancements import calculate_weed_growing_requirements
+
+    result = calculate_weed_growing_requirements("How much to grow 100 weed plants System 1?")
+    system = result["systems"]["smoke"]
+    assert system["items"]["Rainwater Jug"] == 100
+    assert "Spring Water" not in system["items"]
+    assert "Watering Can" not in system["items"]
+    assert system["items"]["Trowel"] == 1
+    assert system["total"] == 37_100
+
+
+def test_weed_system_two_keeps_its_existing_water_requirements():
+    from enhancements import calculate_weed_growing_requirements
+
+    result = calculate_weed_growing_requirements("How much to grow 10 weed plants System 2?")
+    system = result["systems"]["grape"]
+    assert system["items"]["Spring Water"] == 10
+    assert system["items"]["Watering Can"] == 10
+    assert "Rainwater Jug" not in system["items"]
