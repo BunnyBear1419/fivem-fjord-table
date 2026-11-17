@@ -6,6 +6,7 @@ import os
 import re
 import threading
 import zipfile
+from difflib import SequenceMatcher
 from datetime import datetime, timezone
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -52,6 +53,8 @@ HISTORY_FILE = BASE_DIR / "history.json"
 INVENTORIES_FILE = BASE_DIR / "inventories.json"
 SHOPPING_LISTS_FILE = BASE_DIR / "shopping-lists.json"
 PLAYER_ACTIVITY_FILE = BASE_DIR / "player-activity.json"
+FAVORITES_FILE = BASE_DIR / "member-favorites.json"
+RECENT_ITEMS_FILE = BASE_DIR / "member-recent-items.json"
 ALIASES_FILE = BASE_DIR / "aliases.json"
 AUDIT_FILE = BASE_DIR / "audit-log.json"
 GUILD_PROFILES_FILE = BASE_DIR / "guild-profiles.json"
@@ -151,6 +154,83 @@ def recent_activity_embed(guild_id, user_id: int):
         embed.description += "\n\nNo activity has been recorded yet."
     embed.set_footer(text="FJORD CARTEL • PRIVATE MEMBER ACTIVITY")
     return embed
+
+
+
+def save_member_favorite(guild_id, user_id: int, table_name: str, recipe_name: str):
+    """Save a recipe favorite in a guild- and member-private store."""
+    key = f"{guild_id or 'dm'}:{user_id}"
+    with file_lock():
+        data = read_json(FAVORITES_FILE, {})
+        entries = data.get(key, [])
+        if any(str(item.get("table", "")).casefold() == table_name.casefold()
+               and str(item.get("recipe", "")).casefold() == recipe_name.casefold() for item in entries):
+            return False
+        entries.append({"table": table_name[:100], "recipe": recipe_name[:100],
+                        "saved_at": discord.utils.utcnow().isoformat()})
+        data[key] = entries[-50:]
+        write_json(FAVORITES_FILE, data)
+    return True
+
+
+def member_favorites(guild_id, user_id: int):
+    key = f"{guild_id or 'dm'}:{user_id}"
+    return read_json(FAVORITES_FILE, {}).get(key, [])
+
+
+def record_recent_item(guild_id, user_id: int, kind: str, label: str, details: str = ""):
+    """Record a bounded, private-to-the-member recently viewed item."""
+    key = f"{guild_id or 'dm'}:{user_id}"
+    with file_lock():
+        data = read_json(RECENT_ITEMS_FILE, [])
+        data.append({"key": key, "kind": str(kind)[:40], "label": str(label)[:120],
+                     "details": str(details)[:180], "viewed_at": discord.utils.utcnow().isoformat()})
+        write_json(RECENT_ITEMS_FILE, data[-1000:])
+
+
+def member_recent_items(guild_id, user_id: int):
+    key = f"{guild_id or 'dm'}:{user_id}"
+    return [item for item in read_json(RECENT_ITEMS_FILE, []) if item.get("key") == key][-20:]
+
+
+def member_items_embed(guild_id, user_id: int, favorites: bool = False):
+    entries = member_favorites(guild_id, user_id) if favorites else member_recent_items(guild_id, user_id)
+    title = "⭐ My Favorite Recipes" if favorites else "🕘 Recently Viewed"
+    embed = discord.Embed(title=title, color=COLOR)
+    if favorites:
+        embed.description = "Your saved recipes are private to you in this server."
+        for item in entries[-20:]:
+            embed.add_field(name=f"{item.get('recipe', 'Unknown recipe')} · {item.get('table', 'Unknown table')}"[:256],
+                            value="Saved " + str(item.get("saved_at", "at an unknown time"))[:19].replace("T", " "), inline=False)
+    else:
+        embed.description = "Your latest viewed recipes, locations, shops, and directory pages. Only you can see this list."
+        for item in reversed(entries):
+            embed.add_field(name=f"{item.get('kind', 'Item')} · {item.get('label', 'Unknown')}"[:256],
+                            value=str(item.get("details") or item.get("viewed_at", ""))[:300], inline=False)
+    if not entries:
+        embed.description = (embed.description or "") + "\n\nNothing saved here yet."
+    embed.set_footer(text="FJORD CARTEL • PRIVATE MEMBER DATA")
+    return embed
+
+
+def compare_shop_listings(query: str):
+    """Return exact/alias and typo-tolerant catalogue matches without inventing prices."""
+    from enhancements import SHOP_PRICE_CATALOG
+    needle = re.sub(r"[^a-z0-9]+", " ", str(query or "").casefold()).strip()
+    if not needle:
+        return []
+    ranked = []
+    for item in SHOP_PRICE_CATALOG:
+        labels = [item.get("name", ""), *item.get("aliases", ())]
+        score = max((SequenceMatcher(None, needle, re.sub(r"[^a-z0-9]+", " ", str(label).casefold()).strip()).ratio()
+                     for label in labels), default=0)
+        if any(needle in re.sub(r"[^a-z0-9]+", " ", str(label).casefold()).strip()
+               or re.sub(r"[^a-z0-9]+", " ", str(label).casefold()).strip() in needle for label in labels):
+            score = max(score, 0.98)
+        if score >= 0.68:
+            ranked.append((score, item))
+    ranked.sort(key=lambda pair: (-pair[0], pair[1].get("price", 0), pair[1].get("shop", "")))
+    return [item for _, item in ranked[:8]]
 
 
 def _profile_path(guild_id: int, profile: str) -> Path:
@@ -466,6 +546,65 @@ class ReportModal(SafeModal, title="Report a recipe issue"):
         await interaction.response.send_message(f"Your report **#{report_id}** has been saved for server administrators.", ephemeral=True)
 
 
+
+class ConfirmRecipeRemovalView(SafeView):
+    def __init__(self, owner_id: int, guild_id, table_name: str, recipe_name: str):
+        super().__init__(timeout=120)
+        self.owner_id, self.guild_id = owner_id, guild_id
+        self.table_name, self.recipe_name = table_name, recipe_name
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the administrator who started this action can confirm it.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Confirm removal", style=discord.ButtonStyle.danger, emoji="🗑️")
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        data = ensure_stable_ids(get_guild_recipe_data(self.guild_id))
+        before = json.loads(json.dumps(data, ensure_ascii=False))
+        table = next((t for t in data.get("tables", []) if t.get("name", "").casefold() == self.table_name.casefold()), None)
+        index = next((i for i, r in enumerate(table.get("recipes", []))
+                      if r.get("name", "").casefold() == self.recipe_name.casefold()), None) if table else None
+        if index is None:
+            await interaction.response.edit_message(content="The recipe no longer exists. Nothing was removed.", embed=None, view=None)
+            return
+        removed = table["recipes"].pop(index)
+        record_recipe_change(before, "remove_recipe", interaction.user.id,
+                             f"Removed {removed['name']} from {table['name']}", self.guild_id)
+        save_guild_recipe_data(self.guild_id, data)
+        await interaction.response.edit_message(content=f"Removed **{removed['name']}**. A history snapshot was saved.", embed=None, view=None)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖️")
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(content="Removal cancelled. No recipe data was changed.", embed=None, view=None)
+
+
+class ConfirmHistoryRestoreView(SafeView):
+    def __init__(self, owner_id: int, guild_id, history_id: int, snapshot: dict):
+        super().__init__(timeout=120)
+        self.owner_id, self.guild_id = owner_id, guild_id
+        self.history_id, self.snapshot = history_id, snapshot
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the administrator who started this restore can confirm it.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Confirm restore", style=discord.ButtonStyle.danger, emoji="↩️")
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        current = get_guild_recipe_data(self.guild_id)
+        record_recipe_change(current, "restore", interaction.user.id,
+                             f"Restored snapshot from history entry #{self.history_id}", self.guild_id)
+        save_guild_recipe_data(self.guild_id, self.snapshot)
+        await interaction.response.edit_message(content=f"Restored history entry **#{self.history_id}**. The data that was replaced is preserved in history.", embed=None, view=None)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖️")
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(content="Restore cancelled. No recipe data was changed.", embed=None, view=None)
+
+
 class AdminActionModal(SafeModal):
     def __init__(self, action: str):
         self.action = action
@@ -562,10 +701,12 @@ class AdminActionModal(SafeModal):
             if index is None:
                 await interaction.response.send_message("Recipe not found in that table.", ephemeral=True)
                 return
-            removed = table["recipes"].pop(index)
-            record_recipe_change(before_data, "remove_recipe", interaction.user.id, f"Removed {removed['name']} from {table['name']}", interaction.guild_id)
-            save_guild_recipe_data(interaction.guild_id, data)
-            await interaction.response.send_message(f"Removed **{removed['name']}**. An automatic backup and change-history entry were created.", ephemeral=True)
+            recipe = table["recipes"][index]
+            await interaction.response.send_message(
+                f"Are you sure you want to remove **{recipe['name']}** from **{table['name']}**? A history snapshot will be kept if you confirm.",
+                view=ConfirmRecipeRemovalView(interaction.user.id, interaction.guild_id, table['name'], recipe['name']),
+                ephemeral=True,
+            )
             return
 
         if self.action == "restore_history":
@@ -579,9 +720,17 @@ class AdminActionModal(SafeModal):
             if not entry or not isinstance(entry.get("snapshot"), dict):
                 await interaction.response.send_message("That history entry has no restorable snapshot.", ephemeral=True)
                 return
-            record_recipe_change(data, "restore", interaction.user.id, f"Restored before history entry #{history_id}", interaction.guild_id)
-            save_guild_recipe_data(interaction.guild_id, entry["snapshot"])
-            await interaction.response.send_message(f"Restored the snapshot from history entry **#{history_id}**. The state being replaced was also saved to history.", ephemeral=True)
+            snapshot = entry["snapshot"]
+            current_count = sum(len(t.get("recipes", [])) for t in data.get("tables", []))
+            restore_count = sum(len(t.get("recipes", [])) for t in snapshot.get("tables", []))
+            await interaction.response.send_message(
+                f"**Restore preview — history entry #{history_id}**\\n"
+                f"Current: {len(data.get('tables', []))} tables / {current_count} recipes\\n"
+                f"Restored version: {len(snapshot.get('tables', []))} tables / {restore_count} recipes\\n"
+                "Confirm only if this is the version you want. The current version will be saved to history.",
+                view=ConfirmHistoryRestoreView(interaction.user.id, interaction.guild_id, history_id, snapshot),
+                ephemeral=True,
+            )
             return
 
         if self.action == "resolve_report":
@@ -2981,6 +3130,10 @@ class InformationPagerView(SafeView):
             self.source_embed = commands_embed()
         elif "recent activity" in title:
             self.source_embed = recent_activity_embed(interaction.guild_id, self.owner_id)
+        elif "my favorite recipes" in title:
+            self.source_embed = member_items_embed(interaction.guild_id, self.owner_id, favorites=True)
+        elif "recently viewed" in title:
+            self.source_embed = member_items_embed(interaction.guild_id, self.owner_id, favorites=False)
         self.fields = tuple((field.name, field.value, field.inline) for field in self.source_embed.fields)
         self.total_pages = max(1, (len(self.fields) + self.page_size - 1) // self.page_size)
         self.page = min(self.page, self.total_pages - 1)
@@ -3009,11 +3162,21 @@ class LocationSearchModal(SafeModal, title="Find a saved location"):
             if needle in field.name.casefold() or needle in field.value.casefold()
         ]
         if not matches:
-            await interaction.response.send_message(
-                f"No saved location entry matched **{self.query.value.strip()[:100]}**. Try a postal number or a shorter keyword.",
-                ephemeral=True,
-            )
-            return
+            candidates = []
+            for field in source.fields:
+                text_value = f"{field.name} {field.value}"
+                score = SequenceMatcher(None, needle, re.sub(r"[^a-z0-9]+", " ", text_value.casefold())).ratio()
+                if score >= 0.38:
+                    candidates.append((score, field))
+            candidates.sort(key=lambda pair: pair[0], reverse=True)
+            if candidates:
+                matches = [(field.name, field.value, field.inline) for _, field in candidates[:3]]
+            else:
+                await interaction.response.send_message(
+                    f"No saved location entry matched **{self.query.value.strip()[:100]}**. Try a postal number or a shorter keyword.",
+                    ephemeral=True,
+                )
+                return
         result = discord.Embed(
             title="📍 Location search results",
             description=f"Matches for **{self.query.value.strip()[:100]}** • {len(matches)} section(s)",
@@ -3021,6 +3184,7 @@ class LocationSearchModal(SafeModal, title="Find a saved location"):
         )
         for name, value, inline in matches:
             result.add_field(name=name, value=value, inline=inline)
+        record_recent_item(interaction.guild_id, interaction.user.id, "Location search", self.query.value.strip(), f"{len(matches)} matching section(s)")
         pager = InformationPagerView(interaction.user.id, result, 2)
         await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
 
@@ -3051,6 +3215,37 @@ class ShopBasketModal(SafeModal, title="Estimate a shopping basket"):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
+
+class ShopPriceCompareModal(SafeModal, title="Compare shop prices"):
+    item = discord.ui.TextInput(label="Item name", placeholder="Example: Cheesecloth, Flower Pot, Firewood", max_length=100)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        matches = compare_shop_listings(self.item.value)
+        if not matches:
+            await interaction.response.send_message(
+                "No saved shop listing matched that item. Try a shorter name or check /shops.",
+                ephemeral=True,
+            )
+            return
+        best = min(matches, key=lambda item: int(item.get("price", 0)))
+        embed = discord.Embed(
+            title=f"⚖️ Price comparison: {best.get('name', self.item.value)}",
+            description=f"**Lowest recorded price:** ${int(best.get('price', 0)):,} at **{best.get('shop', 'Unknown shop')}**",
+            color=COLOR,
+        )
+        for item in matches:
+            embed.add_field(
+                name=f"{item.get('shop', 'Unknown shop')} · ${int(item.get('price', 0)):,}",
+                value=f"**Item:** {item.get('name', 'Unknown')}\n**Difference from lowest:** ${int(item.get('price', 0)) - int(best.get('price', 0)):,}",
+                inline=False,
+            )
+        if len(matches) == 1:
+            embed.add_field(name="Comparison note", value="Only one saved listing is currently recorded for this item. No alternate price was invented.", inline=False)
+        embed.set_footer(text="Saved catalogue prices only • Verify current in-city prices")
+        record_recent_item(interaction.guild_id, interaction.user.id, "Shop price", best.get("name", self.item.value), best.get("shop", ""))
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
 class DashboardMenuView(SafeView):
     def __init__(self, owner_id: int):
         super().__init__(timeout=300)
@@ -3067,6 +3262,9 @@ class DashboardMenuView(SafeView):
                 discord.SelectOption(label="Usable Items", value="usable", description="Inventory items and their requirements", emoji="🎒"),
                 discord.SelectOption(label="Find a location / postal", value="location_search", description="Search saved postal and hidden-location notes", emoji="📍"),
                 discord.SelectOption(label="Estimate a shopping basket", value="shop_basket", description="Total known prices and group items by shop", emoji="💰"),
+                discord.SelectOption(label="Compare shop prices", value="price_compare", description="Find known listings and the lowest recorded price", emoji="⚖️"),
+                discord.SelectOption(label="My favorite recipes", value="favorites", description="Open your privately saved recipes", emoji="⭐"),
+                discord.SelectOption(label="Recently viewed", value="recent_items", description="Return to recently viewed recipes and locations", emoji="🕘"),
             ],
         )
         select.callback = self.choose_section
@@ -3085,6 +3283,14 @@ class DashboardMenuView(SafeView):
             return
         if section == "shop_basket":
             await interaction.response.send_modal(ShopBasketModal())
+            return
+        if section == "price_compare":
+            await interaction.response.send_modal(ShopPriceCompareModal())
+            return
+        if section in {"favorites", "recent_items"}:
+            embed = member_items_embed(interaction.guild_id, self.owner_id, favorites=(section == "favorites"))
+            pager = InformationPagerView(self.owner_id, embed, 5)
+            await interaction.response.edit_message(embed=pager.current_embed(), view=pager)
             return
         if section == "crafting":
             if bot.recipe_data is None:
@@ -3179,14 +3385,32 @@ class RecipeSearchResultsView(SafeView):
         self._sync_navigation_buttons()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
+    @discord.ui.button(label="Save page to favorites", emoji="⭐", style=discord.ButtonStyle.success, row=1)
+    async def save_page_button(self, interaction: discord.Interaction, button: discord.ui.Button):
+        start = self.page * self.page_size
+        page_items = self.results[start:start + self.page_size]
+        saved = 0
+        for table_name, recipe in page_items:
+            if save_member_favorite(interaction.guild_id, self.owner_id, table_name, recipe.get("name", "Unknown")):
+                saved += 1
+            record_recent_item(interaction.guild_id, self.owner_id, "Recipe", recipe.get("name", "Unknown"), table_name)
+        await interaction.response.send_message(
+            f"⭐ Saved **{saved}** new favorite(s). Already-saved recipes were left unchanged.",
+            ephemeral=True,
+        )
+
     @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary, custom_id="recipe_search_previous", row=0)
     async def previous_button(self, interaction, button):
         self.page = max(0, self.page - 1)
+        for table_name, recipe in self.results[self.page * self.page_size:(self.page + 1) * self.page_size]:
+            record_recent_item(interaction.guild_id, self.owner_id, "Recipe", recipe.get("name", "Unknown"), table_name)
         await self.refresh(interaction)
 
     @discord.ui.button(label="Next", emoji="➡️", style=discord.ButtonStyle.primary, custom_id="recipe_search_next", row=0)
     async def next_button(self, interaction, button):
         self.page = min(self.total_pages - 1, self.page + 1)
+        for table_name, recipe in self.results[self.page * self.page_size:(self.page + 1) * self.page_size]:
+            record_recent_item(interaction.guild_id, self.owner_id, "Recipe", recipe.get("name", "Unknown"), table_name)
         await self.refresh(interaction)
 
 
@@ -3205,6 +3429,8 @@ async def search_command(interaction: discord.Interaction, query: str):
         return
     record_usage("search", query)
     record_player_activity(interaction.guild_id, interaction.user.id, "Searched recipes", query)
+    for table_name, recipe in results[:5]:
+        record_recent_item(interaction.guild_id, interaction.user.id, "Recipe", recipe.get("name", "Unknown"), table_name)
     view = RecipeSearchResultsView(interaction.user.id, query, results)
     await interaction.response.send_message(embed=view.current_embed(), view=view, ephemeral=True)
 
@@ -3212,6 +3438,7 @@ async def search_command(interaction: discord.Interaction, query: str):
 @bot.tree.command(name="shops", description="Browse shop items and prices.")
 async def shops_command(interaction: discord.Interaction):
     record_player_activity(interaction.guild_id, interaction.user.id, "Opened directory", "Shops and prices")
+    record_recent_item(interaction.guild_id, interaction.user.id, "Directory", "Shops and prices")
     source_embed = shops_embed()
     pager = InformationPagerView(interaction.user.id, source_embed, 2)
     await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
@@ -3220,6 +3447,7 @@ async def shops_command(interaction: discord.Interaction):
 @bot.tree.command(name="locations", description="Browse postal codes and hidden locations.")
 async def locations_command(interaction: discord.Interaction):
     record_player_activity(interaction.guild_id, interaction.user.id, "Opened directory", "Postal locations")
+    record_recent_item(interaction.guild_id, interaction.user.id, "Directory", "Postal locations")
     source_embed = locations_embed()
     pager = InformationPagerView(interaction.user.id, source_embed, 3)
     await interaction.response.send_message(embed=pager.current_embed(), view=pager, ephemeral=True)
