@@ -265,26 +265,26 @@ def calculate_weed_growing_requirements(query: str):
         "smoke": {
             "name": "System 1 — Smoke On The Water + Grapeseed",
             "items": {
-                "Weed Seed": plants, "Fertilizer": plants, "Rainwater Jug": plants,
-                "Trowel": 1, "Flower Pot": plants,
+                "Weed Seed": plants, "Fertilizer": plants, "Spring Water": plants,
+                "Watering Can": plants, "Trowel": 1, "Flower Pot": plants,
             },
             "locations": {
-                "Smoke On The Water": ["Weed Seed", "Rainwater Jug"],
-                "Grapeseed": ["Fertilizer", "Trowel", "Flower Pot"],
+                "Smoke On The Water": ["Weed Seed", "Spring Water"],
+                "Grapeseed": ["Fertilizer", "Watering Can", "Trowel", "Flower Pot"],
             },
-            "note": "Use 1 Rainwater Jug per plant. Spring Water and Watering Can are not required. The Trowel is reusable for every plant.",
+            "note": "System 1 uses 1 Spring Water and 1 Watering Can per plant. The Trowel is reusable; a Flower Pot is required for every plant, including plants placed on grass.",
         },
         "grape": {
             "name": "System 2 — Grapeseed",
             "items": {
-                "Weed Seed": plants, "Spring Water": plants, "Watering Can": plants,
+                "Weed Seed": plants, "Rainwater Jug": plants,
                 "Bloom Booster": plants, "Trowel": 1,
                 **({} if grass else {"Flower Pot": plants}),
             },
             "locations": {
-                "Grapeseed": ["Weed Seed", "Spring Water", "Watering Can", "Bloom Booster", "Trowel"] + ([] if grass else ["Flower Pot"]),
+                "Grapeseed": ["Weed Seed", "Rainwater Jug", "Bloom Booster", "Trowel"] + ([] if grass else ["Flower Pot"]),
             },
-            "note": "System 2 requires one Watering Can per plant; the Trowel is reusable."
+            "note": "System 2 uses 1 Rainwater Jug per plant instead of Spring Water or a Watering Can. The Trowel is reusable; a Flower Pot is only needed when planting off grass."
         },
     }
     total_cost = lambda items: sum(prices[item] * quantity for item, quantity in items.items())
