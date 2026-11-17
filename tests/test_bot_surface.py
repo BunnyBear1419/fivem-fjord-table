@@ -737,26 +737,35 @@ def test_poppy_plant_growing_calculator_defaults_to_one_plant():
     assert result["items"]["Trowel"] == 1
 
 
-def test_weed_system_one_uses_rainwater_jug_instead_of_spring_water_and_watering_can():
+def test_weed_system_one_uses_spring_water_and_watering_can():
     from enhancements import calculate_weed_growing_requirements
 
     result = calculate_weed_growing_requirements("How much to grow 100 weed plants System 1?")
     system = result["systems"]["smoke"]
-    assert system["items"]["Rainwater Jug"] == 100
-    assert "Watering Can" not in system["items"]0
-    assert "Spring Water" not in system["items"]
+    assert system["items"]["Spring Water"] == 100
+    assert system["items"]["Watering Can"] == 100
+    assert "Rainwater Jug" not in system["items"]
+    assert system["items"]["Fertilizer"] == 100
+    assert system["items"]["Flower Pot"] == 100
     assert system["items"]["Trowel"] == 1
     assert system["total"] == 39_100
+    assert system["locations"]["Smoke On The Water"] == ["Weed Seed", "Spring Water"]
+    assert system["locations"]["Grapeseed"] == ["Fertilizer", "Watering Can", "Trowel", "Flower Pot"]
 
 
-def test_weed_system_two_keeps_its_existing_water_requirements():
+def test_weed_system_two_uses_rainwater_jug_without_spring_water_or_watering_can():
     from enhancements import calculate_weed_growing_requirements
 
-    result = calculate_weed_growing_requirements("How much to grow 10 weed plants System 2?")
+    result = calculate_weed_growing_requirements("How much to grow 100 weed plants System 2?")
     system = result["systems"]["grape"]
-    assert system["items"]["Spring Water"] == 10
-    assert system["items"]["Watering Can"] == 10
-    assert "Rainwater Jug" not in system["items"]
+    assert system["items"]["Rainwater Jug"] == 100
+    assert "Spring Water" not in system["items"]
+    assert "Watering Can" not in system["items"]
+    assert system["items"]["Bloom Booster"] == 100
+    assert system["items"]["Flower Pot"] == 100
+    assert system["items"]["Trowel"] == 1
+    assert system["total"] == 40_100
+    assert system["locations"]["Grapeseed"] == ["Weed Seed", "Rainwater Jug", "Bloom Booster", "Trowel", "Flower Pot"]
 
 
 
