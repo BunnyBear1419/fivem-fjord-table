@@ -675,3 +675,30 @@ def test_all_guild_recipe_profile_saves_are_validated_before_write():
     body = source[start:end]
     assert "validate_recipe_data(data)" in body
     assert "if errors:" in body
+
+
+def test_member_favorites_recent_views_price_comparison_and_safe_confirmations():
+    source = Path("bot.py").read_text(encoding="utf-8")
+    for token in (
+        'FAVORITES_FILE = BASE_DIR / "member-favorites.json"',
+        'RECENT_ITEMS_FILE = BASE_DIR / "member-recent-items.json"',
+        "def save_member_favorite(",
+        "def record_recent_item(",
+        "def member_items_embed(",
+        "class ShopPriceCompareModal(",
+        "def compare_shop_listings(",
+        'value="price_compare"',
+        'value="favorites"',
+        'value="recent_items"',
+        "Save page to favorites",
+        "class ConfirmRecipeRemovalView(",
+        "class ConfirmHistoryRestoreView(",
+        "Restore preview — history entry",
+    ):
+        assert token in source
+
+
+def test_private_member_favorites_and_recent_files_are_gitignored():
+    ignore = Path(".gitignore").read_text(encoding="utf-8")
+    assert "member-favorites.json" in ignore
+    assert "member-recent-items.json" in ignore
