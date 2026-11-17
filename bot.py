@@ -42,7 +42,7 @@ from enhancements import (
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
     ensure_stable_ids, dependency_chain, dependency_lines, inventory_plan,
     multi_recipe_plan, advanced_search, recipe_comparison, merge_recipe_import,
-    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_shop_basket, calculate_raw_cocaine_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings, validate_city_reference_data,
+    analytics_embed, chat_recipe_search, related_table_search, parse_inventory, expanded_production_requirements, calculate_shop_price_query, calculate_shop_basket, calculate_raw_cocaine_requirements, calculate_poppy_growing_requirements, calculate_weed_growing_requirements, calculate_inventory_limited_batches, inventory_quantity, parse_usable_item_sections, attach_location_recipe_warnings, validate_city_reference_data,
 )
 
 PROJECT_NAME = "Fjord Cartel Information"
@@ -1981,6 +1981,24 @@ async def on_message(message: discord.Message):
     if query.casefold() in {"help", "crafting"}:
         await message.reply("Use /crafting or /dashboard to open the bot menus. The ! prefix is reserved for questions.", mention_author=False)
         return
+    poppy_result = calculate_poppy_growing_requirements(query)
+    if poppy_result is not None:
+        if poppy_result.get("error"):
+            await message.reply(poppy_result["error"], mention_author=False)
+            return
+        embed = discord.Embed(
+            title="🌺 Poppy Plant Growing Guide",
+            description=f"**Plants:** {poppy_result['plants']:,}\n**Total estimated cost:** ${poppy_result['total']:,}",
+            color=COLOR,
+        )
+        lines = [f"• **{name}:** {quantity:,} — ${poppy_result['costs'][name]:,}" for name, quantity in poppy_result["items"].items()]
+        embed.add_field(name="Required items", value="\n".join(lines), inline=False)
+        embed.add_field(name="Where to buy", value="**Farm Supplier — Postals 2002–2003**\nPoppy Seed, Rainwater Jug, Bone Meal, and Trowel", inline=False)
+        embed.add_field(name="Growing instructions", value=poppy_result["note"], inline=False)
+        embed.set_footer(text="Poppy Seed, Rainwater Jug and Bone Meal are counted per plant; Trowel is reusable.")
+        await message.reply(embed=embed, mention_author=False)
+        return
+
     weed_result = calculate_weed_growing_requirements(query)
     if weed_result is not None:
         if weed_result.get("error"):
@@ -2017,7 +2035,7 @@ async def on_message(message: discord.Message):
         if len(selected) == 2:
             embed.set_footer(text="Mention System 1 / Smoke On The Water or System 2 / Grapeseed to show just one.")
         else:
-            embed.set_footer(text="Water and reusable tools are counted as one purchase each; Flower Pots are omitted for grass planting.")
+            embed.set_footer(text="Rainwater Jug is counted once per plant; Trowel is reusable. Flower Pots are omitted for grass planting.")
         await message.reply(embed=embed, mention_author=False)
         return
 
