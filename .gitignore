@@ -13,6 +13,8 @@ permissions.json
 inventories.json
 shopping-lists.json
 player-activity.json
+member-favorites.json
+member-recent-items.json
 backups/
 bot.log*
 *.tmp
