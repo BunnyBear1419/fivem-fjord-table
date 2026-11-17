@@ -2035,7 +2035,7 @@ async def on_message(message: discord.Message):
         if len(selected) == 2:
             embed.set_footer(text="Mention System 1 / Smoke On The Water or System 2 / Grapeseed to show just one.")
         else:
-            embed.set_footer(text="System 1: Spring Water + Watering Can per plant, Flower Pot always required. System 2: Rainwater Jug per plant; no Spring Water or Watering Can. Trowel is reusable.")
+            embed.set_footer(text="System 1: choose one Female or Male Seed, plus Spring Water per plant; no Watering Can. Flower Pot is always required. System 2: Weed Seed, Rainwater Jug, and Bloom Booster per plant; no Spring Water or Watering Can. Trowel is reusable.")
         await message.reply(embed=embed, mention_author=False)
         return
 
@@ -2625,7 +2625,7 @@ def locations_embed():
         value=(
             "• **Watering can:** $15 each\n"
             "• **Rainwater Jug:** $20 each\n"
-            "• **Spring Water:** $25 each\n"
+            "• **Spring Water:** $20 each\n"
             "• **Pond Water:** $15 each\n"
             "• **Misting Bottle:** $20 each"
         ),
