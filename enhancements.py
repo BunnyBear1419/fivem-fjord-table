@@ -243,36 +243,34 @@ def calculate_poppy_growing_requirements(query: str):
 
 
 def calculate_weed_growing_requirements(query: str):
-    """Calculate shopping requirements for either of the two weed-growing systems."""
+    """Calculate shopping requirements for either of the two in-city weed systems."""
     raw = str(query or "").strip()
     if not re.search(r"\bweed\b", raw, re.IGNORECASE) or not re.search(r"\b(?:plant|plants|grow|growing)\b", raw, re.IGNORECASE):
         return None
     match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?(?:weed\s+)?plants?\b", raw, re.IGNORECASE)
     if not match:
         match = re.search(r"\b(?:grow|growing)\s+([0-9][0-9,]*)\b", raw, re.IGNORECASE)
-    # If the member asks what is needed without specifying a target, show the
-    # per-plant shopping list rather than falling through to the shop-price lookup.
     plants = int(match.group(1).replace(",", "")) if match else 1
     if plants < 1 or plants > 100000:
         return {"error": "Please enter a plant amount between 1 and 100,000."}
     grass = bool(re.search(r"\b(?:grass|in\s+the\s+grass)\b", raw, re.IGNORECASE))
     prices = {
-        "Weed Seed": 60, "Fertilizer": 40, "Spring Water": 25,
-        "Rainwater Jug": 20, "Watering Can": 15, "Flower Pot": 250, "Trowel": 100,
-        "Bloom Booster": 70,
+        "Female/Male Seed (choose one)": 60, "Weed Seed": 60,
+        "Fertilizer": 40, "Spring Water": 20, "Rainwater Jug": 20,
+        "Flower Pot": 250, "Trowel": 100, "Bloom Booster": 70,
     }
     systems = {
         "smoke": {
             "name": "System 1 — Smoke On The Water + Grapeseed",
             "items": {
-                "Weed Seed": plants, "Fertilizer": plants, "Spring Water": plants,
-                "Watering Can": plants, "Trowel": 1, "Flower Pot": plants,
+                "Female/Male Seed (choose one)": plants, "Fertilizer": plants,
+                "Spring Water": plants, "Trowel": 1, "Flower Pot": plants,
             },
             "locations": {
-                "Smoke On The Water": ["Weed Seed", "Spring Water"],
-                "Grapeseed": ["Fertilizer", "Watering Can", "Trowel", "Flower Pot"],
+                "Smoke On The Water": ["Female/Male Seed (choose one)", "Spring Water"],
+                "Grapeseed": ["Fertilizer", "Trowel", "Flower Pot"],
             },
-            "note": "System 1 uses 1 Spring Water and 1 Watering Can per plant. The Trowel is reusable; a Flower Pot is required for every plant, including plants placed on grass.",
+            "note": "Choose either Female Seed or Male Seed from Smoke On The Water (one seed per plant). Buy Fertilizer, Trowel, and Flower Pots at Grapeseed, plus Spring Water at Smoke On The Water. The Trowel is reusable; one Flower Pot is required for every plant, including plants placed on grass.",
         },
         "grape": {
             "name": "System 2 — Grapeseed",
@@ -284,7 +282,7 @@ def calculate_weed_growing_requirements(query: str):
             "locations": {
                 "Grapeseed": ["Weed Seed", "Rainwater Jug", "Bloom Booster", "Trowel"] + ([] if grass else ["Flower Pot"]),
             },
-            "note": "System 2 uses 1 Rainwater Jug per plant instead of Spring Water or a Watering Can. The Trowel is reusable; a Flower Pot is only needed when planting off grass."
+            "note": "System 2 uses one Weed Seed, one Rainwater Jug, and one Bloom Booster per plant. No Spring Water or Watering Can is required. The Trowel is reusable; a Flower Pot is only needed when planting off grass.",
         },
     }
     total_cost = lambda items: sum(prices[item] * quantity for item, quantity in items.items())
