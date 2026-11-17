@@ -548,10 +548,10 @@ class ReportModal(SafeModal, title="Report a recipe issue"):
 
 
 class ConfirmRecipeRemovalView(SafeView):
-    def __init__(self, owner_id: int, guild_id, table_name: str, recipe_name: str):
+    def __init__(self, owner_id: int, guild_id, table_name: str, recipe_name: str, fingerprint: str):
         super().__init__(timeout=120)
         self.owner_id, self.guild_id = owner_id, guild_id
-        self.table_name, self.recipe_name = table_name, recipe_name
+        self.table_name, self.recipe_name, self.fingerprint = table_name, recipe_name, fingerprint
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.owner_id:
@@ -562,6 +562,9 @@ class ConfirmRecipeRemovalView(SafeView):
     @discord.ui.button(label="Confirm removal", style=discord.ButtonStyle.danger, emoji="🗑️")
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
         data = ensure_stable_ids(get_guild_recipe_data(self.guild_id))
+        if recipe_fingerprint(data) != self.fingerprint:
+            await interaction.response.edit_message(content="The recipe directory changed after this prompt. Nothing was removed. Reopen the remove tool.", embed=None, view=None)
+            return
         before = json.loads(json.dumps(data, ensure_ascii=False))
         table = next((t for t in data.get("tables", []) if t.get("name", "").casefold() == self.table_name.casefold()), None)
         index = next((i for i, r in enumerate(table.get("recipes", []))
@@ -578,6 +581,35 @@ class ConfirmRecipeRemovalView(SafeView):
     @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖️")
     async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
         await interaction.response.edit_message(content="Removal cancelled. No recipe data was changed.", embed=None, view=None)
+
+
+
+class ConfirmRecipeEditView(SafeView):
+    def __init__(self, owner_id: int, guild_id, before_data: dict, updated_data: dict, fingerprint: str, summary: str):
+        super().__init__(timeout=120)
+        self.owner_id, self.guild_id = owner_id, guild_id
+        self.before_data, self.updated_data = before_data, updated_data
+        self.fingerprint, self.summary = fingerprint, summary
+
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        if interaction.user.id != self.owner_id:
+            await interaction.response.send_message("Only the administrator who started this edit can confirm it.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Confirm edit", style=discord.ButtonStyle.success, emoji="💾")
+    async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
+        current = ensure_stable_ids(get_guild_recipe_data(self.guild_id))
+        if recipe_fingerprint(current) != self.fingerprint:
+            await interaction.response.edit_message(content="The recipe data changed after this preview. Nothing was edited. Reopen the edit tool to create a fresh preview.", embed=None, view=None)
+            return
+        record_recipe_change(self.before_data, "edit_recipe", interaction.user.id, self.summary, self.guild_id)
+        save_guild_recipe_data(self.guild_id, self.updated_data)
+        await interaction.response.edit_message(content="Recipe edit applied. The previous version is preserved in history.", embed=None, view=None)
+
+    @discord.ui.button(label="Cancel", style=discord.ButtonStyle.secondary, emoji="✖️")
+    async def cancel(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await interaction.response.edit_message(content="Edit cancelled. No recipe data was changed.", embed=None, view=None)
 
 
 class ConfirmHistoryRestoreView(SafeView):
@@ -690,9 +722,13 @@ class AdminActionModal(SafeModal):
                     return
             if self.tools.value.strip():
                 recipe["tools"] = [x.strip() for x in self.tools.value.split(",") if x.strip()]
-            record_recipe_change(before_data, "edit_recipe", interaction.user.id, f"Edited {recipe['name']} in {table['name']}", interaction.guild_id)
-            save_guild_recipe_data(interaction.guild_id, data)
-            await interaction.response.send_message(f"Updated **{recipe['name']}**. An automatic backup and change-history entry were created.", ephemeral=True)
+            summary = f"Edited {recipe['name']} in {table['name']}"
+            await interaction.response.send_message(
+                f"**Edit preview — {recipe['name']}** in **{table['name']}**.\\n"
+                "Review the replacement values before applying. The previous version will be preserved in history.",
+                view=ConfirmRecipeEditView(interaction.user.id, interaction.guild_id, before_data, data, recipe_fingerprint(before_data), summary),
+                ephemeral=True,
+            )
             return
 
         if self.action == "remove_recipe":
@@ -704,7 +740,7 @@ class AdminActionModal(SafeModal):
             recipe = table["recipes"][index]
             await interaction.response.send_message(
                 f"Are you sure you want to remove **{recipe['name']}** from **{table['name']}**? A history snapshot will be kept if you confirm.",
-                view=ConfirmRecipeRemovalView(interaction.user.id, interaction.guild_id, table['name'], recipe['name']),
+                view=ConfirmRecipeRemovalView(interaction.user.id, interaction.guild_id, table['name'], recipe['name'], recipe_fingerprint(data)),
                 ephemeral=True,
             )
             return
