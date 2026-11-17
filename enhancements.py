@@ -222,7 +222,7 @@ def calculate_raw_cocaine_requirements(query: str):
 def calculate_poppy_growing_requirements(query: str):
     """Calculate the supplied in-game Poppy Plant shopping list."""
     raw = str(query or "").strip()
-    if not re.search(r"\bpopp(?:y|ly)\b", raw, re.IGNORECASE) or not re.search(r"\b(?:plant|plants|grow|growing)\b", raw, re.IGNORECASE):
+    if not re.search(r"\bpopp(?:y|ies|ly)\b", raw, re.IGNORECASE) or not re.search(r"\b(?:plant|plants|grow|growing)\b", raw, re.IGNORECASE):
         return None
     match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?(?:poppy\s+)?plants?\b", raw, re.IGNORECASE)
     if not match:
