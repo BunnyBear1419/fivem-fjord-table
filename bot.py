@@ -724,7 +724,7 @@ class AdminActionModal(SafeModal):
                 recipe["tools"] = [x.strip() for x in self.tools.value.split(",") if x.strip()]
             summary = f"Edited {recipe['name']} in {table['name']}"
             await interaction.response.send_message(
-                f"**Edit preview — {recipe['name']}** in **{table['name']}**.\\n"
+                f"**Edit preview — {recipe['name']}** in **{table['name']}**.\n"
                 "Review the replacement values before applying. The previous version will be preserved in history.",
                 view=ConfirmRecipeEditView(interaction.user.id, interaction.guild_id, before_data, data, recipe_fingerprint(before_data), summary),
                 ephemeral=True,
@@ -760,9 +760,9 @@ class AdminActionModal(SafeModal):
             current_count = sum(len(t.get("recipes", [])) for t in data.get("tables", []))
             restore_count = sum(len(t.get("recipes", [])) for t in snapshot.get("tables", []))
             await interaction.response.send_message(
-                f"**Restore preview — history entry #{history_id}**\\n"
-                f"Current: {len(data.get('tables', []))} tables / {current_count} recipes\\n"
-                f"Restored version: {len(snapshot.get('tables', []))} tables / {restore_count} recipes\\n"
+                f"**Restore preview — history entry #{history_id}**\n"
+                f"Current: {len(data.get('tables', []))} tables / {current_count} recipes\n"
+                f"Restored version: {len(snapshot.get('tables', []))} tables / {restore_count} recipes\n"
                 "Confirm only if this is the version you want. The current version will be saved to history.",
                 view=ConfirmHistoryRestoreView(interaction.user.id, interaction.guild_id, history_id, snapshot),
                 ephemeral=True,
@@ -2309,7 +2309,7 @@ async def on_message(message: discord.Message):
             )
         try:
             ai_answer = await hybrid_ai_answer(
-                message.guild.id, message.author.id, query, "\\n".join(context_parts)
+                message.guild.id, message.author.id, query, "\n".join(context_parts)
             )
         except Exception:
             logger.exception("Hybrid AI answer handler failed")
