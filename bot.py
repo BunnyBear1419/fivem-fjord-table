@@ -2035,7 +2035,7 @@ async def on_message(message: discord.Message):
         if len(selected) == 2:
             embed.set_footer(text="Mention System 1 / Smoke On The Water or System 2 / Grapeseed to show just one.")
         else:
-            embed.set_footer(text="Rainwater Jug is counted once per plant; Trowel is reusable. Flower Pots are omitted for grass planting.")
+            embed.set_footer(text="System 1: Spring Water + Watering Can per plant, Flower Pot always required. System 2: Rainwater Jug per plant; no Spring Water or Watering Can. Trowel is reusable.")
         await message.reply(embed=embed, mention_author=False)
         return
 
