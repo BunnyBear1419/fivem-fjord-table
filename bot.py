@@ -635,10 +635,10 @@ class ConfirmRecipeEditView(SafeView):
 
 
 class ConfirmHistoryRestoreView(SafeView):
-    def __init__(self, owner_id: int, guild_id, history_id: int, snapshot: dict):
+    def __init__(self, owner_id: int, guild_id, history_id: int, snapshot: dict, fingerprint: str):
         super().__init__(timeout=120)
         self.owner_id, self.guild_id = owner_id, guild_id
-        self.history_id, self.snapshot = history_id, snapshot
+        self.history_id, self.snapshot, self.fingerprint = history_id, snapshot, fingerprint
 
     async def interaction_check(self, interaction: discord.Interaction) -> bool:
         if interaction.user.id != self.owner_id:
@@ -648,7 +648,10 @@ class ConfirmHistoryRestoreView(SafeView):
 
     @discord.ui.button(label="Confirm restore", style=discord.ButtonStyle.danger, emoji="↩️")
     async def confirm(self, interaction: discord.Interaction, button: discord.ui.Button):
-        current = get_guild_recipe_data(self.guild_id)
+        current = ensure_stable_ids(get_guild_recipe_data(self.guild_id))
+        if recipe_fingerprint(current) != self.fingerprint:
+            await interaction.response.edit_message(content="The recipe directory changed after this restore preview. Nothing was restored. Reopen the restore tool to preview the latest version.", embed=None, view=None)
+            return
         record_recipe_change(current, "restore", interaction.user.id,
                              f"Restored snapshot from history entry #{self.history_id}", self.guild_id)
         save_guild_recipe_data(self.guild_id, self.snapshot)
@@ -786,7 +789,7 @@ class AdminActionModal(SafeModal):
                 f"Current: {len(data.get('tables', []))} tables / {current_count} recipes\n"
                 f"Restored version: {len(snapshot.get('tables', []))} tables / {restore_count} recipes\n"
                 "Confirm only if this is the version you want. The current version will be saved to history.",
-                view=ConfirmHistoryRestoreView(interaction.user.id, interaction.guild_id, history_id, snapshot),
+                view=ConfirmHistoryRestoreView(interaction.user.id, interaction.guild_id, history_id, snapshot, recipe_fingerprint(data)),
                 ephemeral=True,
             )
             return
