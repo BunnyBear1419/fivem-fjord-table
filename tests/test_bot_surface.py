@@ -683,6 +683,8 @@ def test_member_favorites_recent_views_price_comparison_and_safe_confirmations()
         'FAVORITES_FILE = BASE_DIR / "member-favorites.json"',
         'RECENT_ITEMS_FILE = BASE_DIR / "member-recent-items.json"',
         "def save_member_favorite(",
+        "def save_member_directory_favorite(",
+        "My Favorites",
         "def record_recent_item(",
         "def member_items_embed(",
         "class ShopPriceCompareModal(",
