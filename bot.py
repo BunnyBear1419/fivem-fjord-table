@@ -173,6 +173,23 @@ def save_member_favorite(guild_id, user_id: int, table_name: str, recipe_name: s
     return True
 
 
+
+def save_member_directory_favorite(guild_id, user_id: int, kind: str, label: str, details: str = ""):
+    """Save a shop, location, or other directory entry privately for a member."""
+    key = f"{guild_id or 'dm'}:{user_id}"
+    with file_lock():
+        data = read_json(FAVORITES_FILE, {})
+        entries = data.get(key, [])
+        if any(str(item.get("kind", "")).casefold() == kind.casefold()
+               and str(item.get("label", "")).casefold() == label.casefold() for item in entries):
+            return False
+        entries.append({"kind": str(kind)[:40], "label": str(label)[:120],
+                        "details": str(details)[:180], "saved_at": discord.utils.utcnow().isoformat()})
+        data[key] = entries[-50:]
+        write_json(FAVORITES_FILE, data)
+    return True
+
+
 def member_favorites(guild_id, user_id: int):
     key = f"{guild_id or 'dm'}:{user_id}"
     return read_json(FAVORITES_FILE, {}).get(key, [])
@@ -195,13 +212,18 @@ def member_recent_items(guild_id, user_id: int):
 
 def member_items_embed(guild_id, user_id: int, favorites: bool = False):
     entries = member_favorites(guild_id, user_id) if favorites else member_recent_items(guild_id, user_id)
-    title = "⭐ My Favorite Recipes" if favorites else "🕘 Recently Viewed"
+    title = "⭐ My Favorites" if favorites else "🕘 Recently Viewed"
     embed = discord.Embed(title=title, color=COLOR)
     if favorites:
-        embed.description = "Your saved recipes are private to you in this server."
+        embed.description = "Your saved recipes, shops, and locations are private to you in this server."
         for item in entries[-20:]:
-            embed.add_field(name=f"{item.get('recipe', 'Unknown recipe')} · {item.get('table', 'Unknown table')}"[:256],
-                            value="Saved " + str(item.get("saved_at", "at an unknown time"))[:19].replace("T", " "), inline=False)
+            if item.get("recipe"):
+                name = f"{item.get('recipe', 'Unknown recipe')} · {item.get('table', 'Unknown table')}"
+                detail = "Recipe"
+            else:
+                name = f"{item.get('kind', 'Favorite')} · {item.get('label', 'Unknown')}"
+                detail = str(item.get("details") or "Saved directory entry")
+            embed.add_field(name=name[:256], value=f"{detail} · Saved " + str(item.get("saved_at", "at an unknown time"))[:19].replace("T", " "), inline=False)
     else:
         embed.description = "Your latest viewed recipes, locations, shops, and directory pages. Only you can see this list."
         for item in reversed(entries):
@@ -3151,6 +3173,11 @@ class InformationPagerView(SafeView):
 
     async def refresh(self, interaction: discord.Interaction):
         self.page = max(0, min(self.page, self.total_pages - 1))
+        start = self.page * self.page_size
+        title = (self.source_embed.title or "").casefold()
+        kind = "Shop" if "shops" in title else "Location" if "locations" in title else "Directory"
+        for name, value, inline in self.fields[start:start + self.page_size]:
+            record_recent_item(interaction.guild_id, self.owner_id, kind, name, value[:120])
         self._sync_navigation_buttons()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
 
@@ -3166,7 +3193,7 @@ class InformationPagerView(SafeView):
             self.source_embed = commands_embed()
         elif "recent activity" in title:
             self.source_embed = recent_activity_embed(interaction.guild_id, self.owner_id)
-        elif "my favorite recipes" in title:
+        elif "my favorites" in title:
             self.source_embed = member_items_embed(interaction.guild_id, self.owner_id, favorites=True)
         elif "recently viewed" in title:
             self.source_embed = member_items_embed(interaction.guild_id, self.owner_id, favorites=False)
@@ -3175,6 +3202,20 @@ class InformationPagerView(SafeView):
         self.page = min(self.page, self.total_pages - 1)
         self._sync_navigation_buttons()
         await interaction.response.edit_message(embed=self.current_embed(), view=self)
+
+    @discord.ui.button(label="Save page", emoji="⭐", style=discord.ButtonStyle.success, row=1)
+    async def save_page_favorites(self, interaction: discord.Interaction, button: discord.ui.Button):
+        title = (self.source_embed.title or "").casefold()
+        kind = "Shop" if "shops" in title else "Location" if "locations" in title else "Directory"
+        start = self.page * self.page_size
+        saved = 0
+        for name, value, inline in self.fields[start:start + self.page_size]:
+            if save_member_directory_favorite(interaction.guild_id, self.owner_id, kind, name, value):
+                saved += 1
+        await interaction.response.send_message(
+            f"⭐ Saved **{saved}** new {kind.lower()} favorite(s). Existing favorites were left unchanged.",
+            ephemeral=True,
+        )
 
     @discord.ui.button(label="Previous", emoji="⬅️", style=discord.ButtonStyle.secondary, custom_id="information_previous", row=0)
     async def previous_button(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -3299,7 +3340,7 @@ class DashboardMenuView(SafeView):
                 discord.SelectOption(label="Find a location / postal", value="location_search", description="Search saved postal and hidden-location notes", emoji="📍"),
                 discord.SelectOption(label="Estimate a shopping basket", value="shop_basket", description="Total known prices and group items by shop", emoji="💰"),
                 discord.SelectOption(label="Compare shop prices", value="price_compare", description="Find known listings and the lowest recorded price", emoji="⚖️"),
-                discord.SelectOption(label="My favorite recipes", value="favorites", description="Open your privately saved recipes", emoji="⭐"),
+                discord.SelectOption(label="My favorites", value="favorites", description="Open your privately saved recipes, shops, and locations", emoji="⭐"),
                 discord.SelectOption(label="Recently viewed", value="recent_items", description="Return to recently viewed recipes and locations", emoji="🕘"),
             ],
         )
