@@ -219,6 +219,29 @@ def calculate_raw_cocaine_requirements(query: str):
     }
 
 
+def calculate_poppy_growing_requirements(query: str):
+    """Calculate the supplied in-game Poppy Plant shopping list."""
+    raw = str(query or "").strip()
+    if not re.search(r"\bpopp(?:y|ly)\b", raw, re.IGNORECASE) or not re.search(r"\b(?:plant|plants|grow|growing)\b", raw, re.IGNORECASE):
+        return None
+    match = re.search(r"([0-9][0-9,]*)\s*(?:x\s*)?(?:poppy\s+)?plants?\b", raw, re.IGNORECASE)
+    if not match:
+        match = re.search(r"\b(?:grow|growing)\s+([0-9][0-9,]*)\b", raw, re.IGNORECASE)
+    plants = int(match.group(1).replace(",", "")) if match else 1
+    if plants < 1 or plants > 100000:
+        return {"error": "Please enter a plant amount between 1 and 100,000."}
+    prices = {"Poppy Seed": 120, "Rainwater Jug": 20, "Bone Meal": 45, "Trowel": 100}
+    items = {"Poppy Seed": plants, "Rainwater Jug": plants, "Bone Meal": plants, "Trowel": 1}
+    costs = {name: prices[name] * quantity for name, quantity in items.items()}
+    return {
+        "plants": plants,
+        "items": items,
+        "costs": costs,
+        "total": sum(costs.values()),
+        "note": "Each Poppy Plant needs 1 Poppy Seed, 1 Rainwater Jug, and 1 Bone Meal. The Trowel is reusable, so only 1 is needed for the whole planting session.",
+    }
+
+
 def calculate_weed_growing_requirements(query: str):
     """Calculate shopping requirements for either of the two weed-growing systems."""
     raw = str(query or "").strip()
@@ -235,21 +258,21 @@ def calculate_weed_growing_requirements(query: str):
     grass = bool(re.search(r"\b(?:grass|in\s+the\s+grass)\b", raw, re.IGNORECASE))
     prices = {
         "Weed Seed": 60, "Fertilizer": 40, "Spring Water": 25,
-        "Watering Can": 15, "Flower Pot": 250, "Trowel": 100,
+        "Rainwater Jug": 20, "Watering Can": 15, "Flower Pot": 250, "Trowel": 100,
         "Bloom Booster": 70,
     }
     systems = {
         "smoke": {
             "name": "System 1 — Smoke On The Water + Grapeseed",
             "items": {
-                "Weed Seed": plants, "Fertilizer": plants, "Spring Water": plants,
-                "Watering Can": 1, "Trowel": 1, "Flower Pot": plants,
+                "Weed Seed": plants, "Fertilizer": plants, "Rainwater Jug": plants,
+                "Trowel": 1, "Flower Pot": plants,
             },
             "locations": {
-                "Smoke On The Water": ["Weed Seed", "Spring Water", "Watering Can"],
+                "Smoke On The Water": ["Weed Seed", "Rainwater Jug"],
                 "Grapeseed": ["Fertilizer", "Trowel", "Flower Pot"],
             },
-            "note": "Fill the Watering Can by opening inventory and dragging Spring Water onto it until full. The Trowel is reusable.",
+            "note": "Use 1 Rainwater Jug per plant. Spring Water and Watering Can are not required. The Trowel is reusable for every plant.",
         },
         "grape": {
             "name": "System 2 — Grapeseed",
