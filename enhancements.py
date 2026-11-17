@@ -54,7 +54,7 @@ SHOP_PRICE_CATALOG = [
     {"name": "San Pedro Cuttings", "shop": "Farm Supplier — Postals 2002–2003", "price": 90, "aliases": ("san pedro cutting", "san pedro cuttings",)},
     {"name": "Watering can", "shop": "Farm Supplier — Postals 2002–2003", "price": 15, "aliases": ("watering can", "watering cans",)},
     {"name": "Rainwater Jug", "shop": "Farm Supplier — Postals 2002–2003", "price": 20, "aliases": ("rainwater jug", "rainwater jugs",)},
-    {"name": "Spring Water", "shop": "Farm Supplier — Postals 2002–2003", "price": 25, "aliases": ("spring water",)},
+    {"name": "Spring Water", "shop": "Farm Supplier — Postals 2002–2003", "price": 20, "aliases": ("spring water",)},
     {"name": "Pond Water", "shop": "Farm Supplier — Postals 2002–2003", "price": 15, "aliases": ("pond water",)},
     {"name": "Misting Bottle", "shop": "Farm Supplier — Postals 2002–2003", "price": 20, "aliases": ("misting bottle", "misting bottles",)},
     {"name": "Fertilizer", "shop": "Farm Supplier — Postals 2002–2003", "price": 40, "aliases": ("fertilizer",)},
