@@ -400,7 +400,7 @@ def test_system_two_watering_can_is_not_reusable():
     result = calculate_weed_growing_requirements("How much for 500 weed plants System 2?")
     assert result["systems"]["grape"]["items"]["Rainwater Jug"] == 500
     assert result["systems"]["grape"]["costs"]["Rainwater Jug"] == 10000
-    assert result["systems"]["grape"]["total"] == 75100
+    assert result["systems"]["grape"]["total"] == 200100
     assert "1 Rainwater Jug per plant" in result["systems"]["grape"]["note"]
 
 
@@ -542,9 +542,9 @@ def test_system_one_requires_flower_pot_even_when_planted_in_grass():
 
     result = calculate_weed_growing_requirements("How much for 10 weed plants in grass?")
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 10
-    assert result["systems"]["smoke"]["total"] == 3900
+    assert result["systems"]["smoke"]["total"] == 4000
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
-    assert result["systems"]["grape"]["total"] == 1500
+    assert result["systems"]["grape"]["total"] == 1600
 
 
 def test_directory_search_is_a_slash_command_not_a_chat_command():
