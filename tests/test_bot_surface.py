@@ -692,6 +692,8 @@ def test_member_favorites_recent_views_price_comparison_and_safe_confirmations()
         'value="recent_items"',
         "Save page to favorites",
         "class ConfirmRecipeRemovalView(",
+        "class ConfirmRecipeEditView(",
+        "recipe_fingerprint(current) != self.fingerprint",
         "class ConfirmHistoryRestoreView(",
         "Restore preview — history entry",
     ):
