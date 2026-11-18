@@ -257,20 +257,20 @@ def calculate_weed_growing_requirements(query: str):
     prices = {
         "Female/Male Seed (choose one)": 60, "Weed Seed": 60,
         "Fertilizer": 40, "Spring Water": 20, "Rainwater Jug": 20,
-        "Flower Pot": 250, "Trowel": 100, "Bloom Booster": 70,
+        "Flower Pot": 250, "Trowel": 100, "Bloom Booster": 70, "Watering Can": 15,
     }
     systems = {
         "smoke": {
             "name": "System 1 — Smoke On The Water + Grapeseed",
             "items": {
                 "Female/Male Seed (choose one)": plants, "Fertilizer": plants,
-                "Spring Water": plants, "Trowel": 1, "Flower Pot": plants,
+                "Spring Water": plants, "Watering Can": plants, "Trowel": 1, "Flower Pot": plants,
             },
             "locations": {
                 "Smoke On The Water": ["Female/Male Seed (choose one)", "Spring Water"],
-                "Grapeseed": ["Fertilizer", "Trowel", "Flower Pot"],
+                "Grapeseed": ["Fertilizer", "Watering Can", "Trowel", "Flower Pot"],
             },
-            "note": "Choose either Female Seed or Male Seed from Smoke On The Water (one seed per plant). Buy Fertilizer, Trowel, and Flower Pots at Grapeseed, plus Spring Water at Smoke On The Water. The Trowel is reusable; one Flower Pot is required for every plant, including plants placed on grass.",
+            "note": "Choose either Female Seed or Male Seed from Smoke On The Water (one seed per plant). Buy Fertilizer, one Watering Can per plant, the reusable Trowel, and Flower Pots at Grapeseed, plus Spring Water at Smoke On The Water. One Flower Pot and one Watering Can are required for every plant, including plants placed on grass.",
         },
         "grape": {
             "name": "System 2 — Grapeseed",
