@@ -302,11 +302,11 @@ def test_weed_growing_calculator_returns_both_systems_and_correct_shop_costs():
     result = calculate_weed_growing_requirements("How much to grow 100 weed plants?")
     assert result["plants"] == 100
     assert result["systems"]["smoke"]["items"]["Spring Water"] == 100
-    assert "Watering Can" not in result["systems"]["smoke"]["items"]
+    assert result["systems"]["smoke"]["items"]["Watering Can"] == 100
     assert "Rainwater Jug" not in result["systems"]["smoke"]["items"]
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 100
     assert result["systems"]["smoke"]["items"]["Trowel"] == 1
-    assert result["systems"]["smoke"]["total"] == 37100
+    assert result["systems"]["smoke"]["total"] == 38600
     assert result["systems"]["grape"]["items"]["Bloom Booster"] == 100
     assert result["systems"]["grape"]["items"]["Rainwater Jug"] == 100
     assert result["systems"]["grape"]["total"] == 40100
@@ -542,7 +542,7 @@ def test_system_one_requires_flower_pot_even_when_planted_in_grass():
 
     result = calculate_weed_growing_requirements("How much for 10 weed plants in grass?")
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 10
-    assert result["systems"]["smoke"]["total"] == 3850
+    assert result["systems"]["smoke"]["total"] == 3950
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
     assert result["systems"]["grape"]["total"] == 1600
 
@@ -737,21 +737,21 @@ def test_poppy_plant_growing_calculator_defaults_to_one_plant():
     assert result["items"]["Trowel"] == 1
 
 
-def test_weed_system_one_uses_seed_choice_spring_water_and_no_watering_can():
+def test_weed_system_one_uses_seed_choice_spring_water_and_watering_can_per_plant():
     from enhancements import calculate_weed_growing_requirements
 
     result = calculate_weed_growing_requirements("How much to grow 100 weed plants System 1?")
     system = result["systems"]["smoke"]
     assert system["items"]["Female/Male Seed (choose one)"] == 100
     assert system["items"]["Spring Water"] == 100
-    assert "Watering Can" not in system["items"]
+    assert system["items"]["Watering Can"] == 100
     assert "Rainwater Jug" not in system["items"]
     assert system["items"]["Fertilizer"] == 100
     assert system["items"]["Flower Pot"] == 100
     assert system["items"]["Trowel"] == 1
-    assert system["total"] == 37_100
+    assert system["total"] == 38_600
     assert system["locations"]["Smoke On The Water"] == ["Female/Male Seed (choose one)", "Spring Water"]
-    assert system["locations"]["Grapeseed"] == ["Fertilizer", "Trowel", "Flower Pot"]
+    assert system["locations"]["Grapeseed"] == ["Fertilizer", "Watering Can", "Trowel", "Flower Pot"]
 
 
 def test_weed_system_two_uses_rainwater_jug_without_spring_water_or_watering_can():
