@@ -2858,7 +2858,8 @@ def locations_embed():
             "• **9195 — Lab:** Tables #1–#4; browse the saved table and recipe directory in `/crafting`.\n"
             "• **9275:** Press machine.\n"
             "• **9366:** Empty Lab.\n"
-            "• **9379:** Weed lab; reported inactive, no activity found."
+            "• **9379:** Weed lab; reported inactive, no activity found.\n"
+            "• **9384 — Empty Weed Lab.**"
         ),
         inline=False,
     )
