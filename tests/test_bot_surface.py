@@ -317,7 +317,7 @@ def test_weed_growing_calculator_applies_different_grass_rules_to_each_system():
 
     result = calculate_weed_growing_requirements("How much to grow 100 weed plants in grass?")
     assert result["systems"]["smoke"]["items"]["Flower Pot"] == 100
-    assert result["systems"]["smoke"]["total"] == 37100
+    assert result["systems"]["smoke"]["total"] == 38600
     assert "Flower Pot" not in result["systems"]["grape"]["items"]
     assert result["systems"]["grape"]["items"]["Rainwater Jug"] == 100
     assert result["systems"]["grape"]["total"] == 15100
@@ -387,7 +387,7 @@ def test_weed_growing_calculator_defaults_to_one_plant_when_quantity_is_omitted(
         "What do I need to grow weed and how much will I spend?"
     )
     assert result["plants"] == 1
-    assert result["systems"]["smoke"]["total"] == 470
+    assert result["systems"]["smoke"]["total"] == 485
     assert result["systems"]["grape"]["total"] == 500
     assert result["systems"]["smoke"]["items"]["Female/Male Seed (choose one)"] == 1
     assert result["systems"]["grape"]["items"]["Bloom Booster"] == 1
