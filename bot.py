@@ -3464,7 +3464,8 @@ class DashboardMenuView(SafeView):
             return
         embed_factories = {
             "commands": (commands_embed, 4),
-            "shops": (shops_embed, 2),\n            "street_prices": (street_prices_embed, 4),
+            "shops": (shops_embed, 2),
+            "street_prices": (street_prices_embed, 4),
             "locations": (locations_embed, 3),
             "usable": (usable_embed, 2),
         }
