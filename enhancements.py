@@ -282,7 +282,7 @@ def calculate_weed_growing_requirements(query: str):
             "locations": {
                 "Grapeseed": ["Weed Seed", "Rainwater Jug", "Bloom Booster", "Trowel"] + ([] if grass else ["Flower Pot"]),
             },
-            "note": "System 2 uses 1 Weed Seed, 1 Rainwater Jug, and 1 Bloom Booster per plant. No Spring Water or Watering Can is required. The Trowel is reusable; a Flower Pot is only needed when planting off grass.",
+            "note": "System 2 uses 1 Weed Seed, 1 Rainwater Jug per plant, and 1 Bloom Booster per plant. No Spring Water or Watering Can is required. The Trowel is reusable; a Flower Pot is only needed when planting off grass.",
         },
     }
     total_cost = lambda items: sum(prices[item] * quantity for item, quantity in items.items())
