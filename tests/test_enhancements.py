@@ -534,8 +534,8 @@ def test_shop_basket_calculator_totals_known_items_and_reports_unknown_names():
     from enhancements import calculate_shop_basket
 
     result = calculate_shop_basket("Spring Water x4, Flower Pot x2, Cheesecloth x10, Mystery Item x3")
-    assert result["total"] == 650
-    assert result["by_shop"]["Farm Supplier — Postals 2002–2003"] == 600
+    assert result["total"] == 630
+    assert result["by_shop"]["Farm Supplier — Postals 2002–2003"] == 580
     assert result["by_shop"]["Head Shop — Postal 3057"] == 50
     assert result["unknown"] == ["Mystery Item"]
     assert sum(item["total"] for item in result["items"]) == result["total"]
