@@ -1,0 +1,833 @@
+{
+  "source": "Slide City Drugs - Hot Streets.csv",
+  "records": [
+    {
+      "item": "Bag of Coke",
+      "hot_low": "$352",
+      "hot_high": "$473",
+      "batch_cost": "$5",
+      "yield": "1",
+      "cost_per_product": "$5.00",
+      "minimum_profit": "$347",
+      "levels": {
+        "1": {
+          "low": "$352",
+          "high": "$473",
+          "profit": "$347"
+        },
+        "2": {
+          "low": "$401",
+          "high": "$539",
+          "profit": "$396"
+        },
+        "3": {
+          "low": "$440",
+          "high": "$591",
+          "profit": "$435"
+        },
+        "4": {
+          "low": "$479",
+          "high": "$643",
+          "profit": "$474"
+        },
+        "5": {
+          "low": "$521",
+          "high": "$700",
+          "profit": "$516"
+        }
+      }
+    },
+    {
+      "item": "Bag of Crack",
+      "hot_low": "$347",
+      "hot_high": "$468",
+      "batch_cost": "$34",
+      "yield": "1",
+      "cost_per_product": "$33.70",
+      "minimum_profit": "$313",
+      "levels": {
+        "1": {
+          "low": "$347",
+          "high": "$468",
+          "profit": "$313"
+        },
+        "2": {
+          "low": "$396",
+          "high": "$534",
+          "profit": "$362"
+        },
+        "3": {
+          "low": "$434",
+          "high": "$585",
+          "profit": "$400"
+        },
+        "4": {
+          "low": "$472",
+          "high": "$636",
+          "profit": "$438"
+        },
+        "5": {
+          "low": "$514",
+          "high": "$693",
+          "profit": "$480"
+        }
+      }
+    },
+    {
+      "item": "Speed Ball",
+      "hot_low": "$322",
+      "hot_high": "$437",
+      "batch_cost": "$69",
+      "yield": "1",
+      "cost_per_product": "$69.00",
+      "minimum_profit": "$253",
+      "levels": {
+        "1": {
+          "low": "$322",
+          "high": "$437",
+          "profit": "$253"
+        },
+        "2": {
+          "low": "$367",
+          "high": "$498",
+          "profit": "$298"
+        },
+        "3": {
+          "low": "$403",
+          "high": "$546",
+          "profit": "$334"
+        },
+        "4": {
+          "low": "$438",
+          "high": "$594",
+          "profit": "$369"
+        },
+        "5": {
+          "low": "$477",
+          "high": "$647",
+          "profit": "$408"
+        }
+      }
+    },
+    {
+      "item": "Crack Syringe",
+      "hot_low": "$259",
+      "hot_high": "$293",
+      "batch_cost": "$29",
+      "yield": "1",
+      "cost_per_product": "$29.35",
+      "minimum_profit": "$230",
+      "levels": {
+        "1": {
+          "low": "$259",
+          "high": "$293",
+          "profit": "$230"
+        },
+        "2": {
+          "low": "$295",
+          "high": "$334",
+          "profit": "$266"
+        },
+        "3": {
+          "low": "$324",
+          "high": "$366",
+          "profit": "$295"
+        },
+        "4": {
+          "low": "$352",
+          "high": "$398",
+          "profit": "$323"
+        },
+        "5": {
+          "low": "$383",
+          "high": "$434",
+          "profit": "$354"
+        }
+      }
+    },
+    {
+      "item": "Weed Bag",
+      "hot_low": "$264",
+      "hot_high": "$352",
+      "batch_cost": "$65",
+      "yield": "1",
+      "cost_per_product": "$65.00",
+      "minimum_profit": "$199",
+      "levels": {
+        "1": {
+          "low": "$264",
+          "high": "$352",
+          "profit": "$199"
+        },
+        "2": {
+          "low": "$301",
+          "high": "$401",
+          "profit": "$236"
+        },
+        "3": {
+          "low": "$330",
+          "high": "$440",
+          "profit": "$265"
+        },
+        "4": {
+          "low": "$359",
+          "high": "$479",
+          "profit": "$294"
+        },
+        "5": {
+          "low": "$391",
+          "high": "$521",
+          "profit": "$326"
+        }
+      }
+    },
+    {
+      "item": "THC Wax",
+      "hot_low": "$201",
+      "hot_high": "$272",
+      "batch_cost": "$66",
+      "yield": "2",
+      "cost_per_product": "$33.00",
+      "minimum_profit": "$168",
+      "levels": {
+        "1": {
+          "low": "$201",
+          "high": "$272",
+          "profit": "$168"
+        },
+        "2": {
+          "low": "$229",
+          "high": "$310",
+          "profit": "$196"
+        },
+        "3": {
+          "low": "$251",
+          "high": "$340",
+          "profit": "$218"
+        },
+        "4": {
+          "low": "$273",
+          "high": "$370",
+          "profit": "$240"
+        },
+        "5": {
+          "low": "$297",
+          "high": "$403",
+          "profit": "$264"
+        }
+      }
+    },
+    {
+      "item": "Heroin Bag",
+      "hot_low": "$352",
+      "hot_high": "$473",
+      "batch_cost": "$185",
+      "yield": "1",
+      "cost_per_product": "$185.00",
+      "minimum_profit": "$167",
+      "levels": {
+        "1": {
+          "low": "$352",
+          "high": "$473",
+          "profit": "$167"
+        },
+        "2": {
+          "low": "$401",
+          "high": "$539",
+          "profit": "$216"
+        },
+        "3": {
+          "low": "$440",
+          "high": "$591",
+          "profit": "$255"
+        },
+        "4": {
+          "low": "$479",
+          "high": "$643",
+          "profit": "$294"
+        },
+        "5": {
+          "low": "$521",
+          "high": "$700",
+          "profit": "$336"
+        }
+      }
+    },
+    {
+      "item": "Crack Pipe",
+      "hot_low": "$187",
+      "hot_high": "$259",
+      "batch_cost": "$24",
+      "yield": "1",
+      "cost_per_product": "$24.35",
+      "minimum_profit": "$163",
+      "levels": {
+        "1": {
+          "low": "$187",
+          "high": "$259",
+          "profit": "$163"
+        },
+        "2": {
+          "low": "$213",
+          "high": "$295",
+          "profit": "$189"
+        },
+        "3": {
+          "low": "$234",
+          "high": "$324",
+          "profit": "$210"
+        },
+        "4": {
+          "low": "$254",
+          "high": "$352",
+          "profit": "$230"
+        },
+        "5": {
+          "low": "$277",
+          "high": "$383",
+          "profit": "$253"
+        }
+      }
+    },
+    {
+      "item": "Amanita Muscaria",
+      "hot_low": "$185",
+      "hot_high": "$245",
+      "batch_cost": "$45",
+      "yield": "2",
+      "cost_per_product": "$22.50",
+      "minimum_profit": "$163",
+      "levels": {
+        "1": {
+          "low": "$185",
+          "high": "$245",
+          "profit": "$163"
+        },
+        "2": {
+          "low": "$211",
+          "high": "$279",
+          "profit": "$189"
+        },
+        "3": {
+          "low": "$231",
+          "high": "$306",
+          "profit": "$209"
+        },
+        "4": {
+          "low": "$252",
+          "high": "$333",
+          "profit": "$230"
+        },
+        "5": {
+          "low": "$274",
+          "high": "$363",
+          "profit": "$252"
+        }
+      }
+    },
+    {
+      "item": "Heroin Syringe",
+      "hot_low": "$253",
+      "hot_high": "$341",
+      "batch_cost": "$105",
+      "yield": "1",
+      "cost_per_product": "$105.00",
+      "minimum_profit": "$148",
+      "levels": {
+        "1": {
+          "low": "$253",
+          "high": "$341",
+          "profit": "$148"
+        },
+        "2": {
+          "low": "$288",
+          "high": "$389",
+          "profit": "$183"
+        },
+        "3": {
+          "low": "$316",
+          "high": "$426",
+          "profit": "$211"
+        },
+        "4": {
+          "low": "$344",
+          "high": "$464",
+          "profit": "$239"
+        },
+        "5": {
+          "low": "$374",
+          "high": "$505",
+          "profit": "$269"
+        }
+      }
+    },
+    {
+      "item": "Hashish (Kief)",
+      "hot_low": "$160",
+      "hot_high": "$215",
+      "batch_cost": "$24",
+      "yield": "1",
+      "cost_per_product": "$24.00",
+      "minimum_profit": "$136",
+      "levels": {
+        "1": {
+          "low": "$160",
+          "high": "$215",
+          "profit": "$136"
+        },
+        "2": {
+          "low": "$182",
+          "high": "$245",
+          "profit": "$158"
+        },
+        "3": {
+          "low": "$200",
+          "high": "$269",
+          "profit": "$176"
+        },
+        "4": {
+          "low": "$218",
+          "high": "$292",
+          "profit": "$194"
+        },
+        "5": {
+          "low": "$237",
+          "high": "$318",
+          "profit": "$213"
+        }
+      }
+    },
+    {
+      "item": "Fentanyl Bag",
+      "hot_low": "$380",
+      "hot_high": "$512",
+      "batch_cost": "$249",
+      "yield": "1",
+      "cost_per_product": "$248.60",
+      "minimum_profit": "$131",
+      "levels": {
+        "1": {
+          "low": "$380",
+          "high": "$512",
+          "profit": "$131"
+        },
+        "2": {
+          "low": "$433",
+          "high": "$584",
+          "profit": "$184"
+        },
+        "3": {
+          "low": "$475",
+          "high": "$640",
+          "profit": "$226"
+        },
+        "4": {
+          "low": "$517",
+          "high": "$696",
+          "profit": "$268"
+        },
+        "5": {
+          "low": "$562",
+          "high": "$758",
+          "profit": "$313"
+        }
+      }
+    },
+    {
+      "item": "Hashish (Freezer)",
+      "hot_low": "$160",
+      "hot_high": "$215",
+      "batch_cost": "$70",
+      "yield": "2",
+      "cost_per_product": "$35.00",
+      "minimum_profit": "$125",
+      "levels": {
+        "1": {
+          "low": "$160",
+          "high": "$215",
+          "profit": "$125"
+        },
+        "2": {
+          "low": "$182",
+          "high": "$245",
+          "profit": "$147"
+        },
+        "3": {
+          "low": "$200",
+          "high": "$269",
+          "profit": "$165"
+        },
+        "4": {
+          "low": "$218",
+          "high": "$292",
+          "profit": "$183"
+        },
+        "5": {
+          "low": "$237",
+          "high": "$318",
+          "profit": "$202"
+        }
+      }
+    },
+    {
+      "item": "Moonrocks",
+      "hot_low": "$117",
+      "hot_high": "$158",
+      "batch_cost": "$63",
+      "yield": "3",
+      "cost_per_product": "$21.00",
+      "minimum_profit": "$96",
+      "levels": {
+        "1": {
+          "low": "$117",
+          "high": "$158",
+          "profit": "$96"
+        },
+        "2": {
+          "low": "$133",
+          "high": "$180",
+          "profit": "$112"
+        },
+        "3": {
+          "low": "$146",
+          "high": "$198",
+          "profit": "$125"
+        },
+        "4": {
+          "low": "$159",
+          "high": "$215",
+          "profit": "$138"
+        },
+        "5": {
+          "low": "$173",
+          "high": "$234",
+          "profit": "$152"
+        }
+      }
+    },
+    {
+      "item": "LSA",
+      "hot_low": "$80",
+      "hot_high": "$110",
+      "batch_cost": "$90",
+      "yield": "5",
+      "cost_per_product": "$18.00",
+      "minimum_profit": "$62",
+      "levels": {
+        "1": {
+          "low": "$80",
+          "high": "$110",
+          "profit": "$62"
+        },
+        "2": {
+          "low": "$91",
+          "high": "$125",
+          "profit": "$73"
+        },
+        "3": {
+          "low": "$100",
+          "high": "$138",
+          "profit": "$82"
+        },
+        "4": {
+          "low": "$109",
+          "high": "$150",
+          "profit": "$91"
+        },
+        "5": {
+          "low": "$118",
+          "high": "$163",
+          "profit": "$100"
+        }
+      }
+    },
+    {
+      "item": "San Pedro Brew",
+      "hot_low": "$71",
+      "hot_high": "$160",
+      "batch_cost": "$20",
+      "yield": "1",
+      "cost_per_product": "$20.00",
+      "minimum_profit": "$51",
+      "levels": {
+        "1": {
+          "low": "$71",
+          "high": "$160",
+          "profit": "$51"
+        },
+        "2": {
+          "low": "$81",
+          "high": "$182",
+          "profit": "$61"
+        },
+        "3": {
+          "low": "$89",
+          "high": "$200",
+          "profit": "$69"
+        },
+        "4": {
+          "low": "$97",
+          "high": "$218",
+          "profit": "$77"
+        },
+        "5": {
+          "low": "$105",
+          "high": "$237",
+          "profit": "$85"
+        }
+      }
+    },
+    {
+      "item": "Cocaine Baggie",
+      "hot_low": "$37",
+      "hot_high": "$51",
+      "batch_cost": "$1",
+      "yield": "1",
+      "cost_per_product": "$1.00",
+      "minimum_profit": "$36",
+      "levels": {
+        "1": {
+          "low": "$37",
+          "high": "$51",
+          "profit": "$36"
+        },
+        "2": {
+          "low": "$42",
+          "high": "$58",
+          "profit": "$41"
+        },
+        "3": {
+          "low": "$46",
+          "high": "$64",
+          "profit": "$45"
+        },
+        "4": {
+          "low": "$50",
+          "high": "$69",
+          "profit": "$49"
+        },
+        "5": {
+          "low": "$55",
+          "high": "$75",
+          "profit": "$54"
+        }
+      }
+    },
+    {
+      "item": "Mushroom Chocolate",
+      "hot_low": "$77",
+      "hot_high": "$79",
+      "batch_cost": "$50",
+      "yield": "1",
+      "cost_per_product": "$50.00",
+      "minimum_profit": "$27",
+      "levels": {
+        "1": {
+          "low": "$77",
+          "high": "$79",
+          "profit": "$27"
+        },
+        "2": {
+          "low": "$88",
+          "high": "$90",
+          "profit": "$38"
+        },
+        "3": {
+          "low": "$96",
+          "high": "$99",
+          "profit": "$46"
+        },
+        "4": {
+          "low": "$105",
+          "high": "$107",
+          "profit": "$55"
+        },
+        "5": {
+          "low": "$114",
+          "high": "$117",
+          "profit": "$64"
+        }
+      }
+    },
+    {
+      "item": "Nyaope",
+      "hot_low": "$46",
+      "hot_high": "$62",
+      "batch_cost": "$60",
+      "yield": "3",
+      "cost_per_product": "$20.00",
+      "minimum_profit": "$26",
+      "levels": {
+        "1": {
+          "low": "$46",
+          "high": "$62",
+          "profit": "$26"
+        },
+        "2": {
+          "low": "$52",
+          "high": "$71",
+          "profit": "$32"
+        },
+        "3": {
+          "low": "$58",
+          "high": "$78",
+          "profit": "$38"
+        },
+        "4": {
+          "low": "$63",
+          "high": "$84",
+          "profit": "$43"
+        },
+        "5": {
+          "low": "$68",
+          "high": "$92",
+          "profit": "$48"
+        }
+      }
+    },
+    {
+      "item": "Weed Joint",
+      "hot_low": "$47",
+      "hot_high": "$65",
+      "batch_cost": "$42",
+      "yield": "2",
+      "cost_per_product": "$21.00",
+      "minimum_profit": "$26",
+      "levels": {
+        "1": {
+          "low": "$47",
+          "high": "$65",
+          "profit": "$26"
+        },
+        "2": {
+          "low": "$54",
+          "high": "$74",
+          "profit": "$33"
+        },
+        "3": {
+          "low": "$59",
+          "high": "$81",
+          "profit": "$38"
+        },
+        "4": {
+          "low": "$64",
+          "high": "$88",
+          "profit": "$43"
+        },
+        "5": {
+          "low": "$70",
+          "high": "$96",
+          "profit": "$49"
+        }
+      }
+    },
+    {
+      "item": "Weed Cookie",
+      "hot_low": "$88",
+      "hot_high": "$121",
+      "batch_cost": "$131",
+      "yield": "2",
+      "cost_per_product": "$65.50",
+      "minimum_profit": "$23",
+      "levels": {
+        "1": {
+          "low": "$88",
+          "high": "$121",
+          "profit": "$23"
+        },
+        "2": {
+          "low": "$100",
+          "high": "$138",
+          "profit": "$35"
+        },
+        "3": {
+          "low": "$110",
+          "high": "$151",
+          "profit": "$45"
+        },
+        "4": {
+          "low": "$120",
+          "high": "$165",
+          "profit": "$55"
+        },
+        "5": {
+          "low": "$130",
+          "high": "$179",
+          "profit": "$65"
+        }
+      }
+    },
+    {
+      "item": "Whippets",
+      "hot_low": "$37",
+      "hot_high": "$51",
+      "batch_cost": "$20",
+      "yield": "1",
+      "cost_per_product": "$20.00",
+      "minimum_profit": "$17",
+      "levels": {
+        "1": {
+          "low": "$37",
+          "high": "$51",
+          "profit": "$17"
+        },
+        "2": {
+          "low": "$42",
+          "high": "$58",
+          "profit": "$22"
+        },
+        "3": {
+          "low": "$46",
+          "high": "$64",
+          "profit": "$26"
+        },
+        "4": {
+          "low": "$50",
+          "high": "$69",
+          "profit": "$30"
+        },
+        "5": {
+          "low": "$55",
+          "high": "$75",
+          "profit": "$35"
+        }
+      }
+    },
+    {
+      "item": "Heroin Dust",
+      "hot_low": "$11",
+      "hot_high": "$22",
+      "batch_cost": "$450",
+      "yield": "25",
+      "cost_per_product": "$18.00",
+      "minimum_profit": "-$7",
+      "levels": {
+        "1": {
+          "low": "$11",
+          "high": "$22",
+          "profit": "-$7"
+        },
+        "2": {
+          "low": "$13",
+          "high": "$25",
+          "profit": "-$5"
+        },
+        "3": {
+          "low": "$14",
+          "high": "$28",
+          "profit": "-$4"
+        },
+        "4": {
+          "low": "$15",
+          "high": "$30",
+          "profit": "-$3"
+        },
+        "5": {
+          "low": "$16",
+          "high": "$33",
+          "profit": "-$2"
+        }
+      }
+    }
+  ]
+}
