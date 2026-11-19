@@ -2396,6 +2396,57 @@ async def on_message(message: discord.Message):
     embed.set_footer(text="Spelling suggestions only • Original recipe names are unchanged")
     await message.reply(embed=embed, view=ChatRecipeMatchView(message.author.id, query, matches), mention_author=False)
 
+STREET_PRICES_FILE = BASE_DIR / "street-prices.json"
+
+
+def load_street_price_data():
+    try:
+        payload = json.loads(STREET_PRICES_FILE.read_text(encoding="utf-8"))
+        records = payload.get("records", [])
+        return [item for item in records if isinstance(item, dict) and item.get("item")]
+    except (OSError, json.JSONDecodeError, AttributeError):
+        logger.exception("Could not load street price reference data")
+        return []
+
+
+def street_prices_embed(page: int = 0, query: str | None = None):
+    records = load_street_price_data()
+    if query:
+        normalized = re.sub(r"[^a-z0-9]+", " ", query.casefold()).strip()
+        terms = [term for term in normalized.split() if term]
+        records = [
+            item for item in records
+            if all(term in re.sub(r"[^a-z0-9]+", " ", item.get("item", "").casefold()).split() for term in terms)
+        ]
+    embed = discord.Embed(
+        title="💵 Slide City • Street Prices & Profit Reference",
+        description="Price and profitability figures transcribed from the supplied Hot Streets sheet. These are reference estimates; verify current in-city values.",
+        color=COLOR,
+    )
+    if not records:
+        embed.description = "No matching saved item was found. Try a shorter product name."
+        return embed
+    page_size = 4
+    total_pages = max(1, (len(records) + page_size - 1) // page_size)
+    page = max(0, min(page, total_pages - 1))
+    for item in records[page * page_size:(page + 1) * page_size]:
+        level_lines = []
+        for level in range(1, 6):
+            values = item.get("levels", {}).get(str(level), {})
+            level_lines.append(
+                f"**Lvl {level}:** {values.get('low', '—')}–{values.get('high', '—')} · Profit {values.get('profit', '—')}"
+            )
+        value = (
+            f"**Hot Streets range:** {item.get('hot_low', '—')}–{item.get('hot_high', '—')}\n"
+            f"**Batch cost:** {item.get('batch_cost', '—')} · **Yield:** {item.get('yield', '—')}\n"
+            f"**Cost per product:** {item.get('cost_per_product', '—')} · **Minimum profit:** {item.get('minimum_profit', '—')}\n"
+            + "\n".join(level_lines)
+        )
+        embed.add_field(name=item.get("item", "Unknown item")[:256], value=value[:1024], inline=False)
+    embed.set_footer(text=f"Page {page + 1}/{total_pages} • {len(records)} saved items • Pricing reference only")
+    return embed
+
+
 def dashboard_embed():
     embed = discord.Embed(
         title="⚔️ Fjord Cartel Information",
@@ -3345,6 +3396,14 @@ class ShopPriceCompareModal(SafeModal, title="Compare shop prices"):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
+class StreetPriceSearchModal(SafeModal, title="Search street prices"):
+    item = discord.ui.TextInput(label="Product name", placeholder="Example: Weed Bag, THC Wax", max_length=100)
+
+    async def on_submit(self, interaction: discord.Interaction):
+        embed = street_prices_embed(query=self.item.value)
+        await interaction.response.send_message(embed=embed, ephemeral=True)
+
+
 class DashboardMenuView(SafeView):
     def __init__(self, owner_id: int):
         super().__init__(timeout=300)
@@ -3356,7 +3415,7 @@ class DashboardMenuView(SafeView):
             options=[
                 discord.SelectOption(label="Crafting", value="crafting", description="Recipes, tables, ingredients, and planning tools", emoji="📚"),
                 discord.SelectOption(label="Commands & Help", value="commands", description="Chat commands and examples", emoji="⌨️"),
-                discord.SelectOption(label="Shops & Prices", value="shops", description="Browse shop items and prices", emoji="🛒"),
+                discord.SelectOption(label="Shops & Prices", value="shops", description="Browse shop items and prices", emoji="🛒"),\n                discord.SelectOption(label="Street Prices & Profit", value="street_prices", description="Browse Hot Streets price ranges and level estimates", emoji="💵"),\n                discord.SelectOption(label="Search street prices", value="street_price_search", description="Find a product in the Hot Streets price sheet", emoji="🔎"),
                 discord.SelectOption(label="Locations", value="locations", description="Browse postal locations a few at a time", emoji="📍"),
                 discord.SelectOption(label="Usable Items", value="usable", description="Inventory items and their requirements", emoji="🎒"),
                 discord.SelectOption(label="Find a location / postal", value="location_search", description="Search saved postal and hidden-location notes", emoji="📍"),
@@ -3403,7 +3462,7 @@ class DashboardMenuView(SafeView):
             return
         embed_factories = {
             "commands": (commands_embed, 4),
-            "shops": (shops_embed, 2),
+            "shops": (shops_embed, 2),\n            "street_prices": (street_prices_embed, 4),
             "locations": (locations_embed, 3),
             "usable": (usable_embed, 2),
         }
