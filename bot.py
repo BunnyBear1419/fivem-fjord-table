@@ -37,6 +37,7 @@ from crafting import (
 )
 from storage import atomic_write_json, read_json as storage_read_json, file_lock
 from hybrid_ai import answer_question as hybrid_ai_answer, is_configured as hybrid_ai_is_configured
+from game_guides import get_game_guide
 from enhancements import (
     calculate_recipe_ingredients, recipe_shopping_embed, table_comparison_embed,
     validate_recipe_data, validation_embed, recipes_csv_bytes, recipes_xlsx_bytes,
@@ -1978,6 +1979,18 @@ async def on_message(message: discord.Message):
     if not query:
         await message.reply("Use ! only when asking a question, for example: !where can I buy ammonia?", mention_author=False)
         return
+    game_guide = get_game_guide(query)
+    if game_guide:
+        embed = discord.Embed(
+            title=game_guide["title"],
+            description=game_guide["description"],
+            color=COLOR,
+        )
+        for field_name, field_value in game_guide["fields"]:
+            embed.add_field(name=field_name, value=field_value, inline=False)
+        embed.set_footer(text=game_guide["footer"])
+        await message.reply(embed=embed, mention_author=False)
+        return
     if query.casefold() in {"help", "crafting"}:
         await message.reply("Use /crafting or /dashboard to open the bot menus. The ! prefix is reserved for questions.", mention_author=False)
         return
@@ -2800,6 +2813,21 @@ def locations_embed():
     embed.add_field(
         name="Rotating NPC — Old Man",
         value="• **Moonshine:** Sell Moonshine to the Old Man. His location rotates and is marked on the map.",
+        inline=False,
+    )
+    embed.add_field(
+        name="Hidden Location • Meth Shed — Postal 3043",
+        value="Hidden Shed location. If it does not appear, use the server's known F8/reload workaround and check again; third-eye interaction when visible.",
+        inline=False,
+    )
+    embed.add_field(
+        name="Junkyard — Postal 3048",
+        value="Junkyard / vehicle interaction area.",
+        inline=False,
+    )
+    embed.add_field(
+        name="Meth System #1 pickup references",
+        value="• **4013** — Cooking kit pickup\n• **3024** — Supply pickup\n• **2060 / 10065 / 10066** — Additional pickup points",
         inline=False,
     )
     embed.add_field(
