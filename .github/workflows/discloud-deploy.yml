@@ -35,7 +35,7 @@ jobs:
 
       - name: Compile and run tests before deployment
         run: |
-          python -m compileall -q bot.py crafting.py enhancements.py storage.py hybrid_ai.py
+          python -m compileall -q bot.py crafting.py enhancements.py storage.py hybrid_ai.py game_guides.py
           python -m pytest -q tests
 
       - name: Create Discloud bot bundle
@@ -47,7 +47,7 @@ jobs:
             exit 1
           }
           printf 'DISCORD_BOT_TOKEN=%s\n' "$DISCORD_BOT_TOKEN" > .env
-          zip deploy.zip bot.py crafting.py enhancements.py storage.py hybrid_ai.py recipes.json discloud.config requirements.txt .env
+          zip deploy.zip bot.py crafting.py enhancements.py storage.py hybrid_ai.py game_guides.py recipes.json discloud.config requirements.txt .env
           rm -f .env
 
       - name: Setup Node
