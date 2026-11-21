@@ -2850,7 +2850,7 @@ def locations_embed():
             "• **7281 — Empty Lab.**\n"
             "• **1026–1050 — Random Locked Door:** Exact location/activity unknown; verify postal range.\n"
             "• **Drug Runs — Mysterious Person:** Drug runs are marked on the map as \"Mysterious Person\".\n"
-            "• **1056 — Empty Lab:** White side door, opposite the fishing guy. Possibly owned; ownership unconfirmed.\n"
+            "• **1056 — Money Wash.**\n"
             "• **1058 — Empty Lab.**\n"
             "• **1082 — Pick Wild Amanita.**"
         ),
